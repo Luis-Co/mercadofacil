@@ -46,6 +46,9 @@
         }
     </script>
 
+    <!-- SQLite WebAssembly (sql.js) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+
     <style>
         body {
             background-color: #F4F4F5;
@@ -92,50 +95,30 @@
             min-height: 350px;
         }
 
-        /* --- Estilos para Animaciones Anime.js (Text Splitter & Layout) --- */
-        #text-split .text-xl {
-            font-size: 2.25rem;
-            color: #0F172A;
-            letter-spacing: -0.02em;
-            line-height: 1.15;
-            font-weight: 900;
-        }
-
-        @media (min-width: 768px) {
-            #text-split .text-xl {
-                font-size: 3.5rem;
-            }
-        }
-
-        #text-split {
-            overflow: hidden;
-            display: block;
-        }
-
+        /* --- Estilos para Mi Canasta de Compras & Anime.js Layout --- */
         .layout-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
             gap: 12px;
             align-content: start;
         }
 
-        .layout-container .item.col {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            font-weight: 900;
-            background-color: #FF6B35;
-            color: #0F172A;
+        .basket-card {
+            background-color: #FFFFFF;
             border: 2px solid #0F172A;
             box-shadow: 3px 3px 0px 0px rgba(15, 23, 42, 1);
-            user-select: none;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            transition: transform 0.15s ease;
         }
 
-        .layout-container .item.col:nth-child(3n+1) { background-color: #FF6B35; color: #0F172A; }
-        .layout-container .item.col:nth-child(3n+2) { background-color: #00E676; color: #0F172A; }
-        .layout-container .item.col:nth-child(3n)   { background-color: #2962FF; color: #FFFFFF; }
+        .basket-card:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 4px 4px 0px 0px rgba(15, 23, 42, 1);
+        }
     </style>
 
     <!-- Import Map para Anime.js v4 -->
@@ -192,13 +175,14 @@
                     <div class="inline-flex items-center gap-2 bg-vibrant-green text-vibrant-dark font-black text-xs px-3 py-1 mb-4 border-2 border-vibrant-dark shadow-stitch uppercase tracking-wider">
                         🛒 Canasta básica al mejor precio
                     </div>
-                    <div class="large centered grid square-grid mb-6" id="text-split">
-                        <p class="text-xl font-black text-vibrant-dark tracking-tighter uppercase leading-none">
-                            ¿Dónde sale más barato?<br>
-                            Compare precios y ahorre hoy
-                        </p>
-                    </div>
-                    <p class="text-lg text-gray-700 font-medium mb-8 max-w-lg leading-relaxed">
+                    <h1 class="text-4xl sm:text-5xl md:text-6xl font-black text-vibrant-dark tracking-tighter mb-4 leading-none uppercase">
+                        ¿DÓNDE SALE<br>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-vibrant-blue via-vibrant-green to-vibrant-orange">MÁS BARATO?</span>
+                    </h1>
+                    <p class="text-xl md:text-2xl font-black text-vibrant-dark mb-4 tracking-tight">
+                        Compare precios de la canasta básica y ahorre hoy
+                    </p>
+                    <p class="text-base text-gray-700 font-medium mb-8 max-w-lg leading-relaxed">
                         Compare los precios de los productos esenciales en los supermercados de Costa Rica antes de salir de compras. Cuide el presupuesto de su hogar y encuentre datos confiables para su negocio.
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4 font-bold">
@@ -272,7 +256,8 @@
                                     <th class="py-4 px-6 text-xs font-black text-vibrant-dark uppercase tracking-widest stitch-border-r w-36">Última Revisión</th>
                                     <th class="py-4 px-6 text-xs font-black text-vibrant-dark uppercase tracking-widest stitch-border-r">Supermercado</th>
                                     <th class="py-4 px-6 text-xs font-black text-vibrant-dark uppercase tracking-widest stitch-border-r">Producto</th>
-                                    <th class="py-4 px-6 text-xs font-black text-vibrant-dark uppercase tracking-widest text-right">Precio Actual</th>
+                                    <th class="py-4 px-6 text-xs font-black text-vibrant-dark uppercase tracking-widest text-right stitch-border-r">Precio Actual</th>
+                                    <th class="py-4 px-4 text-xs font-black text-vibrant-dark uppercase tracking-widest text-center w-32">Canasta</th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody" class="divide-y-2 divide-vibrant-dark font-medium">
@@ -296,28 +281,54 @@
                         </div>
                     </div>
 
-                    <!-- Mi Canasta de Compras (createLayout) -->
+                    <!-- Mi Canasta de Compras (createLayout + SQLite) -->
                     <div class="p-6 stitch-border-t bg-gray-50">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4">
                             <div>
-                                <h3 class="text-sm font-black text-vibrant-dark uppercase tracking-tight flex items-center gap-2">
+                                <div class="inline-flex items-center gap-2 bg-vibrant-blue text-white text-[10px] font-black px-2.5 py-0.5 border-2 border-vibrant-dark uppercase tracking-wider shadow-stitch mb-1.5">
+                                    💾 Persistencia Local SQLite
+                                </div>
+                                <h3 class="text-lg md:text-xl font-black text-vibrant-dark uppercase tracking-tight flex items-center gap-2">
                                     <span>🧺</span> Mi Canasta de Compras
                                 </h3>
                                 <p class="text-xs text-gray-600 font-medium mt-0.5">
-                                    Agregue artículos para armar su lista del súper:
+                                    Consulte los artículos seleccionados, supermercado, fecha cotizada y precio total. Se guarda en su navegador sin necesidad de iniciar sesión.
                                 </p>
                             </div>
-                            <div class="controls flex items-center gap-3">
-                                <button class="bg-vibrant-orange text-vibrant-dark font-black py-2.5 px-5 shadow-stitch hover:shadow-stitch-hover border-2 border-vibrant-dark uppercase tracking-wider text-xs flex items-center gap-2 cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                                    <span>🛒</span> + Agregar a mi canasta
+                            <div class="controls flex flex-wrap items-center gap-2.5">
+                                <select id="canastaQuickSelect" class="bg-white border-2 border-vibrant-dark text-vibrant-dark text-xs font-bold py-2 px-3 shadow-stitch max-w-[240px]">
+                                    <!-- Populated via JS -->
+                                </select>
+                                <button id="btnAgregarQuick" class="bg-vibrant-orange text-vibrant-dark font-black py-2 px-4 shadow-stitch hover:shadow-stitch-hover border-2 border-vibrant-dark uppercase tracking-wider text-xs flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5">
+                                    <span>🛒</span> + Agregar
                                 </button>
-                                <span class="text-[11px] font-bold text-gray-500 uppercase">Máx. 15</span>
+                                <button id="btnVaciarCanasta" onclick="window.vaciarCanasta && window.vaciarCanasta()" class="bg-white hover:bg-red-50 text-red-600 font-bold py-2 px-3 border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover text-xs uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-all active:translate-y-0.5">
+                                    <span>🗑️</span> Vaciar
+                                </button>
+                                <span class="text-[11px] font-bold text-gray-500 uppercase ml-1">Máx. 15</span>
+                            </div>
+                        </div>
+
+                        <!-- Barra de Resumen de la Canasta -->
+                        <div class="mb-4 bg-white border-2 border-vibrant-dark shadow-stitch p-4 flex flex-wrap items-center justify-between gap-4">
+                            <div class="flex items-center gap-6">
+                                <div>
+                                    <span class="text-[11px] font-bold text-gray-500 uppercase block">Artículos</span>
+                                    <span id="canastaCountBadge" class="text-xl font-black text-vibrant-dark">0</span>
+                                </div>
+                                <div class="stitch-border-l pl-6">
+                                    <span class="text-[11px] font-bold text-gray-500 uppercase block">Total Canasta</span>
+                                    <span id="canastaTotalBadge" class="text-2xl font-black text-vibrant-blue">₡0</span>
+                                </div>
+                            </div>
+                            <div class="text-xs font-semibold text-gray-600 flex items-center gap-2">
+                                <span>💡</span> <span id="canastaTipText">Haga clic en "+ Canasta" en cualquier fila de la tabla para agregar ese producto con su fecha y precio.</span>
                             </div>
                         </div>
 
                         <!-- Contenedor Layout Anime.js -->
-                        <div class="layout-container min-h-[70px] p-3 bg-white border-2 border-vibrant-dark shadow-stitch">
-                            <!-- Items añadidos por addItem() con clase item col -->
+                        <div class="layout-container min-h-[90px] p-4 bg-white border-2 border-vibrant-dark shadow-stitch">
+                            <!-- Items añadidos dinámicamente con SQLite & Anime.js -->
                         </div>
                     </div>
                 </div>
@@ -339,21 +350,21 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
                     
-                    <!-- Ferreterías (Naranja) -->
+                    <!-- Tiendas (Naranja) -->
                     <div class="bg-vibrant-orange stitch-box shadow-stitch p-8 flex flex-col hover:shadow-none hover:translate-y-1 hover:translate-x-1 transition-all">
                         <div class="flex-grow">
-                            <h3 class="text-3xl font-black text-vibrant-dark mb-2 uppercase">Ferreterías</h3>
-                            <p class="text-sm font-bold text-vibrant-dark opacity-80 mb-6 uppercase tracking-wider">Materiales y Construcción</p>
+                            <h3 class="text-3xl font-black text-vibrant-dark mb-2 uppercase">Tiendas</h3>
+                            <p class="text-sm font-bold text-vibrant-dark opacity-80 mb-6 uppercase tracking-wider">Abarrotes & Mini-súpers</p>
                             <ul class="space-y-3 font-semibold text-vibrant-dark mb-8">
-                                <li class="flex items-center gap-2">➔ EPA, El Lagar, Colono y más.</li>
-                                <li class="flex items-center gap-2">➔ Más de 15,000 productos monitoreados.</li>
-                                <li class="flex items-center gap-2">➔ Actualizaciones periódicas de precios.</li>
+                                <li class="flex items-center gap-2">➔ Monitoreo de canasta básica y abarrotes.</li>
+                                <li class="flex items-center gap-2">➔ Comparativa frente a grandes supermercados.</li>
+                                <li class="flex items-center gap-2">➔ Actualizaciones semanales de precios.</li>
                             </ul>
                         </div>
                         <div class="stitch-border-t border-vibrant-dark pt-6 mt-auto">
-                            <div class="text-4xl font-black text-vibrant-dark mb-4">₡105k <span class="text-sm font-bold uppercase opacity-80">/mes</span></div>
+                            <div class="text-4xl font-black text-vibrant-dark mb-4">₡10,000 <span class="text-sm font-bold uppercase opacity-80">/mes (₡10 mil)</span></div>
                             <button class="w-full bg-vibrant-dark text-white font-black py-3 uppercase tracking-wider hover:bg-black transition-colors">
-                                Solicitar Acceso
+                                Solicitar Plan
                             </button>
                         </div>
                     </div>
@@ -361,40 +372,40 @@
                     <!-- Farmacias (Verde) -->
                     <div class="bg-vibrant-green stitch-box shadow-stitch p-8 flex flex-col relative transform md:-translate-y-4">
                         <div class="absolute top-0 right-0 -mt-4 mr-4 bg-vibrant-dark text-white text-xs font-black px-4 py-2 uppercase tracking-widest border-2 border-white shadow-stitch">
-                            MÁS SOLICITADO
+                            MÁS POPULAR
                         </div>
                         <div class="flex-grow">
                             <h3 class="text-3xl font-black text-vibrant-dark mb-2 uppercase">Farmacias</h3>
-                            <p class="text-sm font-bold text-vibrant-dark opacity-80 mb-6 uppercase tracking-wider">Salud y Medicamentos</p>
+                            <p class="text-sm font-bold text-vibrant-dark opacity-80 mb-6 uppercase tracking-wider">Salud & Medicamentos</p>
                             <ul class="space-y-3 font-semibold text-vibrant-dark mb-8">
-                                <li class="flex items-center gap-2">➔ Fischel, Sucre, La Bomba.</li>
+                                <li class="flex items-center gap-2">➔ Fischel, Sucre, La Bomba y más.</li>
                                 <li class="flex items-center gap-2">➔ Alertas de inventario y cambios de precio.</li>
                                 <li class="flex items-center gap-2">➔ Actualización diaria garantizada.</li>
                             </ul>
                         </div>
                         <div class="stitch-border-t border-vibrant-dark pt-6 mt-auto">
-                            <div class="text-4xl font-black text-vibrant-dark mb-4">₡155k <span class="text-sm font-bold uppercase opacity-80">/mes</span></div>
+                            <div class="text-4xl font-black text-vibrant-dark mb-4">₡15,000 <span class="text-sm font-bold uppercase opacity-80">/mes (₡15 mil)</span></div>
                             <button class="w-full bg-vibrant-dark text-white font-black py-3 uppercase tracking-wider hover:bg-black transition-colors">
-                                Solicitar Acceso
+                                Solicitar Plan
                             </button>
                         </div>
                     </div>
 
-                    <!-- Retail (Azul) -->
+                    <!-- Comercios (Azul) -->
                     <div class="bg-vibrant-blue stitch-box shadow-stitch p-8 flex flex-col hover:shadow-none hover:translate-y-1 hover:translate-x-1 transition-all">
                         <div class="flex-grow">
-                            <h3 class="text-3xl font-black text-white mb-2 uppercase">Comercio & Hogar</h3>
-                            <p class="text-sm font-bold text-white opacity-80 mb-6 uppercase tracking-wider">Línea Blanca y Tecnología</p>
+                            <h3 class="text-3xl font-black text-white mb-2 uppercase">Comercios</h3>
+                            <p class="text-sm font-bold text-white opacity-80 mb-6 uppercase tracking-wider">Retail, Hogar y Tecnología</p>
                             <ul class="space-y-3 font-semibold text-white mb-8">
-                                <li class="flex items-center gap-2">➔ Gollo, Monge, Siman y tiendas líderes.</li>
+                                <li class="flex items-center gap-2">➔ Gollo, Monge, Siman y cadenas líderes.</li>
                                 <li class="flex items-center gap-2">➔ Historial de rebajas y promociones.</li>
-                                <li class="flex items-center gap-2">➔ Notificaciones automáticas al instante.</li>
+                                <li class="flex items-center gap-2">➔ Notificaciones automáticas de variaciones.</li>
                             </ul>
                         </div>
                         <div class="stitch-border-t border-white pt-6 mt-auto">
-                            <div class="text-4xl font-black text-white mb-4">₡235k <span class="text-sm font-bold uppercase opacity-80">/mes</span></div>
+                            <div class="text-4xl font-black text-white mb-4">₡20,000 <span class="text-sm font-bold uppercase opacity-80">/mes (₡20 mil)</span></div>
                             <button class="w-full bg-white text-vibrant-blue font-black py-3 uppercase tracking-wider hover:bg-gray-100 transition-colors">
-                                Solicitar Acceso
+                                Solicitar Plan
                             </button>
                         </div>
                     </div>
@@ -420,70 +431,229 @@
     </footer>
 
     <!-- ==============================================
-         THREE.JS ANIMATION SCRIPT (Colorido)
+         THREE.JS: CUBO 3D GIRATORIO CON PRODUCTOS EN CADA CARA
          ============================================== -->
     <script>
         window.addEventListener('load', function() {
             const container = document.getElementById('three-container');
-            
+            if (!container) return;
+
             const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
-            camera.position.z = 5;
-            
+            const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.z = 4.8;
+
             const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             renderer.setSize(container.clientWidth, container.clientHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             container.appendChild(renderer.domElement);
-            
-            // Geometría moderna y dinámica (Icosaedro)
-            const geometry = new THREE.IcosahedronGeometry(1.5, 0);
-            
-            // Material principal: Azul vibrante
-            const material = new THREE.MeshPhongMaterial({
-                color: 0x2962FF, 
-                flatShading: true,
-                shininess: 80
-            });
-            
-            const shape = new THREE.Mesh(geometry, material);
-            
-            // Wireframe exterior: Verde Brillante grueso (estilo brutalista)
-            const edges = new THREE.EdgesGeometry(geometry);
-            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x00E676, linewidth: 3 }));
-            shape.add(line);
-            
-            // Decoración interior flotante: Naranja
-            const innerGeo = new THREE.IcosahedronGeometry(0.8, 0);
-            const innerMat = new THREE.MeshBasicMaterial({ color: 0xFF6B35, wireframe: true });
-            const innerShape = new THREE.Mesh(innerGeo, innerMat);
-            shape.add(innerShape);
 
-            scene.add(shape);
-            
-            // Iluminación contrastante
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            // 6 Productos de la Canasta Básica con su precio más económico
+            const products = [
+                {
+                    name: 'Arroz Tío Pelón',
+                    detail: '1.8 kg',
+                    super: 'Palí',
+                    price: '₡1,790',
+                    emoji: '🍚',
+                    bg: '#FFFBEB',
+                    accent: '#FF6B35'
+                },
+                {
+                    name: 'Frijoles Don Pedro',
+                    detail: '800 g',
+                    super: 'Palí',
+                    price: '₡1,390',
+                    emoji: '🫘',
+                    bg: '#F0FDF4',
+                    accent: '#00E676'
+                },
+                {
+                    name: 'Leche Dos Pinos',
+                    detail: '1 Litro',
+                    super: 'Palí',
+                    price: '₡945',
+                    emoji: '🥛',
+                    bg: '#EFF6FF',
+                    accent: '#2962FF'
+                },
+                {
+                    name: 'Huevos Blancos',
+                    detail: 'Cartón 30',
+                    super: 'Palí',
+                    price: '₡2,950',
+                    emoji: '🥚',
+                    bg: '#FEF9C3',
+                    accent: '#EAB308'
+                },
+                {
+                    name: 'Café 1820',
+                    detail: '250 g',
+                    super: 'Palí',
+                    price: '₡1,690',
+                    emoji: '☕',
+                    bg: '#FFF7ED',
+                    accent: '#F97316'
+                },
+                {
+                    name: 'Atún Sardimar',
+                    detail: '140 g',
+                    super: 'Maxi Palí',
+                    price: '₡1,100',
+                    emoji: '🐟',
+                    bg: '#ECFEFF',
+                    accent: '#06B6D4'
+                }
+            ];
+
+            // Generador de Textura 2D en Canvas para cada cara
+            function createProductFaceTexture(prod) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 512;
+                const ctx = canvas.getContext('2d');
+
+                // Fondo
+                ctx.fillStyle = prod.bg;
+                ctx.fillRect(0, 0, 512, 512);
+
+                // Borde exterior Neo-Brutalista
+                ctx.lineWidth = 22;
+                ctx.strokeStyle = '#0F172A';
+                ctx.strokeRect(11, 11, 490, 490);
+
+                // Borde de acento interno
+                ctx.lineWidth = 6;
+                ctx.strokeStyle = prod.accent;
+                ctx.strokeRect(28, 28, 456, 456);
+
+                // Barra Superior de Supermercado
+                ctx.fillStyle = '#0F172A';
+                ctx.fillRect(40, 42, 432, 60);
+                ctx.fillStyle = prod.accent;
+                ctx.font = '900 28px Inter, system-ui, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('SUPER: ' + prod.super.toUpperCase(), 256, 72);
+
+                // Emoji del producto grande
+                ctx.font = '100px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
+                ctx.fillText(prod.emoji, 256, 175);
+
+                // Nombre del producto
+                ctx.fillStyle = '#0F172A';
+                ctx.font = '900 32px Inter, system-ui, sans-serif';
+                ctx.fillText(prod.name, 256, 260);
+
+                // Detalle / Gramaje
+                ctx.font = '700 22px Inter, system-ui, sans-serif';
+                ctx.fillStyle = '#475569';
+                ctx.fillText(prod.detail, 256, 298);
+
+                // Etiqueta de Precio Neo-brutalista
+                ctx.fillStyle = prod.accent;
+                ctx.fillRect(52, 345, 408, 88);
+                ctx.lineWidth = 8;
+                ctx.strokeStyle = '#0F172A';
+                ctx.strokeRect(52, 345, 408, 88);
+
+                ctx.fillStyle = '#0F172A';
+                ctx.font = '900 46px Inter, system-ui, sans-serif';
+                ctx.fillText(prod.price, 256, 390);
+
+                // Etiqueta inferior
+                ctx.fillStyle = '#0F172A';
+                ctx.font = '800 17px Inter, system-ui, sans-serif';
+                ctx.fillText('⭐ MEJOR PRECIO CANASTA', 256, 465);
+
+                const texture = new THREE.CanvasTexture(canvas);
+                return texture;
+            }
+
+            // Materiales de las 6 caras
+            const materials = products.map(prod => new THREE.MeshStandardMaterial({
+                map: createProductFaceTexture(prod),
+                roughness: 0.25,
+                metalness: 0.05
+            }));
+
+            // Geometría del Cubo 3D
+            const geometry = new THREE.BoxGeometry(2.2, 2.2, 2.2);
+            const cube = new THREE.Mesh(geometry, materials);
+
+            // Borde oscuro marcado para estilo Stitch / Neo-Brutalist
+            const edges = new THREE.EdgesGeometry(geometry);
+            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x0F172A, linewidth: 3 }));
+            cube.add(line);
+
+            scene.add(cube);
+
+            // Luces equilibradas para máxima legibilidad
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
             scene.add(ambientLight);
-            
-            const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-            dirLight.position.set(5, 5, 5);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            dirLight.position.set(5, 6, 6);
             scene.add(dirLight);
-            
-            // Loop de animación
+
+            // Controles de arrastre interactivo con mouse o táctil
+            let isDragging = false;
+            let previousMousePosition = { x: 0, y: 0 };
+
+            container.style.cursor = 'grab';
+
+            container.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                container.style.cursor = 'grabbing';
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+
+            window.addEventListener('mouseup', () => {
+                isDragging = false;
+                container.style.cursor = 'grab';
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const deltaX = e.clientX - previousMousePosition.x;
+                const deltaY = e.clientY - previousMousePosition.y;
+                cube.rotation.y += deltaX * 0.01;
+                cube.rotation.x += deltaY * 0.01;
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+
+            // Soporte para pantallas táctiles
+            container.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    isDragging = true;
+                    previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                }
+            }, { passive: true });
+
+            window.addEventListener('touchend', () => { isDragging = false; });
+
+            window.addEventListener('touchmove', (e) => {
+                if (!isDragging || e.touches.length !== 1) return;
+                const deltaX = e.touches[0].clientX - previousMousePosition.x;
+                const deltaY = e.touches[0].clientY - previousMousePosition.y;
+                cube.rotation.y += deltaX * 0.01;
+                cube.rotation.x += deltaY * 0.01;
+                previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }, { passive: true });
+
+            // Loop de animación fluida
             function animate() {
                 requestAnimationFrame(animate);
-                
-                shape.rotation.x += 0.003;
-                shape.rotation.y += 0.008;
-                innerShape.rotation.y -= 0.01;
-                innerShape.rotation.x -= 0.005;
-                
+                if (!isDragging) {
+                    cube.rotation.y += 0.006;
+                    cube.rotation.x += 0.003;
+                }
                 renderer.render(scene, camera);
             }
-            
+
             animate();
-            
+
             window.addEventListener('resize', () => {
-                if(container) {
+                if (container && renderer && camera) {
                     camera.aspect = container.clientWidth / container.clientHeight;
                     camera.updateProjectionMatrix();
                     renderer.setSize(container.clientWidth, container.clientHeight);
@@ -673,7 +843,12 @@
                             ${bestPriceBadge}
                         </div>
                     </td>
-                    <td class="py-4 px-6 border-b-2 border-vibrant-dark text-lg font-black ${isBestPrice ? 'text-green-700' : 'text-vibrant-blue'} text-right">${formatCRC(row.precio)}</td>
+                    <td class="py-4 px-6 stitch-border-r border-b-2 border-vibrant-dark text-lg font-black ${isBestPrice ? 'text-green-700' : 'text-vibrant-blue'} text-right">${formatCRC(row.precio)}</td>
+                    <td class="py-4 px-4 border-b-2 border-vibrant-dark text-center">
+                        <button onclick="window.agregarProductoCanasta(${row.id})" class="bg-vibrant-green hover:bg-green-400 text-vibrant-dark font-black px-3 py-1.5 text-xs border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 transition-all inline-flex items-center gap-1 cursor-pointer">
+                            <span>🛒</span> + Canasta
+                        </button>
+                    </td>
                 `;
                 tableBody.appendChild(tr);
             });
@@ -719,67 +894,315 @@
     </script>
 
     <!-- ==============================================
-         ANIME.JS V4: LAYOUT ANIMATION (createLayout)
+         MERCADOFÁCIL: MI CANASTA DE COMPRAS (SQLite + Anime.js v4)
          ============================================== -->
     <script type="module">
-        import { createLayout, utils } from 'animejs';
+        import { createLayout } from 'animejs';
 
-        const [ $button ] = utils.$('.controls button');
+        // Constantes de almacenamiento
+        const SQLITE_STORAGE_KEY = 'mercadofacil_sqlite_bin';
+        const FALLBACK_STORAGE_KEY = 'mercadofacil_canasta_fallback';
+        const CLEARED_FLAG_KEY = 'mercadofacil_canasta_cleared';
+        const MAX_ITEMS = 15;
 
+        let sqliteDb = null;
+
+        // Inicializar layout de Anime.js v4
         const layout = createLayout('.layout-container', {
-          duration: 250,
-          ease: 'outQuad',
-          enterFrom: {
-            transform: 'translateY(100px) scale(.25)',
-            opacity: 0,
-            duration: 350, // Applied to the elements entering the layout
-            ease: 'out(3)' // Applied to the elements entering the layout
-          }
+            duration: 250,
+            ease: 'outQuad',
+            enterFrom: {
+                transform: 'translateY(35px) scale(.8)',
+                opacity: 0,
+                duration: 350,
+                ease: 'out(3)'
+            }
         });
 
-        let count = 0;
+        // 1. Inicialización de SQLite WebAssembly (sql.js)
+        async function initSQLite() {
+            if (typeof initSqlJs === 'function') {
+                try {
+                    const SQL = await initSqlJs({
+                        locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+                    });
 
-        function addItem() {
-          layout.update(({ root }) => {
-            const $item = document.createElement('div');
-            $item.classList.add('item', 'col');
-            $item.innerHTML = ++count;
-            if (count > 15) return $button.disabled = true;
-            root.appendChild($item);
-          });
+                    const savedBase64 = localStorage.getItem(SQLITE_STORAGE_KEY);
+                    if (savedBase64) {
+                        try {
+                            const binaryStr = atob(savedBase64);
+                            const bytes = new Uint8Array(binaryStr.length);
+                            for (let i = 0; i < binaryStr.length; i++) {
+                                bytes[i] = binaryStr.charCodeAt(i);
+                            }
+                            sqliteDb = new SQL.Database(bytes);
+                        } catch (e) {
+                            console.warn('Error al restaurar SQLite binario, creando nueva BD', e);
+                            sqliteDb = new SQL.Database();
+                        }
+                    } else {
+                        sqliteDb = new SQL.Database();
+                    }
+
+                    // Crear tabla si no existe
+                    sqliteDb.run(`
+                        CREATE TABLE IF NOT EXISTS canasta (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            item TEXT NOT NULL,
+                            super TEXT NOT NULL,
+                            precio INTEGER NOT NULL,
+                            fecha TEXT NOT NULL,
+                            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                        );
+                    `);
+
+                    // Si es la primera visita y la tabla está vacía, precargar 2 artículos para demostrar
+                    const check = sqliteDb.exec("SELECT COUNT(*) FROM canasta");
+                    const count = check.length ? check[0].values[0][0] : 0;
+                    if (count === 0 && !localStorage.getItem(CLEARED_FLAG_KEY)) {
+                        sqliteDb.run("INSERT INTO canasta (item, super, precio, fecha) VALUES (?, ?, ?, ?)", [
+                            'Arroz Tío Pelón 1.8kg', 'Palí', 1790, '25 Oct, 2026'
+                        ]);
+                        sqliteDb.run("INSERT INTO canasta (item, super, precio, fecha) VALUES (?, ?, ?, ?)", [
+                            'Leche Semidescremada Dos Pinos 1L', 'Palí', 945, '25 Oct, 2026'
+                        ]);
+                        persistSQLite();
+                    }
+                } catch (err) {
+                    console.warn('SQLite WASM no disponible, usando modo local seguro:', err);
+                    sqliteDb = null;
+                }
+            }
+
+            // Fallback si SQLite WASM no pudo inicializar
+            if (!sqliteDb && !localStorage.getItem(FALLBACK_STORAGE_KEY) && !localStorage.getItem(CLEARED_FLAG_KEY)) {
+                const initialFallback = [
+                    { id: 1, item: 'Arroz Tío Pelón 1.8kg', super: 'Palí', precio: 1790, fecha: '25 Oct, 2026' },
+                    { id: 2, item: 'Leche Semidescremada Dos Pinos 1L', super: 'Palí', precio: 945, fecha: '25 Oct, 2026' }
+                ];
+                localStorage.setItem(FALLBACK_STORAGE_KEY, JSON.stringify(initialFallback));
+            }
+
+            populateQuickSelect();
+            renderCanastaUI();
         }
 
-        if ($button) {
-          $button.addEventListener('click', addItem);
+        // 2. Persistencia en localStorage
+        function persistSQLite() {
+            if (!sqliteDb) return;
+            try {
+                const binary = sqliteDb.export();
+                let binaryStr = '';
+                const chunkSize = 8192;
+                for (let i = 0; i < binary.length; i += chunkSize) {
+                    binaryStr += String.fromCharCode.apply(null, binary.subarray(i, i + chunkSize));
+                }
+                localStorage.setItem(SQLITE_STORAGE_KEY, btoa(binaryStr));
+            } catch (err) {
+                console.warn('Error al guardar SQLite en localStorage:', err);
+            }
         }
-    </script>
 
-    <!-- ==============================================
-         ANIME.JS V4: TEXT SPLITTER (splitText & createTimeline)
-         ============================================== -->
-    <script type="module">
-        import { createTimeline, stagger, utils, splitText } from 'animejs';
-
-        if (document.fonts) {
-            await document.fonts.ready;
+        // 3. Operaciones de lectura y escritura
+        function getItemsFromStorage() {
+            if (sqliteDb) {
+                try {
+                    const res = sqliteDb.exec("SELECT id, item, super, precio, fecha FROM canasta ORDER BY id DESC");
+                    if (res && res.length > 0) {
+                        const cols = res[0].columns;
+                        return res[0].values.map(val => {
+                            const row = {};
+                            cols.forEach((c, idx) => row[c] = val[idx]);
+                            return row;
+                        });
+                    }
+                    return [];
+                } catch (e) {
+                    console.error('Error al consultar SQLite:', e);
+                }
+            }
+            try {
+                return JSON.parse(localStorage.getItem(FALLBACK_STORAGE_KEY) || '[]');
+            } catch {
+                return [];
+            }
         }
 
-        const { words, chars } = splitText('#text-split p', {
-          words: { wrap: 'clip' },
-          chars: true,
-        });
+        function insertItem(item, superName, precio, fecha) {
+            localStorage.removeItem(CLEARED_FLAG_KEY);
+            if (sqliteDb) {
+                try {
+                    sqliteDb.run("INSERT INTO canasta (item, super, precio, fecha) VALUES (?, ?, ?, ?)", [item, superName, precio, fecha]);
+                    persistSQLite();
+                    return;
+                } catch (e) {
+                    console.error('Error al insertar en SQLite:', e);
+                }
+            }
+            const items = getItemsFromStorage();
+            const newId = items.length ? Math.max(...items.map(i => i.id || 0)) + 1 : 1;
+            items.unshift({ id: newId, item, super: superName, precio, fecha });
+            localStorage.setItem(FALLBACK_STORAGE_KEY, JSON.stringify(items));
+        }
 
-        createTimeline({
-          loop: true,
-          defaults: { ease: 'inOut(3)', duration: 650 }
-        })
-        .add(words, {
-          y: [$el => +$el.dataset.line % 2 ? '100%' : '-100%', '0%'],
-        }, stagger(125))
-        .add(chars, {
-          y: $el => +$el.dataset.line % 2 ? '100%' : '-100%',
-        }, stagger(10, { from: 'random' }))
-        .init();
+        function deleteItem(id) {
+            if (sqliteDb) {
+                try {
+                    sqliteDb.run("DELETE FROM canasta WHERE id = ?", [id]);
+                    persistSQLite();
+                    return;
+                } catch (e) {
+                    console.error('Error al borrar en SQLite:', e);
+                }
+            }
+            let items = getItemsFromStorage();
+            items = items.filter(i => i.id !== id);
+            localStorage.setItem(FALLBACK_STORAGE_KEY, JSON.stringify(items));
+        }
+
+        function clearAllItems() {
+            localStorage.setItem(CLEARED_FLAG_KEY, 'true');
+            if (sqliteDb) {
+                try {
+                    sqliteDb.run("DELETE FROM canasta");
+                    persistSQLite();
+                    return;
+                } catch (e) {
+                    console.error('Error al vaciar SQLite:', e);
+                }
+            }
+            localStorage.setItem(FALLBACK_STORAGE_KEY, JSON.stringify([]));
+        }
+
+        // 4. Renderizado reactivo con Anime.js createLayout
+        function renderCanastaUI() {
+            const items = getItemsFromStorage();
+            const count = items.length;
+            const total = items.reduce((sum, item) => sum + (Number(item.precio) || 0), 0);
+
+            // Actualizar contadores y badges
+            const countBadge = document.getElementById('canastaCountBadge');
+            const totalBadge = document.getElementById('canastaTotalBadge');
+            const btnQuick = document.getElementById('btnAgregarQuick');
+            const tipText = document.getElementById('canastaTipText');
+
+            if (countBadge) countBadge.innerText = `${count} ${count === 1 ? 'artículo' : 'artículos'}`;
+            if (totalBadge) totalBadge.innerText = formatCRC(total);
+
+            if (btnQuick) {
+                const isFull = count >= MAX_ITEMS;
+                btnQuick.disabled = isFull;
+                if (isFull) {
+                    btnQuick.innerText = 'Límite (15)';
+                    if (tipText) tipText.innerText = 'Ha alcanzado el límite máximo de 15 productos en su canasta de ahorro.';
+                } else {
+                    btnQuick.innerHTML = '<span>🛒</span> + Agregar';
+                    if (tipText) tipText.innerText = 'Haga clic en "+ Canasta" en cualquier fila de la tabla para agregar ese producto con su fecha y precio.';
+                }
+            }
+
+            // Actualización fluida del layout con Anime.js
+            layout.update(({ root }) => {
+                root.innerHTML = '';
+
+                if (items.length === 0) {
+                    const emptyNotice = document.createElement('div');
+                    emptyNotice.className = 'col-span-full py-8 text-center text-gray-500 font-semibold text-sm';
+                    emptyNotice.innerHTML = `
+                        🧺 Su canasta de compras está vacía.<br>
+                        <span class="text-xs text-gray-400 font-normal">Haga clic en <strong>"+ Canasta"</strong> en la tabla de precios o use el selector rápido para armar su lista.</span>
+                    `;
+                    root.appendChild(emptyNotice);
+                    return;
+                }
+
+                items.forEach(it => {
+                    const card = document.createElement('div');
+                    card.className = 'basket-card item col';
+                    card.innerHTML = `
+                        <div class="flex items-start justify-between gap-2 mb-2">
+                            <span class="inline-block bg-vibrant-dark text-white text-[10px] font-black px-2 py-0.5 uppercase tracking-wider">${it.super}</span>
+                            <button onclick="window.eliminarDeCanasta(${it.id})" class="text-gray-400 hover:text-red-600 font-black text-sm leading-none p-1 transition-colors" title="Quitar de la canasta">✕</button>
+                        </div>
+                        <div class="font-black text-sm text-vibrant-dark mb-1 leading-snug">${it.item}</div>
+                        <div class="text-[11px] text-gray-500 font-bold mb-3 flex items-center gap-1">
+                            <span>📅</span> Cotizado: ${it.fecha}
+                        </div>
+                        <div class="mt-auto pt-2 border-t border-gray-200 flex items-center justify-between">
+                            <span class="text-xs font-bold text-gray-500">Precio:</span>
+                            <span class="text-base font-black text-vibrant-blue">${formatCRC(it.precio)}</span>
+                        </div>
+                    `;
+                    root.appendChild(card);
+                });
+            });
+        }
+
+        // 5. Poblar el selector rápido con los mejores precios
+        function populateQuickSelect() {
+            const quickSelect = document.getElementById('canastaQuickSelect');
+            if (!quickSelect) return;
+            quickSelect.innerHTML = '';
+
+            const featuredItems = [
+                { id: 3, label: 'Arroz Tío Pelón 1.8kg (Palí - ₡1,790)' },
+                { id: 8, label: 'Frijoles Don Pedro 800g (Palí - ₡1,390)' },
+                { id: 13, label: 'Leche Dos Pinos 1L (Palí - ₡945)' },
+                { id: 18, label: 'Huevos Blancos x30 (Palí - ₡2,950)' },
+                { id: 23, label: 'Café 1820 250g (Palí - ₡1,690)' },
+                { id: 25, label: 'Atún Sardimar 140g (Maxi Palí - ₡1,100)' }
+            ];
+
+            featuredItems.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.id;
+                opt.innerText = item.label;
+                quickSelect.appendChild(opt);
+            });
+        }
+
+        // 6. Funciones globales expuestas para interacción del usuario
+        window.agregarProductoCanasta = function(productId) {
+            const currentItems = getItemsFromStorage();
+            if (currentItems.length >= MAX_ITEMS) {
+                alert('Ha alcanzado el límite máximo de 15 productos en su canasta de ahorro.');
+                return;
+            }
+            const prod = allData.find(d => d.id === productId);
+            if (!prod) return;
+            insertItem(prod.item, prod.super, prod.precio, prod.fecha);
+            renderCanastaUI();
+        };
+
+        window.eliminarDeCanasta = function(id) {
+            deleteItem(id);
+            renderCanastaUI();
+        };
+
+        window.vaciarCanasta = function() {
+            if (confirm('¿Desea vaciar todos los artículos de su canasta de compras?')) {
+                clearAllItems();
+                renderCanastaUI();
+            }
+        };
+
+        // Event listener para el botón de agregar rápido
+        const btnAgregarQuick = document.getElementById('btnAgregarQuick');
+        if (btnAgregarQuick) {
+            btnAgregarQuick.addEventListener('click', () => {
+                const quickSelect = document.getElementById('canastaQuickSelect');
+                if (!quickSelect) return;
+                const selectedId = parseInt(quickSelect.value, 10);
+                window.agregarProductoCanasta(selectedId);
+            });
+        }
+
+        // Iniciar SQLite al cargar el DOM
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initSQLite);
+        } else {
+            initSQLite();
+        }
     </script>
 </body>
 </html>
