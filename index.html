@@ -597,7 +597,7 @@
             paginationControls.appendChild(
                 createBtn('SIG', currentPage === totalPages, 'hover:bg-gray-100', () => changePage(currentPage + 1))
             );
-        };
+        };  
 
         superFilter.addEventListener('change', applyFilters);
         itemFilter.addEventListener('change', applyFilters);
