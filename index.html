@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MercadoFácil | Inteligencia de Precios en CR</title>
+    
+    <!-- Favicon Actualizado -->
+    <link rel="icon" href="https://img.icons8.com/color/48/shopping-cart--v1.png">
+    
+    <!-- Tipografía: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Configuración de Tema: Vibrante (Neo-brutalista) -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        vibrant: {
+                            orange: '#FF6B35',   // Naranja vibrante
+                            green: '#00E676',    // Verde brillante
+                            blue: '#2962FF',     // Azul intenso
+                            dark: '#0F172A',     // Casi negro para contrastes altos
+                            light: '#FFFFFF',    // Blanco puro
+                            bg: '#F4F4F5'        // Gris muy claro para fondo
+                        }
+                    },
+                    boxShadow: {
+                        'stitch': '4px 4px 0px 0px rgba(15, 23, 42, 1)',
+                        'stitch-hover': '2px 2px 0px 0px rgba(15, 23, 42, 1)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #F4F4F5;
+            color: #0F172A;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+
+        /* --- Parche CSS: Ocultar barra inyectada de Google Translate --- */
+        html { top: 0 !important; }
+        body { top: 0 !important; }
+        .skiptranslate, iframe.skiptranslate, .goog-te-banner-frame {
+            display: none !important;
+            visibility: hidden !important;
+        }
+        #goog-gt-tt, .goog-te-balloon-frame { display: none !important; }
+        .goog-text-highlight { background-color: transparent !important; box-shadow: none !important; }
+
+        /* Estilos Stitch: Bordes marcados, sin redondeos */
+        select, input, button, .stitch-box {
+            border-radius: 0 !important;
+            border: 2px solid #0F172A;
+            transition: all 0.2s ease;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            background-color: #fefefe;
+        }
+
+        .stitch-border-b { border-bottom: 2px solid #0F172A; }
+        .stitch-border-t { border-top: 2px solid #0F172A; }
+        .stitch-border-r { border-right: 2px solid #0F172A; }
+        .stitch-border-l { border-left: 2px solid #0F172A; }
+
+        .table-row-hover:hover {
+            background-color: #E2E8F0;
+        }
+
+        /* Three.js Container */
+        #three-container {
+            width: 100%;
+            height: 100%;
+            min-height: 350px;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- Div Oculto para Google Translate Nativo -->
+    <div id="google_translate_element" style="display:none;"></div>
+
+    <!-- Navegación -->
+    <nav class="bg-vibrant-blue stitch-border-b sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2 font-black text-2xl text-white cursor-pointer tracking-tighter" onclick="window.scrollTo(0,0)">
+                <img src="https://img.icons8.com/color/48/shopping-cart--v1.png" alt="Logo" class="w-8 h-8">
+                MERCADOFÁCIL
+            </div>
+            <div class="flex items-center gap-6 text-sm font-bold">
+                <a href="#dashboard" class="text-white hover:text-vibrant-green transition-colors hidden md:block uppercase tracking-wide">Datos B2C</a>
+                <a href="#premium" class="text-white hover:text-vibrant-orange transition-colors hidden md:block uppercase tracking-wide">APIs B2B</a>
+                
+                <!-- Selector de Idiomas -->
+                <div class="relative">
+                    <select id="custom_lang_selector" class="appearance-none bg-white border-2 border-vibrant-dark text-vibrant-dark py-1.5 pl-3 pr-8 text-sm font-bold cursor-pointer hover:bg-gray-100 shadow-stitch">
+                        <option value="es">ESPAÑOL</option>
+                        <option value="en">ENGLISH</option>
+                        <option value="pt">PORTUGUÊS</option>
+                        <option value="de">DEUTSCH</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-vibrant-dark">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow">
+        
+        <!-- Hero Section with Three.js -->
+        <section class="py-12 md:py-20 stitch-border-b bg-white overflow-hidden relative">
+            <!-- Decorative background elements -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-vibrant-orange opacity-10 rounded-full mix-blend-multiply filter blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+            <div class="absolute bottom-0 left-0 w-64 h-64 bg-vibrant-blue opacity-10 rounded-full mix-blend-multiply filter blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
+
+            <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative z-10">
+                <div>
+                    <h1 class="text-5xl md:text-7xl font-black text-vibrant-dark tracking-tighter mb-6 leading-none">
+                        DATOS CLAROS.<br>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-vibrant-blue via-vibrant-green to-vibrant-orange">PRECIOS REALES.</span>
+                    </h1>
+                    <p class="text-lg text-gray-700 font-medium mb-8 max-w-lg leading-relaxed">
+                        Inteligencia de precios B2B y B2C en Costa Rica. Extraemos y estructuramos datos de supermercados, ferreterías y más.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 font-bold">
+                        <a href="#dashboard" class="bg-vibrant-orange text-vibrant-dark text-center py-3 px-6 shadow-stitch hover:shadow-stitch-hover hover:translate-y-0.5 transition-all">
+                            VER PRECIOS HOY
+                        </a>
+                        <a href="#premium" class="bg-vibrant-green text-vibrant-dark text-center py-3 px-6 shadow-stitch hover:shadow-stitch-hover hover:translate-y-0.5 transition-all">
+                            APIs PARA EMPRESAS
+                        </a>
+                    </div>
+                </div>
+                <!-- 3D Canvas Container -->
+                <div id="three-container" class="relative w-full h-96 flex justify-center items-center">
+                    <!-- Three.js renders here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Section (B2C) -->
+        <section id="dashboard" class="py-16 bg-vibrant-bg stitch-border-b">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="mb-8 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-3xl font-black text-vibrant-dark tracking-tight uppercase">Explorador B2C</h2>
+                        <p class="text-gray-600 font-medium mt-1">Canasta básica costarricense actualizada.</p>
+                    </div>
+                </div>
+
+                <!-- Dashboard Container -->
+                <div class="bg-white stitch-box shadow-stitch overflow-hidden">
+                    
+                    <!-- Controles / Filtros -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-6 bg-vibrant-blue stitch-border-b">
+                        <div>
+                            <label class="block text-xs font-bold text-white uppercase tracking-widest mb-2">Supermercado</label>
+                            <select id="superFilter" class="w-full bg-white text-vibrant-dark font-semibold py-3 px-4 shadow-sm">
+                                <option value="Todos">TODOS LOS SUPERMERCADOS</option>
+                                <option value="Walmart">WALMART</option>
+                                <option value="MásxMenos">MÁSXMENOS</option>
+                                <option value="Palí">PALÍ</option>
+                                <option value="Auto Mercado">AUTO MERCADO</option>
+                                <option value="Maxi Palí">MAXI PALÍ</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-white uppercase tracking-widest mb-2">Artículo</label>
+                            <select id="itemFilter" class="w-full bg-white text-vibrant-dark font-semibold py-3 px-4 shadow-sm">
+                                <option value="Todos">TODOS LOS ARTÍCULOS</option>
+                                <option value="Arroz Tío Pelón 1.8kg">ARROZ TÍO PELÓN 1.8KG</option>
+                                <option value="Frijoles Negros Don Pedro 800g">FRIJOLES NEGROS DON PEDRO 800G</option>
+                                <option value="Leche Semidescremada Dos Pinos 1L">LECHE SEMIDESCREMADA DOS PINOS 1L</option>
+                                <option value="Huevos Blancos (Cartón 30)">HUEVOS BLANCOS (CARTÓN 30)</option>
+                                <option value="Café 1820 250g">CAFÉ 1820 250G</option>
+                                <option value="Atún Sardimar Trocitos 140g">ATÚN SARDIMAR TROCITOS 140G</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Tabla -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100 stitch-border-b">
+                                    <th class="py-4 px-6 text-xs font-black text-vibrant-dark uppercase tracking-widest stitch-border-r w-32">Fecha</th>
+                                    <th class="py-4 px-6 text-xs font-black text-vibrant-dark uppercase tracking-widest stitch-border-r">Supermercado</th>
+                                    <th class="py-4 px-6 text-xs font-black text-vibrant-dark uppercase tracking-widest stitch-border-r">Producto</th>
+                                    <th class="py-4 px-6 text-xs font-black text-vibrant-dark uppercase tracking-widest text-right">Precio Actual</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody" class="divide-y-2 divide-vibrant-dark font-medium">
+                                <!-- JS Populated -->
+                            </tbody>
+                        </table>
+                        
+                        <div id="noResults" class="hidden py-16 text-center text-vibrant-dark font-bold text-lg bg-gray-50">
+                            No se encontraron registros.
+                        </div>
+                    </div>
+                    
+                    <!-- Paginación -->
+                    <div class="p-4 stitch-border-t bg-white flex items-center justify-between">
+                        <div class="text-sm font-semibold text-vibrant-dark">
+                            Mostrando <span id="pageStartItem" class="bg-vibrant-orange px-2 py-0.5 text-white">0</span> a <span id="pageEndItem" class="bg-vibrant-orange px-2 py-0.5 text-white">0</span> de <span id="totalItems">0</span>
+                        </div>
+                        <div class="flex gap-2 font-bold" id="paginationControls">
+                            <!-- JS Populated -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- B2B Section (Direct Pricing) -->
+        <section id="premium" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl md:text-5xl font-black text-vibrant-dark tracking-tighter mb-4 uppercase">Extracción B2B</h2>
+                    <p class="text-vibrant-dark font-medium max-w-2xl mx-auto text-lg border-b-4 border-vibrant-green inline-block pb-2">
+                        Precios directos. Cero reuniones innecesarias.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    
+                    <!-- Ferreterías (Naranja) -->
+                    <div class="bg-vibrant-orange stitch-box shadow-stitch p-8 flex flex-col hover:shadow-none hover:translate-y-1 hover:translate-x-1 transition-all">
+                        <div class="flex-grow">
+                            <h3 class="text-3xl font-black text-vibrant-dark mb-2 uppercase">Ferreterías</h3>
+                            <p class="text-sm font-bold text-vibrant-dark opacity-80 mb-6 uppercase tracking-wider">Materiales & Acabados</p>
+                            <ul class="space-y-3 font-semibold text-vibrant-dark mb-8">
+                                <li class="flex items-center gap-2">➔ EPA, El Lagar, Colono.</li>
+                                <li class="flex items-center gap-2">➔ ~15,000 SKUs rastreados.</li>
+                                <li class="flex items-center gap-2">➔ Actualización Semanal.</li>
+                            </ul>
+                        </div>
+                        <div class="stitch-border-t border-vibrant-dark pt-6 mt-auto">
+                            <div class="text-4xl font-black text-vibrant-dark mb-4">₡105k <span class="text-sm font-bold uppercase opacity-80">/mes</span></div>
+                            <button class="w-full bg-vibrant-dark text-white font-black py-3 uppercase tracking-wider hover:bg-black transition-colors">
+                                Comprar API
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Farmacias (Verde) -->
+                    <div class="bg-vibrant-green stitch-box shadow-stitch p-8 flex flex-col relative transform md:-translate-y-4">
+                        <div class="absolute top-0 right-0 -mt-4 mr-4 bg-vibrant-dark text-white text-xs font-black px-4 py-2 uppercase tracking-widest border-2 border-white shadow-stitch">
+                            POPULAR
+                        </div>
+                        <div class="flex-grow">
+                            <h3 class="text-3xl font-black text-vibrant-dark mb-2 uppercase">Farmacias</h3>
+                            <p class="text-sm font-bold text-vibrant-dark opacity-80 mb-6 uppercase tracking-wider">Salud & Cuidado</p>
+                            <ul class="space-y-3 font-semibold text-vibrant-dark mb-8">
+                                <li class="flex items-center gap-2">➔ Fischel, Sucre, La Bomba.</li>
+                                <li class="flex items-center gap-2">➔ Alertas de stock crítico.</li>
+                                <li class="flex items-center gap-2">➔ Actualización Diaria.</li>
+                            </ul>
+                        </div>
+                        <div class="stitch-border-t border-vibrant-dark pt-6 mt-auto">
+                            <div class="text-4xl font-black text-vibrant-dark mb-4">₡155k <span class="text-sm font-bold uppercase opacity-80">/mes</span></div>
+                            <button class="w-full bg-vibrant-dark text-white font-black py-3 uppercase tracking-wider hover:bg-black transition-colors">
+                                Comprar API
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Retail (Azul) -->
+                    <div class="bg-vibrant-blue stitch-box shadow-stitch p-8 flex flex-col hover:shadow-none hover:translate-y-1 hover:translate-x-1 transition-all">
+                        <div class="flex-grow">
+                            <h3 class="text-3xl font-black text-white mb-2 uppercase">Retail Tech</h3>
+                            <p class="text-sm font-bold text-white opacity-80 mb-6 uppercase tracking-wider">Electrodomésticos</p>
+                            <ul class="space-y-3 font-semibold text-white mb-8">
+                                <li class="flex items-center gap-2">➔ Gollo, Monge, Siman.</li>
+                                <li class="flex items-center gap-2">➔ Histórico de promociones.</li>
+                                <li class="flex items-center gap-2">➔ Webhook Real-time.</li>
+                            </ul>
+                        </div>
+                        <div class="stitch-border-t border-white pt-6 mt-auto">
+                            <div class="text-4xl font-black text-white mb-4">₡235k <span class="text-sm font-bold uppercase opacity-80">/mes</span></div>
+                            <button class="w-full bg-white text-vibrant-blue font-black py-3 uppercase tracking-wider hover:bg-gray-100 transition-colors">
+                                Comprar API
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-vibrant-dark text-white stitch-border-t border-vibrant-dark py-10">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6 font-bold uppercase text-xs tracking-widest">
+            <div class="flex items-center gap-3">
+                <img src="https://img.icons8.com/color/48/shopping-cart--v1.png" alt="Logo" class="w-6 h-6 grayscale brightness-200">
+                &copy; 2026 MERCADOFÁCIL
+            </div>
+            <div class="flex gap-8">
+                <a href="#" class="hover:text-vibrant-orange transition-colors">Términos</a>
+                <a href="#" class="hover:text-vibrant-green transition-colors">Privacidad</a>
+                <a href="#" class="hover:text-vibrant-blue transition-colors">Soporte</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ==============================================
+         THREE.JS ANIMATION SCRIPT (Colorido)
+         ============================================== -->
+    <script>
+        window.addEventListener('load', function() {
+            const container = document.getElementById('three-container');
+            
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.z = 5;
+            
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+            
+            // Geometría moderna y dinámica (Icosaedro)
+            const geometry = new THREE.IcosahedronGeometry(1.5, 0);
+            
+            // Material principal: Azul vibrante
+            const material = new THREE.MeshPhongMaterial({
+                color: 0x2962FF, 
+                flatShading: true,
+                shininess: 80
+            });
+            
+            const shape = new THREE.Mesh(geometry, material);
+            
+            // Wireframe exterior: Verde Brillante grueso (estilo brutalista)
+            const edges = new THREE.EdgesGeometry(geometry);
+            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x00E676, linewidth: 3 }));
+            shape.add(line);
+            
+            // Decoración interior flotante: Naranja
+            const innerGeo = new THREE.IcosahedronGeometry(0.8, 0);
+            const innerMat = new THREE.MeshBasicMaterial({ color: 0xFF6B35, wireframe: true });
+            const innerShape = new THREE.Mesh(innerGeo, innerMat);
+            shape.add(innerShape);
+
+            scene.add(shape);
+            
+            // Iluminación contrastante
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+            dirLight.position.set(5, 5, 5);
+            scene.add(dirLight);
+            
+            // Loop de animación
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                shape.rotation.x += 0.003;
+                shape.rotation.y += 0.008;
+                innerShape.rotation.y -= 0.01;
+                innerShape.rotation.x -= 0.005;
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+            
+            window.addEventListener('resize', () => {
+                if(container) {
+                    camera.aspect = container.clientWidth / container.clientHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(container.clientWidth, container.clientHeight);
+                }
+            });
+        });
+    </script>
+
+    <!-- ==============================================
+         LÓGICA DEL TRADUCTOR DE GOOGLE (Stealth Mode)
+         ============================================== -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'es', 
+                includedLanguages: 'es,en,pt,de',
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const customSelect = document.getElementById('custom_lang_selector');
+            
+            const clearGoogleTranslateCookie = () => {
+                const currentHost = window.location.hostname;
+                const domains = ['', currentHost, `.${currentHost}`, 'webticocr.com', '.webticocr.com'];
+
+                domains.forEach(domain => {
+                    const domainString = domain ? `; domain=${domain}` : '';
+                    document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/${domainString}`;
+                });
+            };
+
+            const match = document.cookie.match(/(^|;) ?googtrans=([^;]*)(;|$)/);
+            if (match) {
+                const currentLang = match[2].split('/')[2];
+                if (currentLang) customSelect.value = currentLang;
+            }
+
+            customSelect.addEventListener('change', (e) => {
+                const lang = e.target.value;
+                clearGoogleTranslateCookie();
+                
+                const host = window.location.hostname;
+                if(host.includes('webticocr.com')) {
+                    document.cookie = `googtrans=/es/${lang}; path=/; domain=.webticocr.com`;
+                } else {
+                    document.cookie = `googtrans=/es/${lang}; path=/; domain=.${host}`;
+                }
+                document.cookie = `googtrans=/es/${lang}; path=/;`;
+                
+                window.location.reload();
+            });
+        });
+    </script>
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <!-- ==============================================
+         LÓGICA DEL DATA GRID (25 Registros CR, CRC)
+         ============================================== -->
+    <script>
+        const formatCRC = (amount) => {
+            return new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC', minimumFractionDigits: 0 }).format(amount);
+        };
+
+        const generateMockData = () => {
+            const today = '26 Oct, 2026';
+            const yesterday = '25 Oct, 2026';
+            const past = '24 Oct, 2026';
+            
+            return [
+                { id: 1, fecha: today, super: 'Walmart', item: 'Arroz Tío Pelón 1.8kg', precio: 1850 },
+                { id: 2, fecha: today, super: 'MásxMenos', item: 'Arroz Tío Pelón 1.8kg', precio: 1920 },
+                { id: 3, fecha: yesterday, super: 'Palí', item: 'Arroz Tío Pelón 1.8kg', precio: 1790 },
+                { id: 4, fecha: past, super: 'Auto Mercado', item: 'Arroz Tío Pelón 1.8kg', precio: 2100 },
+                { id: 5, fecha: yesterday, super: 'Maxi Palí', item: 'Arroz Tío Pelón 1.8kg', precio: 1800 },
+                
+                { id: 6, fecha: today, super: 'Walmart', item: 'Frijoles Negros Don Pedro 800g', precio: 1450 },
+                { id: 7, fecha: today, super: 'MásxMenos', item: 'Frijoles Negros Don Pedro 800g', precio: 1510 },
+                { id: 8, fecha: past, super: 'Palí', item: 'Frijoles Negros Don Pedro 800g', precio: 1390 },
+                { id: 9, fecha: yesterday, super: 'Auto Mercado', item: 'Frijoles Negros Don Pedro 800g', precio: 1650 },
+                { id: 10, fecha: yesterday, super: 'Maxi Palí', item: 'Frijoles Negros Don Pedro 800g', precio: 1400 },
+                
+                { id: 11, fecha: today, super: 'Walmart', item: 'Leche Semidescremada Dos Pinos 1L', precio: 950 },
+                { id: 12, fecha: today, super: 'MásxMenos', item: 'Leche Semidescremada Dos Pinos 1L', precio: 980 },
+                { id: 13, fecha: yesterday, super: 'Palí', item: 'Leche Semidescremada Dos Pinos 1L', precio: 945 },
+                { id: 14, fecha: today, super: 'Auto Mercado', item: 'Leche Semidescremada Dos Pinos 1L', precio: 1020 },
+                { id: 15, fecha: yesterday, super: 'Maxi Palí', item: 'Leche Semidescremada Dos Pinos 1L', precio: 945 },
+                
+                { id: 16, fecha: past, super: 'Walmart', item: 'Huevos Blancos (Cartón 30)', precio: 3200 },
+                { id: 17, fecha: today, super: 'MásxMenos', item: 'Huevos Blancos (Cartón 30)', precio: 3450 },
+                { id: 18, fecha: today, super: 'Palí', item: 'Huevos Blancos (Cartón 30)', precio: 2950 },
+                { id: 19, fecha: yesterday, super: 'Auto Mercado', item: 'Huevos Blancos (Cartón 30)', precio: 3800 },
+                { id: 20, fecha: today, super: 'Maxi Palí', item: 'Huevos Blancos (Cartón 30)', precio: 3000 },
+                
+                { id: 21, fecha: today, super: 'Walmart', item: 'Café 1820 250g', precio: 1750 },
+                { id: 22, fecha: yesterday, super: 'MásxMenos', item: 'Café 1820 250g', precio: 1810 },
+                { id: 23, fecha: today, super: 'Palí', item: 'Café 1820 250g', precio: 1690 },
+                { id: 24, fecha: today, super: 'Auto Mercado', item: 'Café 1820 250g', precio: 1950 },
+                
+                { id: 25, fecha: today, super: 'Maxi Palí', item: 'Atún Sardimar Trocitos 140g', precio: 1100 }
+            ];
+        };
+
+        const allData = generateMockData();
+        let filteredData = [...allData];
+        
+        let currentPage = 1;
+        const itemsPerPage = 5;
+
+        const superFilter = document.getElementById('superFilter');
+        const itemFilter = document.getElementById('itemFilter');
+        const tableBody = document.getElementById('tableBody');
+        const noResults = document.getElementById('noResults');
+        const paginationControls = document.getElementById('paginationControls');
+        const pageStartItem = document.getElementById('pageStartItem');
+        const pageEndItem = document.getElementById('pageEndItem');
+        const totalItemsLabel = document.getElementById('totalItems');
+
+        const applyFilters = () => {
+            const selectedSuper = superFilter.value;
+            const selectedItem = itemFilter.value;
+
+            filteredData = allData.filter(d => {
+                const matchSuper = selectedSuper === 'Todos' || d.super === selectedSuper;
+                const matchItem = selectedItem === 'Todos' || d.item === selectedItem;
+                return matchSuper && matchItem;
+            });
+            
+            filteredData.sort((a, b) => a.precio - b.precio);
+            
+            currentPage = 1;
+            renderTable();
+        };
+
+        const changePage = (pageNumber) => {
+            currentPage = pageNumber;
+            renderTable();
+        };
+
+        const renderTable = () => {
+            tableBody.innerHTML = '';
+            const totalItems = filteredData.length;
+            totalItemsLabel.innerText = totalItems;
+
+            if (totalItems === 0) {
+                tableBody.parentElement.classList.add('hidden');
+                noResults.classList.remove('hidden');
+                paginationControls.innerHTML = '';
+                pageStartItem.innerText = 0;
+                pageEndItem.innerText = 0;
+                return;
+            }
+
+            tableBody.parentElement.classList.remove('hidden');
+            noResults.classList.add('hidden');
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedItems = filteredData.slice(startIndex, endIndex);
+
+            pageStartItem.innerText = startIndex + 1;
+            pageEndItem.innerText = Math.min(endIndex, totalItems);
+
+            paginatedItems.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.className = 'table-row-hover transition-colors';
+                tr.innerHTML = `
+                    <td class="py-4 px-6 stitch-border-r border-b-2 border-vibrant-dark text-sm text-gray-600 font-bold">${row.fecha}</td>
+                    <td class="py-4 px-6 stitch-border-r border-b-2 border-vibrant-dark text-sm font-black text-vibrant-dark">${row.super}</td>
+                    <td class="py-4 px-6 stitch-border-r border-b-2 border-vibrant-dark text-sm text-vibrant-dark font-semibold">${row.item}</td>
+                    <td class="py-4 px-6 border-b-2 border-vibrant-dark text-lg font-black text-vibrant-blue text-right">${formatCRC(row.precio)}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            renderPaginationControls(totalItems);
+        };
+
+        const renderPaginationControls = (totalItems) => {
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            paginationControls.innerHTML = '';
+
+            if (totalPages <= 1) return;
+
+            const createBtn = (text, disabled, onClickClass, action) => {
+                const btn = document.createElement('button');
+                btn.innerText = text;
+                btn.className = `px-3 py-1 bg-white border-2 border-vibrant-dark ${disabled ? 'opacity-50 cursor-not-allowed' : onClickClass}`;
+                btn.disabled = disabled;
+                btn.onclick = action;
+                return btn;
+            };
+
+            paginationControls.appendChild(
+                createBtn('ANT', currentPage === 1, 'hover:bg-gray-100', () => changePage(currentPage - 1))
+            );
+
+            for (let i = 1; i <= totalPages; i++) {
+                const isActive = currentPage === i;
+                paginationControls.appendChild(
+                    createBtn(i, false, isActive ? 'bg-vibrant-blue text-white' : 'hover:bg-gray-100', () => changePage(i))
+                );
+            }
+
+            paginationControls.appendChild(
+                createBtn('SIG', currentPage === totalPages, 'hover:bg-gray-100', () => changePage(currentPage + 1))
+            );
+        };
+
+        superFilter.addEventListener('change', applyFilters);
+        itemFilter.addEventListener('change', applyFilters);
+
+        document.addEventListener('DOMContentLoaded', renderTable);
+    </script>
+</body>
+</html>
