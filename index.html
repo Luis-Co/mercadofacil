@@ -209,6 +209,28 @@
 
                 <!-- Google Login & Auth Container -->
                 <div id="authContainer" class="flex items-center gap-2">
+                    <script>
+                        (function() {
+                            try {
+                                const raw = localStorage.getItem('pocketbase_auth');
+                                if (raw) {
+                                    const parsed = JSON.parse(raw);
+                                    if (parsed && parsed.token && parsed.model) {
+                                        const btn = document.getElementById('btnLoginGoogle');
+                                        const bar = document.getElementById('userProfileBar');
+                                        const lbl = document.getElementById('userEmailLabel');
+                                        const adminBtn = document.getElementById('btnAdminPanel');
+                                        if (btn) btn.classList.add('hidden');
+                                        if (bar) bar.classList.remove('hidden');
+                                        if (lbl) lbl.innerText = parsed.model.email || parsed.model.name || 'Usuario';
+                                        if (adminBtn && parsed.model.email && parsed.model.email.toLowerCase() === 'corea3000@gmail.com') {
+                                            adminBtn.classList.remove('hidden');
+                                        }
+                                    }
+                                }
+                            } catch(e) {}
+                        })();
+                    </script>
                     <!-- Botón Login Google (Visitante) -->
                     <button id="btnLoginGoogle" onclick="window.loginConGoogle()" class="bg-white hover:bg-gray-100 text-vibrant-dark font-black py-1.5 px-3 border-2 border-vibrant-dark text-xs uppercase tracking-wider shadow-stitch hover:shadow-stitch-hover flex items-center gap-2 cursor-pointer transition-all active:translate-y-0.5">
                         <svg class="w-4 h-4" viewBox="0 0 24 24">
@@ -2375,35 +2397,21 @@
         // ==============================================
         const pb = (typeof PocketBase !== 'undefined') ? new PocketBase('https://pb-mercadofacil.webticocr.com') : null;
         const ADMIN_EMAIL = 'corea3000@gmail.com';
-        const APPROVED_USERS_KEY = 'mercadofacil_approved_users';
-
-        // Obtener correos autorizados
-        function getApprovedEmails() {
-            try {
-                let list = JSON.parse(localStorage.getItem(APPROVED_USERS_KEY) || '[]');
-                if (!Array.isArray(list)) list = [];
-                if (!list.map(e => e.toLowerCase()).includes(ADMIN_EMAIL.toLowerCase())) {
-                    list.push(ADMIN_EMAIL);
-                }
-                return list;
-            } catch {
-                return [ADMIN_EMAIL];
-            }
-        }
-
-        function saveApprovedEmails(list) {
-            localStorage.setItem(APPROVED_USERS_KEY, JSON.stringify(list));
-        }
 
         // Verifica si el usuario actual tiene acceso a comparar todos los supermercados
+        // consultando directamente el modelo devuelto por la base de datos PocketBase
         window.hasAccessToAllSupermarkets = function() {
             if (!pb || !pb.authStore || !pb.authStore.isValid) return false;
             const model = pb.authStore.model;
-            if (!model || !model.email) return false;
-            const email = model.email.toLowerCase();
+            if (!model) return false;
+            
+            const email = (model.email || '').toLowerCase().trim();
+            
+            // 1. Propietario / Master Admin (corea3000@gmail.com)
             if (email === ADMIN_EMAIL.toLowerCase()) return true;
-            const approved = getApprovedEmails().map(e => e.toLowerCase());
-            return approved.includes(email);
+
+            // 2. Acceso por campo 'admin' en la colección users de PocketBase
+            return Boolean(model.admin === true || model.admin === 'true' || model.admin === 1);
         };
 
         // Login con Google OAuth2
@@ -2414,7 +2422,7 @@
             }
             try {
                 const authData = await pb.collection('users').authWithOAuth2({ provider: 'google' });
-                console.log("Autenticación exitosa. Datos de la conexión:", authData);
+                console.log("Autenticación exitosa en PocketBase:", authData);
                 verificarEstadoSesion();
                 
                 const userEmail = (pb.authStore.model && pb.authStore.model.email) ? pb.authStore.model.email : '';
@@ -2437,13 +2445,24 @@
                 pb.authStore.clear();
             }
             verificarEstadoSesion();
-            // Si estaba en 'Todos' y ya no tiene permiso, revertir a Walmart
-            if (superFilter && superFilter.value === 'Todos') {
+            if (superFilter) {
                 superFilter.value = 'Walmart';
                 applyFilters();
             }
             window.customAlert('Ha cerrado sesión exitosamente.', 'Sesión Cerrada', '👋');
         };
+
+        // Refrescar y sincronizar token con la base de datos PocketBase
+        async function refrescarSesionPocketBase() {
+            if (pb && pb.authStore && pb.authStore.isValid) {
+                try {
+                    await pb.collection('users').authRefresh();
+                    verificarEstadoSesion();
+                } catch (e) {
+                    console.log("Estado de sesión verificado con PocketBase");
+                }
+            }
+        }
 
         // Verificar y actualizar UI según estado de sesión
         function verificarEstadoSesion() {
@@ -2452,22 +2471,24 @@
             const userEmailLabel = document.getElementById('userEmailLabel');
             const btnAdminPanel = document.getElementById('btnAdminPanel');
 
-            if (pb && pb.authStore && pb.authStore.isValid) {
+            if (pb && pb.authStore && pb.authStore.isValid && pb.authStore.model) {
                 const usuario = pb.authStore.model;
-                console.log("Sesión activa. Usuario:", usuario);
+                const email = (usuario.email || '').toLowerCase();
+                console.log("Sesión activa en PocketBase. Usuario:", email, "admin en DB:", usuario.admin);
+                
                 if (btnLogin) btnLogin.classList.add('hidden');
                 if (userProfileBar) userProfileBar.classList.remove('hidden');
                 if (userEmailLabel) userEmailLabel.innerText = usuario.email || usuario.name || 'Usuario';
                 
                 if (btnAdminPanel) {
-                    if (usuario.email && usuario.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                    if (email === ADMIN_EMAIL.toLowerCase()) {
                         btnAdminPanel.classList.remove('hidden');
                     } else {
                         btnAdminPanel.classList.add('hidden');
                     }
                 }
             } else {
-                console.log("Sin sesión activa.");
+                console.log("Sin sesión activa en PocketBase.");
                 if (btnLogin) btnLogin.classList.remove('hidden');
                 if (userProfileBar) userProfileBar.classList.add('hidden');
                 if (btnAdminPanel) btnAdminPanel.classList.add('hidden');
@@ -2503,7 +2524,7 @@
             } else {
                 window.showCustomModal({
                     title: '🔒 Plan Mercados Requerido',
-                    message: `Hola <strong>${pb.authStore.model.name || userEmail}</strong>.<br><br>Su cuenta de Google (<strong>${userEmail}</strong>) aún no tiene habilitado el <strong>Plan Mercados (₡10,000/mes)</strong> para comparar precios entre todos los supermercados al mismo tiempo.<br><br>Puede cancelar por <strong>SINPE Móvil al 62278771</strong> y el administrador le activará el acceso de inmediato.`,
+                    message: `Hola <strong>${pb.authStore.model.name || userEmail}</strong>.<br><br>Su cuenta de Google (<strong>${userEmail}</strong>) aún no tiene habilitado el <strong>Plan Mercados (₡10,000/mes)</strong> para comparar precios entre todos los supermercados al mismo tiempo.<br><br>Puede cancelar por <strong>SINPE Móvil al 62278771</strong> y el administrador le activará el acceso en la base de datos de inmediato.`,
                     icon: '🔒',
                     headerBg: 'bg-vibrant-orange',
                     confirmText: 'Pagar Plan Mercados (₡10,000)',
@@ -2519,8 +2540,9 @@
 
         // ==============================================
         // PANEL ADMINISTRADOR (Solo corea3000@gmail.com)
+        // Conexión y gestión en vivo con la colección 'users' de PocketBase
         // ==============================================
-        window.abrirPanelAdmin = function() {
+        window.abrirPanelAdmin = async function() {
             if (!pb || !pb.authStore || !pb.authStore.isValid || !pb.authStore.model || pb.authStore.model.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
                 window.customAlert('Acceso denegado: Esta sección es exclusiva para el administrador del sistema (corea3000@gmail.com).', 'Acceso Denegado', '⛔');
                 return;
@@ -2528,14 +2550,15 @@
 
             const overlay = document.getElementById('adminModalOverlay');
             const card = document.getElementById('adminModalCard');
-            window.renderAdminList();
-
+            
             if (overlay && card) {
                 overlay.classList.remove('opacity-0', 'pointer-events-none');
                 overlay.classList.add('opacity-100');
                 card.classList.remove('scale-95');
                 card.classList.add('scale-100');
             }
+
+            await window.renderAdminList();
         };
 
         window.cerrarPanelAdmin = function() {
@@ -2549,11 +2572,26 @@
             }
         };
 
-        window.adminAgregarCliente = function() {
+        // Actualizar campo 'admin' en la base de datos PocketBase
+        window.adminCambiarPermisoPocketBase = async function(userId, newStatus, userEmail) {
+            try {
+                await pb.collection('users').update(userId, { admin: newStatus });
+                window.customAlert(`El usuario <strong>${userEmail}</strong> fue actualizado en PocketBase:<br><br><strong>admin: ${newStatus ? 'True (Plan Mercados Habilitado)' : 'False (Sin Plan)'}</strong>`, 'Base de Datos PocketBase', '✅');
+                await window.renderAdminList();
+            } catch (err) {
+                console.error("Error al actualizar PocketBase:", err);
+                window.customAlert(`No se pudo actualizar el registro en PocketBase: <strong>${err.message || err}</strong><br><br><strong>Instrucción para PocketBase:</strong><br>1. En la consola de PocketBase, abra <em>Collections &gt; users &gt; Edit collection &gt; API rules</em>.<br>2. En <strong>Update rule</strong> configure: <code>@request.auth.email = "corea3000@gmail.com" || id = @request.auth.id</code>.<br><br>O bien, cambie el campo <strong>admin a True</strong> directamente en la tabla de PocketBase.`, 'Regla de Permisos PocketBase', '⚠️');
+            }
+        };
+
+        window.adminAgregarCliente = async function() {
             const input = document.getElementById('adminNewClientEmail');
             const feedback = document.getElementById('adminFeedback');
             if (!input) return;
-            const email = input.value.trim().toLowerCase();
+            let email = input.value.trim().toLowerCase();
+            if (email && !email.includes('@')) {
+                email += '@gmail.com';
+            }
 
             if (!email || !email.includes('@') || !email.includes('.')) {
                 if (feedback) {
@@ -2563,74 +2601,116 @@
                 return;
             }
 
-            let list = getApprovedEmails();
-            if (list.map(e => e.toLowerCase()).includes(email)) {
-                if (feedback) {
-                    feedback.className = 'text-xs font-black mt-2 text-amber-600 block';
-                    feedback.innerText = 'ℹ️ Este correo ya se encuentra autorizado.';
-                }
-                return;
-            }
-
-            list.push(email);
-            saveApprovedEmails(list);
-            input.value = '';
             if (feedback) {
-                feedback.className = 'text-xs font-black mt-2 text-green-700 block';
-                feedback.innerText = `✅ Acceso otorgado con éxito a ${email}`;
-                setTimeout(() => feedback.classList.add('hidden'), 3500);
+                feedback.className = 'text-xs font-black mt-2 text-blue-600 block';
+                feedback.innerText = '🔍 Consultando usuario en la base de datos PocketBase...';
             }
-            window.renderAdminList();
-        };
 
-        window.adminRevocarCliente = async function(emailToRevoke) {
-            if (emailToRevoke.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-                window.customAlert('No se puede revocar el acceso del administrador principal.', 'Administrador Principal', '👑');
-                return;
-            }
-            const confirmed = await window.showCustomModal({
-                title: 'Revocar Acceso',
-                message: `¿Está seguro de que desea revocar el acceso al Plan Mercados para <strong>${emailToRevoke}</strong>?`,
-                icon: '⚠️',
-                headerBg: 'bg-red-500',
-                confirmText: 'Sí, Revocar',
-                confirmBg: 'bg-red-600 hover:bg-red-700 text-white',
-                cancelText: 'Cancelar'
-            });
-            if (confirmed) {
-                let list = getApprovedEmails();
-                list = list.filter(e => e.toLowerCase() !== emailToRevoke.toLowerCase());
-                saveApprovedEmails(list);
-                window.renderAdminList();
-                window.customAlert(`Acceso revocado exitosamente para <strong>${emailToRevoke}</strong>.`, 'Acceso Revocado', '✅');
+            try {
+                const user = await pb.collection('users').getFirstListItem(`email="${email}"`);
+                if (user) {
+                    await pb.collection('users').update(user.id, { admin: true });
+                    input.value = '';
+                    if (feedback) {
+                        feedback.className = 'text-xs font-black mt-2 text-green-700 block';
+                        feedback.innerText = `✅ Plan Mercados activado en PocketBase para ${email} (admin: true)`;
+                        setTimeout(() => feedback.classList.add('hidden'), 4000);
+                    }
+                    await window.renderAdminList();
+                    return;
+                }
+            } catch (err) {
+                if (feedback) {
+                    feedback.className = 'text-xs font-black mt-2 text-amber-800 block leading-relaxed';
+                    feedback.innerHTML = `ℹ️ La cuenta <strong>${email}</strong> aún no se ha conectado por primera vez a MercadoFácil.<br>El cliente debe ingresar al menos una vez con el botón <strong>"Entrar con Google"</strong> para que PocketBase cree su registro en la colección <em>users</em>. Una vez registrado, puede activar su campo <strong>admin: True</strong>.`;
+                }
             }
         };
 
-        window.renderAdminList = function() {
+        // Renderizar lista consultando directamente la colección users de PocketBase
+        window.renderAdminList = async function() {
             const listContainer = document.getElementById('adminUsersList');
             const countBadge = document.getElementById('adminCountBadge');
-            const list = getApprovedEmails();
-
-            if (countBadge) countBadge.innerText = `${list.length} ${list.length === 1 ? 'cuenta' : 'cuentas'}`;
             if (!listContainer) return;
 
-            listContainer.innerHTML = '';
-            list.forEach(email => {
-                const isAdmin = email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-                const row = document.createElement('div');
-                row.className = 'p-3 flex items-center justify-between hover:bg-gray-50 text-xs font-bold';
-                row.innerHTML = `
-                    <div class="flex items-center gap-2">
-                        <span>${isAdmin ? '👑' : '👤'}</span>
-                        <span class="text-vibrant-dark ${isAdmin ? 'font-black' : ''}">${email}</span>
-                        ${isAdmin ? '<span class="bg-amber-200 text-vibrant-dark text-[10px] font-black px-1.5 py-0.2 border border-vibrant-dark">ADMIN</span>' : '<span class="bg-green-100 text-green-800 text-[10px] font-black px-1.5 py-0.2 border border-green-300">PLAN MERCADOS</span>'}
+            listContainer.innerHTML = '<div class="p-4 text-center text-xs font-bold text-gray-500">⏳ Consultando colección users en PocketBase...</div>';
+
+            try {
+                const records = await pb.collection('users').getFullList({
+                    sort: '-created'
+                });
+
+                if (countBadge) {
+                    countBadge.innerText = `${records.length} ${records.length === 1 ? 'cuenta' : 'cuentas'}`;
+                }
+
+                listContainer.innerHTML = '';
+                records.forEach(user => {
+                    const email = (user.email || user.username || '').toLowerCase();
+                    const isAdmin = email === ADMIN_EMAIL.toLowerCase();
+                    const hasPlan = Boolean(user.admin === true || user.admin === 'true' || user.admin === 1);
+
+                    const row = document.createElement('div');
+                    row.className = 'p-3 flex items-center justify-between hover:bg-gray-50 text-xs font-bold border-b border-gray-100 last:border-b-0';
+                    row.innerHTML = `
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-base">${isAdmin ? '👑' : (hasPlan ? '⭐' : '👤')}</span>
+                            <div>
+                                <span class="text-vibrant-dark ${isAdmin ? 'font-black' : ''}">${user.name ? `${user.name} (${email})` : email}</span>
+                                <div class="mt-0.5 flex items-center gap-1.5">
+                                    ${isAdmin 
+                                        ? '<span class="bg-amber-200 text-vibrant-dark text-[10px] font-black px-1.5 py-0.2 border border-vibrant-dark">ADMIN / PROPIETARIO</span>' 
+                                        : (hasPlan 
+                                            ? '<span class="bg-green-100 text-green-800 text-[10px] font-black px-1.5 py-0.2 border border-green-300">PLAN MERCADOS ACTIVO (admin: true)</span>' 
+                                            : '<span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-1.5 py-0.2 border border-gray-300">SIN PLAN (admin: false)</span>')}
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            ${isAdmin 
+                                ? '<span class="text-[10px] text-gray-400 font-bold">Propietario</span>' 
+                                : (hasPlan 
+                                    ? `<button onclick="window.adminCambiarPermisoPocketBase('${user.id}', false, '${email}')" class="text-red-600 hover:text-red-800 font-black px-2.5 py-1 border border-red-300 bg-red-50 hover:bg-red-100 text-[10px] uppercase cursor-pointer">Revocar Plan ✕</button>`
+                                    : `<button onclick="window.adminCambiarPermisoPocketBase('${user.id}', true, '${email}')" class="bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black px-2.5 py-1 border-2 border-vibrant-dark text-[10px] uppercase cursor-pointer shadow-xs">➕ Activar Plan</button>`)}
+                        </div>
+                    `;
+                    listContainer.appendChild(row);
+                });
+
+            } catch (err) {
+                console.warn("PocketBase getFullList:", err);
+                if (countBadge) countBadge.innerText = 'Colección PocketBase';
+                listContainer.innerHTML = `
+                    <div class="p-3 bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed">
+                        <p class="font-black mb-1">ℹ️ Nota de Configuración PocketBase (API Rules):</p>
+                        <p>La regla <strong>List/Search rule</strong> de la colección <code>users</code> en PocketBase está configurada como <code>id = @request.auth.id</code>, lo cual limita la lista vía API únicamente al usuario actual.</p>
+                        <p class="mt-1.5">Para listar y activar usuarios directamente desde este botón, configure en PocketBase (Edit collection &gt; API rules):</p>
+                        <code class="block bg-white p-1 border border-amber-300 font-mono text-[11px] my-1 font-bold">@request.auth.email = "corea3000@gmail.com" || id = @request.auth.id</code>
+                        <p class="mt-1 text-gray-700">O también puede cambiar el campo <strong>admin a True</strong> directamente en su consola de PocketBase (como se observa en su captura).</p>
                     </div>
-                    ${isAdmin ? '<span class="text-[10px] text-gray-400 font-bold">Propietario</span>' : `<button onclick="window.adminRevocarCliente('${email}')" class="text-red-600 hover:text-red-800 font-black px-2 py-0.5 border border-red-300 bg-red-50 hover:bg-red-100 text-[10px] uppercase cursor-pointer">Revocar ✕</button>`}
                 `;
-                listContainer.appendChild(row);
-            });
+            }
         };
 
+        // Escuchar cambios de sesión de PocketBase en tiempo real
+        if (pb && pb.authStore) {
+            pb.authStore.onChange(() => {
+                verificarEstadoSesion();
+            });
+        }
+
+        // Ejecutar validación inicial de sesión
+        verificarEstadoSesion();
+        refrescarSesionPocketBase();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            verificarEstadoSesion();
+            refrescarSesionPocketBase();
+        });
+        window.addEventListener('load', () => {
+            verificarEstadoSesion();
+            refrescarSesionPocketBase();
+        });
 
         // Iniciar SQLite al cargar el DOM
         if (document.readyState === 'loading') {
