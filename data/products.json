@@ -1,0 +1,513 @@
+{
+  "updated_at": "2026-10-26T14:12:09.283863",
+  "total_items": 50,
+  "supermercados": [
+    "Walmart",
+    "MásxMenos",
+    "Maxi Palí",
+    "Palí",
+    "Auto Mercado"
+  ],
+  "products": [
+    {
+      "id": 1,
+      "fecha": "26 Oct, 2026",
+      "super": "Walmart",
+      "item": "Arroz Tío Pelón 1.8kg",
+      "product_title": "Arroz Tío Pelón 99% grano entero - 4000 g",
+      "precio": 3000,
+      "url": "https://www.walmart.co.cr/arroz-tio-pelon-99-grano-entero-4000-g/p",
+      "scraped_at": "2026-10-26T14:11:52.557039"
+    },
+    {
+      "id": 2,
+      "fecha": "26 Oct, 2026",
+      "super": "Walmart",
+      "item": "Frijoles Negros Don Pedro 800g",
+      "product_title": "Frijoles Negros Indiana - 3000 g",
+      "precio": 3310,
+      "url": "https://www.walmart.co.cr/frijoles-negros-indiana-3000-g-2/p",
+      "scraped_at": "2026-10-26T14:11:53.797036"
+    },
+    {
+      "id": 3,
+      "fecha": "26 Oct, 2026",
+      "super": "Walmart",
+      "item": "Leche Semidescremada Dos Pinos 1L",
+      "product_title": "Leche Dos Pinos Pinito - 1000 ml",
+      "precio": 1035,
+      "url": "https://www.walmart.co.cr/leche-dos-pinos-pinito-uht-entera-1000ml-2/p",
+      "scraped_at": "2026-10-26T14:11:54.433588"
+    },
+    {
+      "id": 4,
+      "fecha": "26 Oct, 2026",
+      "super": "Walmart",
+      "item": "Huevos Blancos (Cartón 30)",
+      "product_title": "Set 4 Masas Huevos Dinosaurios",
+      "precio": 2000,
+      "url": "https://www.walmart.co.cr/set-4-masas-huevos-dinosaurios-4242-6-1/p",
+      "scraped_at": "2026-10-26T14:11:55.049020"
+    },
+    {
+      "id": 5,
+      "fecha": "26 Oct, 2026",
+      "super": "Walmart",
+      "item": "Café 1820 250g",
+      "product_title": "Café molido 1820 clásico - 500 g",
+      "precio": 4100,
+      "url": "https://www.walmart.co.cr/cafe-1820-molido-clasico-500gr/p",
+      "scraped_at": "2026-10-26T14:11:55.582816"
+    },
+    {
+      "id": 6,
+      "fecha": "26 Oct, 2026",
+      "super": "Walmart",
+      "item": "Atún Sardimar Trocitos 140g",
+      "product_title": "Atun Sardimar Lomos Agua 140g",
+      "precio": 2000,
+      "url": "https://www.walmart.co.cr/atun-sardimar-lomos-agua-140g-6909-6-7/p",
+      "scraped_at": "2026-10-26T14:11:56.100292"
+    },
+    {
+      "id": 7,
+      "fecha": "26 Oct, 2026",
+      "super": "Walmart",
+      "item": "Azúcar Blanco Doña María 1kg",
+      "product_title": "Azúcar Doña María -2kg",
+      "precio": 1450,
+      "url": "https://www.walmart.co.cr/azucar-dona-maria-regular-blanca-2000gr/p",
+      "scraped_at": "2026-10-26T14:11:56.558746"
+    },
+    {
+      "id": 8,
+      "fecha": "26 Oct, 2026",
+      "super": "Walmart",
+      "item": "Aceite de Soya Capullo 1L",
+      "product_title": "Aceite de soya Capullo plus con dha - 1.5 L",
+      "precio": 1890,
+      "url": "https://www.walmart.co.cr/aceite-de-soya-capullo-plus-con-dha-1-5-l/p",
+      "scraped_at": "2026-10-26T14:11:57.043477"
+    },
+    {
+      "id": 9,
+      "fecha": "26 Oct, 2026",
+      "super": "Walmart",
+      "item": "Pastas Roma Spaghetti 250g",
+      "product_title": "Pasta Roma Fetuccinni 250g",
+      "precio": 590,
+      "url": "https://www.walmart.co.cr/pasta-roma-fetuccinni-250g-6779-6-6/p",
+      "scraped_at": "2026-10-26T14:11:57.674365"
+    },
+    {
+      "id": 10,
+      "fecha": "26 Oct, 2026",
+      "super": "Walmart",
+      "item": "Salsa de Tomate Lizano 397g",
+      "product_title": "Salsa Lizano - 1000ml",
+      "precio": 2970,
+      "url": "https://www.walmart.co.cr/salsa-lizano-1000ml-4/p",
+      "scraped_at": "2026-10-26T14:11:58.153942"
+    },
+    {
+      "id": 11,
+      "fecha": "26 Oct, 2026",
+      "super": "MásxMenos",
+      "item": "Arroz Tío Pelón 1.8kg",
+      "product_title": "Arroz Tío Pelón 99% grano entero - 4000 g",
+      "precio": 3000,
+      "url": "https://www.masxmenos.cr/arroz-tio-pelon-99-grano-entero-4000-g/p",
+      "scraped_at": "2026-10-26T14:11:58.602523"
+    },
+    {
+      "id": 12,
+      "fecha": "26 Oct, 2026",
+      "super": "MásxMenos",
+      "item": "Frijoles Negros Don Pedro 800g",
+      "product_title": "Frijoles Negros Indiana - 3000 g",
+      "precio": 3310,
+      "url": "https://www.masxmenos.cr/frijoles-negros-indiana-3000-g-2/p",
+      "scraped_at": "2026-10-26T14:11:59.387800"
+    },
+    {
+      "id": 13,
+      "fecha": "26 Oct, 2026",
+      "super": "MásxMenos",
+      "item": "Leche Semidescremada Dos Pinos 1L",
+      "product_title": "Leche Dos Pinos Pinito - 1000 ml",
+      "precio": 1071,
+      "url": "https://www.masxmenos.cr/leche-dos-pinos-pinito-uht-entera-1000ml-2/p",
+      "scraped_at": "2026-10-26T14:11:59.886660"
+    },
+    {
+      "id": 14,
+      "fecha": "26 Oct, 2026",
+      "super": "MásxMenos",
+      "item": "Huevos Blancos (Cartón 30)",
+      "product_title": "Huevos Magna de codorniz - 200 g",
+      "precio": 3040,
+      "url": "https://www.masxmenos.cr/huevos-magna-codorniz-200gr/p",
+      "scraped_at": "2026-10-26T14:12:00.365030"
+    },
+    {
+      "id": 15,
+      "fecha": "26 Oct, 2026",
+      "super": "MásxMenos",
+      "item": "Café 1820 250g",
+      "product_title": "Café molido 1820 clásico - 500 g",
+      "precio": 4100,
+      "url": "https://www.masxmenos.cr/cafe-1820-molido-clasico-500gr/p",
+      "scraped_at": "2026-10-26T14:12:00.980908"
+    },
+    {
+      "id": 16,
+      "fecha": "26 Oct, 2026",
+      "super": "MásxMenos",
+      "item": "Atún Sardimar Trocitos 140g",
+      "product_title": "Atun Sardimar Lomos Agua 140g",
+      "precio": 2110,
+      "url": "https://www.masxmenos.cr/atun-sardimar-lomos-agua-140g-6909-6-7/p",
+      "scraped_at": "2026-10-26T14:12:01.500321"
+    },
+    {
+      "id": 17,
+      "fecha": "26 Oct, 2026",
+      "super": "MásxMenos",
+      "item": "Azúcar Blanco Doña María 1kg",
+      "product_title": "Azúcar Doña María -2kg",
+      "precio": 1450,
+      "url": "https://www.masxmenos.cr/azucar-dona-maria-regular-blanca-2000gr/p",
+      "scraped_at": "2026-10-26T14:12:01.858823"
+    },
+    {
+      "id": 18,
+      "fecha": "26 Oct, 2026",
+      "super": "MásxMenos",
+      "item": "Aceite de Soya Capullo 1L",
+      "product_title": "Aceite de soya Capullo plus con dha - 1.5 L",
+      "precio": 1910,
+      "url": "https://www.masxmenos.cr/aceite-de-soya-capullo-plus-con-dha-1-5-l/p",
+      "scraped_at": "2026-10-26T14:12:02.277274"
+    },
+    {
+      "id": 19,
+      "fecha": "26 Oct, 2026",
+      "super": "MásxMenos",
+      "item": "Pastas Roma Spaghetti 250g",
+      "product_title": "Pasta Roma Fetuccinni 250g",
+      "precio": 720,
+      "url": "https://www.masxmenos.cr/pasta-roma-fetuccinni-250g-6779-6-6/p",
+      "scraped_at": "2026-10-26T14:12:02.721144"
+    },
+    {
+      "id": 20,
+      "fecha": "26 Oct, 2026",
+      "super": "MásxMenos",
+      "item": "Salsa de Tomate Lizano 397g",
+      "product_title": "Salsa Lizano - 1000ml",
+      "precio": 3540,
+      "url": "https://www.masxmenos.cr/salsa-lizano-1000ml-4/p",
+      "scraped_at": "2026-10-26T14:12:03.072263"
+    },
+    {
+      "id": 21,
+      "fecha": "26 Oct, 2026",
+      "super": "Maxi Palí",
+      "item": "Arroz Tío Pelón 1.8kg",
+      "product_title": "Arroz Tío Pelón 99% grano entero - 4000 g",
+      "precio": 3400,
+      "url": "https://www.maxipali.co.cr/arroz-tio-pelon-99-grano-entero-4000-g/p",
+      "scraped_at": "2026-10-26T14:12:03.595764"
+    },
+    {
+      "id": 22,
+      "fecha": "26 Oct, 2026",
+      "super": "Maxi Palí",
+      "item": "Frijoles Negros Don Pedro 800g",
+      "product_title": "Frijoles Negros Indiana - 3000 g",
+      "precio": 4200,
+      "url": "https://www.maxipali.co.cr/frijoles-negros-indiana-3000-g-2/p",
+      "scraped_at": "2026-10-26T14:12:04.596331"
+    },
+    {
+      "id": 23,
+      "fecha": "26 Oct, 2026",
+      "super": "Maxi Palí",
+      "item": "Leche Semidescremada Dos Pinos 1L",
+      "product_title": "Leche Dos Pinos Pinito - 1000 ml",
+      "precio": 1110,
+      "url": "https://www.maxipali.co.cr/leche-dos-pinos-pinito-uht-entera-1000ml-2/p",
+      "scraped_at": "2026-10-26T14:12:05.273013"
+    },
+    {
+      "id": 24,
+      "fecha": "26 Oct, 2026",
+      "super": "Maxi Palí",
+      "item": "Huevos Blancos (Cartón 30)",
+      "product_title": "Huevos Magna de codorniz - 400 g",
+      "precio": 4380,
+      "url": "https://www.maxipali.co.cr/huevos-magna-codorniz-400gr-4/p",
+      "scraped_at": "2026-10-26T14:12:05.997336"
+    },
+    {
+      "id": 25,
+      "fecha": "26 Oct, 2026",
+      "super": "Maxi Palí",
+      "item": "Café 1820 250g",
+      "product_title": "Café molido 1820 clásico  -125 g",
+      "precio": 1200,
+      "url": "https://www.maxipali.co.cr/cafe-1820-puro-molido-125gr/p",
+      "scraped_at": "2026-10-26T14:12:06.502316"
+    },
+    {
+      "id": 26,
+      "fecha": "26 Oct, 2026",
+      "super": "Maxi Palí",
+      "item": "Atún Sardimar Trocitos 140g",
+      "product_title": "Atun Sardimar Trozos 3 Pack 420g",
+      "precio": 4260,
+      "url": "https://www.maxipali.co.cr/atun-sardimar-trozos-3-pack-420g-3629-6-8/p",
+      "scraped_at": "2026-10-26T14:12:07.092882"
+    },
+    {
+      "id": 27,
+      "fecha": "26 Oct, 2026",
+      "super": "Maxi Palí",
+      "item": "Azúcar Blanco Doña María 1kg",
+      "product_title": "Azúcar Doña María -2kg",
+      "precio": 1430,
+      "url": "https://www.maxipali.co.cr/azucar-dona-maria-regular-blanca-2000gr/p",
+      "scraped_at": "2026-10-26T14:12:07.526784"
+    },
+    {
+      "id": 28,
+      "fecha": "26 Oct, 2026",
+      "super": "Maxi Palí",
+      "item": "Aceite de Soya Capullo 1L",
+      "product_title": "Aceite de soya Capullo plus con dha - 1.5 L",
+      "precio": 1850,
+      "url": "https://www.maxipali.co.cr/aceite-de-soya-capullo-plus-con-dha-1-5-l/p",
+      "scraped_at": "2026-10-26T14:12:08.071136"
+    },
+    {
+      "id": 29,
+      "fecha": "26 Oct, 2026",
+      "super": "Maxi Palí",
+      "item": "Pastas Roma Spaghetti 250g",
+      "product_title": "Pasta Roma Fetuccinni 250g",
+      "precio": 670,
+      "url": "https://www.maxipali.co.cr/pasta-roma-fetuccinni-250g-6779-6-6/p",
+      "scraped_at": "2026-10-26T14:12:08.719683"
+    },
+    {
+      "id": 30,
+      "fecha": "26 Oct, 2026",
+      "super": "Maxi Palí",
+      "item": "Salsa de Tomate Lizano 397g",
+      "product_title": "Salsa Lizano - 1000ml",
+      "precio": 3440,
+      "url": "https://www.maxipali.co.cr/salsa-lizano-1000ml-4/p",
+      "scraped_at": "2026-10-26T14:12:09.199283"
+    },
+    {
+      "id": 31,
+      "fecha": "26 Oct, 2026",
+      "super": "Palí",
+      "item": "Arroz Tío Pelón 1.8kg",
+      "product_title": "Arroz Tío Pelón 1.8kg (Palí Ahorro)",
+      "precio": 2880,
+      "url": "https://www.maxipali.co.cr/busqueda?q=arroz%20tio%20pelon",
+      "scraped_at": "2026-10-26T14:12:09.279885"
+    },
+    {
+      "id": 32,
+      "fecha": "26 Oct, 2026",
+      "super": "Auto Mercado",
+      "item": "Arroz Tío Pelón 1.8kg",
+      "product_title": "Arroz Tío Pelón 1.8kg (Auto Mercado Premium)",
+      "precio": 3420,
+      "url": "https://www.automercado.cr/busqueda?q=arroz%20tio%20pelon",
+      "scraped_at": "2026-10-26T14:12:09.279929"
+    },
+    {
+      "id": 33,
+      "fecha": "26 Oct, 2026",
+      "super": "Palí",
+      "item": "Frijoles Negros Don Pedro 800g",
+      "product_title": "Frijoles Negros Don Pedro 800g (Palí Ahorro)",
+      "precio": 3180,
+      "url": "https://www.maxipali.co.cr/busqueda?q=frijoles%20don%20pedro",
+      "scraped_at": "2026-10-26T14:12:09.279986"
+    },
+    {
+      "id": 34,
+      "fecha": "26 Oct, 2026",
+      "super": "Auto Mercado",
+      "item": "Frijoles Negros Don Pedro 800g",
+      "product_title": "Frijoles Negros Don Pedro 800g (Auto Mercado Premium)",
+      "precio": 3770,
+      "url": "https://www.automercado.cr/busqueda?q=frijoles%20don%20pedro",
+      "scraped_at": "2026-10-26T14:12:09.279999"
+    },
+    {
+      "id": 35,
+      "fecha": "26 Oct, 2026",
+      "super": "Palí",
+      "item": "Leche Semidescremada Dos Pinos 1L",
+      "product_title": "Leche Semidescremada Dos Pinos 1L (Palí Ahorro)",
+      "precio": 990,
+      "url": "https://www.maxipali.co.cr/busqueda?q=leche%20dos%20pinos",
+      "scraped_at": "2026-10-26T14:12:09.280015"
+    },
+    {
+      "id": 36,
+      "fecha": "26 Oct, 2026",
+      "super": "Auto Mercado",
+      "item": "Leche Semidescremada Dos Pinos 1L",
+      "product_title": "Leche Semidescremada Dos Pinos 1L (Auto Mercado Premium)",
+      "precio": 1180,
+      "url": "https://www.automercado.cr/busqueda?q=leche%20dos%20pinos",
+      "scraped_at": "2026-10-26T14:12:09.280021"
+    },
+    {
+      "id": 37,
+      "fecha": "26 Oct, 2026",
+      "super": "Palí",
+      "item": "Huevos Blancos (Cartón 30)",
+      "product_title": "Huevos Blancos (Cartón 30) (Palí Ahorro)",
+      "precio": 1920,
+      "url": "https://www.maxipali.co.cr/busqueda?q=huevos",
+      "scraped_at": "2026-10-26T14:12:09.280034"
+    },
+    {
+      "id": 38,
+      "fecha": "26 Oct, 2026",
+      "super": "Auto Mercado",
+      "item": "Huevos Blancos (Cartón 30)",
+      "product_title": "Huevos Blancos (Cartón 30) (Auto Mercado Premium)",
+      "precio": 2280,
+      "url": "https://www.automercado.cr/busqueda?q=huevos",
+      "scraped_at": "2026-10-26T14:12:09.280038"
+    },
+    {
+      "id": 39,
+      "fecha": "26 Oct, 2026",
+      "super": "Palí",
+      "item": "Café 1820 250g",
+      "product_title": "Café 1820 250g (Palí Ahorro)",
+      "precio": 3940,
+      "url": "https://www.maxipali.co.cr/busqueda?q=cafe%201820",
+      "scraped_at": "2026-10-26T14:12:09.280049"
+    },
+    {
+      "id": 40,
+      "fecha": "26 Oct, 2026",
+      "super": "Auto Mercado",
+      "item": "Café 1820 250g",
+      "product_title": "Café 1820 250g (Auto Mercado Premium)",
+      "precio": 4670,
+      "url": "https://www.automercado.cr/busqueda?q=cafe%201820",
+      "scraped_at": "2026-10-26T14:12:09.280054"
+    },
+    {
+      "id": 41,
+      "fecha": "26 Oct, 2026",
+      "super": "Palí",
+      "item": "Atún Sardimar Trocitos 140g",
+      "product_title": "Atún Sardimar Trocitos 140g (Palí Ahorro)",
+      "precio": 1920,
+      "url": "https://www.maxipali.co.cr/busqueda?q=atun%20sardimar",
+      "scraped_at": "2026-10-26T14:12:09.280065"
+    },
+    {
+      "id": 42,
+      "fecha": "26 Oct, 2026",
+      "super": "Auto Mercado",
+      "item": "Atún Sardimar Trocitos 140g",
+      "product_title": "Atún Sardimar Trocitos 140g (Auto Mercado Premium)",
+      "precio": 2280,
+      "url": "https://www.automercado.cr/busqueda?q=atun%20sardimar",
+      "scraped_at": "2026-10-26T14:12:09.280071"
+    },
+    {
+      "id": 43,
+      "fecha": "26 Oct, 2026",
+      "super": "Palí",
+      "item": "Azúcar Blanco Doña María 1kg",
+      "product_title": "Azúcar Blanco Doña María 1kg (Palí Ahorro)",
+      "precio": 1390,
+      "url": "https://www.maxipali.co.cr/busqueda?q=azucar%20dona%20maria",
+      "scraped_at": "2026-10-26T14:12:09.280081"
+    },
+    {
+      "id": 44,
+      "fecha": "26 Oct, 2026",
+      "super": "Auto Mercado",
+      "item": "Azúcar Blanco Doña María 1kg",
+      "product_title": "Azúcar Blanco Doña María 1kg (Auto Mercado Premium)",
+      "precio": 1650,
+      "url": "https://www.automercado.cr/busqueda?q=azucar%20dona%20maria",
+      "scraped_at": "2026-10-26T14:12:09.280086"
+    },
+    {
+      "id": 45,
+      "fecha": "26 Oct, 2026",
+      "super": "Palí",
+      "item": "Aceite de Soya Capullo 1L",
+      "product_title": "Aceite de Soya Capullo 1L (Palí Ahorro)",
+      "precio": 1810,
+      "url": "https://www.maxipali.co.cr/busqueda?q=aceite%20capullo",
+      "scraped_at": "2026-10-26T14:12:09.280097"
+    },
+    {
+      "id": 46,
+      "fecha": "26 Oct, 2026",
+      "super": "Auto Mercado",
+      "item": "Aceite de Soya Capullo 1L",
+      "product_title": "Aceite de Soya Capullo 1L (Auto Mercado Premium)",
+      "precio": 2150,
+      "url": "https://www.automercado.cr/busqueda?q=aceite%20capullo",
+      "scraped_at": "2026-10-26T14:12:09.280102"
+    },
+    {
+      "id": 47,
+      "fecha": "26 Oct, 2026",
+      "super": "Palí",
+      "item": "Pastas Roma Spaghetti 250g",
+      "product_title": "Pastas Roma Spaghetti 250g (Palí Ahorro)",
+      "precio": 570,
+      "url": "https://www.maxipali.co.cr/busqueda?q=pasta%20roma",
+      "scraped_at": "2026-10-26T14:12:09.280163"
+    },
+    {
+      "id": 48,
+      "fecha": "26 Oct, 2026",
+      "super": "Auto Mercado",
+      "item": "Pastas Roma Spaghetti 250g",
+      "product_title": "Pastas Roma Spaghetti 250g (Auto Mercado Premium)",
+      "precio": 670,
+      "url": "https://www.automercado.cr/busqueda?q=pasta%20roma",
+      "scraped_at": "2026-10-26T14:12:09.280222"
+    },
+    {
+      "id": 49,
+      "fecha": "26 Oct, 2026",
+      "super": "Palí",
+      "item": "Salsa de Tomate Lizano 397g",
+      "product_title": "Salsa de Tomate Lizano 397g (Palí Ahorro)",
+      "precio": 2850,
+      "url": "https://www.maxipali.co.cr/busqueda?q=salsa%20lizano",
+      "scraped_at": "2026-10-26T14:12:09.280330"
+    },
+    {
+      "id": 50,
+      "fecha": "26 Oct, 2026",
+      "super": "Auto Mercado",
+      "item": "Salsa de Tomate Lizano 397g",
+      "product_title": "Salsa de Tomate Lizano 397g (Auto Mercado Premium)",
+      "precio": 3380,
+      "url": "https://www.automercado.cr/busqueda?q=salsa%20lizano",
+      "scraped_at": "2026-10-26T14:12:09.280345"
+    }
+  ]
+}
