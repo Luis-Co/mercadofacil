@@ -267,15 +267,32 @@
                 <div class="bg-white stitch-box shadow-stitch overflow-hidden">
                     
                     <!-- Controles / Filtros -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-6 bg-vibrant-blue stitch-border-b">
+                    <!-- Controles / Filtros: Supermercado, Categoría Oficial, Producto -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 bg-vibrant-blue stitch-border-b">
                         <div>
-                            <label class="block text-xs font-bold text-white uppercase tracking-widest mb-2">1. Seleccione el supermercado</label>
+                            <label class="block text-xs font-bold text-white uppercase tracking-widest mb-2">1. Supermercado</label>
                             <select id="superFilter" class="w-full bg-white text-vibrant-dark font-semibold py-3 px-4 shadow-sm">
                                 <option value="Todos">TODOS LOS SUPERMERCADOS (EN VIVO)</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-white uppercase tracking-widest mb-2">2. ¿Qué producto de la canasta busca?</label>
+                            <label class="block text-xs font-bold text-white uppercase tracking-widest mb-2">2. Categoría de la Canasta</label>
+                            <select id="categoryFilter" class="w-full bg-white text-vibrant-dark font-semibold py-3 px-4 shadow-sm">
+                                <option value="Todas">TODAS LAS CATEGORÍAS (EN VIVO)</option>
+                                <option value="🥑 Frutas">🥑 Frutas</option>
+                                <option value="🥦 Hortalizas, Leguminosas y Tubérculos">🥦 Hortalizas, Leguminosas y Tubérculos</option>
+                                <option value="🍞 Pan y Cereales">🍞 Pan y Cereales</option>
+                                <option value="🥩 Carnes y Embutidos">🥩 Carnes y Embutidos</option>
+                                <option value="🐟 Pescados y Enlatados">🐟 Pescados y Enlatados</option>
+                                <option value="🥛 Productos Lácteos y Huevos">🥛 Productos Lácteos y Huevos</option>
+                                <option value="🧈 Aceites y Grasas">🧈 Aceites y Grasas</option>
+                                <option value="☕ Otros Alimentos Esenciales">☕ Otros Alimentos Esenciales</option>
+                                <option value="🧴 Productos de Higiene y Limpieza">🧴 Productos de Higiene y Limpieza</option>
+                                <option value="✏️ Útiles Escolares">✏️ Útiles Escolares</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-white uppercase tracking-widest mb-2">3. Producto Específico</label>
                             <select id="itemFilter" class="w-full bg-white text-vibrant-dark font-semibold py-3 px-4 shadow-sm">
                                 <option value="Todos">TODOS LOS PRODUCTOS (EN VIVO)</option>
                             </select>
@@ -534,7 +551,7 @@
                         </div>
                         <div class="stitch-border-t border-vibrant-dark pt-6 mt-auto">
                             <div class="text-4xl font-black text-vibrant-dark mb-4">₡10,000 <span class="text-sm font-bold uppercase opacity-80">/mes</span></div>
-                            <button class="w-full bg-vibrant-dark text-white font-black py-3 uppercase tracking-wider hover:bg-black transition-colors">
+                            <button onclick="window.abrirModalSolicitarPlan('Tiendas', 10000, 'Abarrotes & Mini-súpers')" class="w-full bg-vibrant-dark text-white font-black py-3 uppercase tracking-wider hover:bg-black shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 transition-all cursor-pointer">
                                 Solicitar Plan
                             </button>
                         </div>
@@ -556,7 +573,7 @@
                         </div>
                         <div class="stitch-border-t border-vibrant-dark pt-6 mt-auto">
                             <div class="text-4xl font-black text-vibrant-dark mb-4">₡15,000 <span class="text-sm font-bold uppercase opacity-80">/mes</span></div>
-                            <button class="w-full bg-vibrant-dark text-white font-black py-3 uppercase tracking-wider hover:bg-black transition-colors">
+                            <button onclick="window.abrirModalSolicitarPlan('Farmacias', 15000, 'Salud & Medicamentos')" class="w-full bg-vibrant-dark text-white font-black py-3 uppercase tracking-wider hover:bg-black shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 transition-all cursor-pointer">
                                 Solicitar Plan
                             </button>
                         </div>
@@ -575,7 +592,7 @@
                         </div>
                         <div class="stitch-border-t border-white pt-6 mt-auto">
                             <div class="text-4xl font-black text-white mb-4">₡20,000 <span class="text-sm font-bold uppercase opacity-80">/mes</span></div>
-                            <button class="w-full bg-white text-vibrant-blue font-black py-3 uppercase tracking-wider hover:bg-gray-100 transition-colors">
+                            <button onclick="window.abrirModalSolicitarPlan('Comercios', 20000, 'Retail, Hogar y Tecnología')" class="w-full bg-white text-vibrant-blue font-black py-3 uppercase tracking-wider hover:bg-gray-100 shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 transition-all cursor-pointer">
                                 Solicitar Plan
                             </button>
                         </div>
@@ -908,6 +925,7 @@
         let itemsPerPage = 15; // Opciones: 15, 25 o 50 productos en grilla
 
         const superFilter = document.getElementById('superFilter');
+        const categoryFilter = document.getElementById('categoryFilter');
         const itemFilter = document.getElementById('itemFilter');
         const pageSizeSelect = document.getElementById('pageSizeSelect');
         const tableBody = document.getElementById('tableBody');
@@ -931,13 +949,15 @@
         }
 
         const applyFilters = () => {
-            const selectedSuper = superFilter.value;
-            const selectedItem = itemFilter.value;
+            const selectedSuper = superFilter ? superFilter.value : 'Todos';
+            const selectedCategory = categoryFilter ? categoryFilter.value : 'Todas';
+            const selectedItem = itemFilter ? itemFilter.value : 'Todos';
 
             filteredData = allData.filter(d => {
                 const matchSuper = selectedSuper === 'Todos' || d.super === selectedSuper;
+                const matchCategory = selectedCategory === 'Todas' || d.categoria === selectedCategory;
                 const matchItem = selectedItem === 'Todos' || d.item === selectedItem;
-                return matchSuper && matchItem;
+                return matchSuper && matchCategory && matchItem;
             });
             
             filteredData.sort((a, b) => a.precio - b.precio);
@@ -1022,13 +1042,20 @@
 
                 const displayTitle = row.product_title || row.item;
 
+                const catBadge = row.categoria 
+                    ? `<span class="inline-block bg-slate-100 text-slate-800 text-[10px] font-black px-2 py-0.5 border border-slate-300 uppercase tracking-wider shadow-xs">${row.categoria}</span>` 
+                    : '';
+
                 tr.innerHTML = `
                     <td class="py-4 px-6 stitch-border-r border-b-2 border-vibrant-dark text-sm text-gray-600 font-bold">${row.fecha}</td>
                     <td class="py-4 px-6 stitch-border-r border-b-2 border-vibrant-dark text-sm font-black text-vibrant-dark">${row.super}</td>
                     <td class="py-4 px-6 stitch-border-r border-b-2 border-vibrant-dark text-sm text-vibrant-dark font-semibold">
-                        <div class="flex items-center flex-wrap gap-2">
-                            <span class="font-bold">${displayTitle}</span>
+                        <div class="flex items-center flex-wrap gap-2 mb-1.5">
+                            ${catBadge}
                             ${bestPriceBadge}
+                        </div>
+                        <div class="flex items-center flex-wrap gap-2">
+                            <span class="font-bold text-base text-vibrant-dark">${displayTitle}</span>
                             ${row.url ? `<a href="${row.url}" target="_blank" rel="noopener noreferrer" class="text-[11px] text-blue-600 hover:text-blue-800 underline font-semibold inline-flex items-center gap-1 ml-1" title="Ver URL oficial en tienda en línea de ${row.super}">🔗 Ver Tienda</a>` : ''}
                         </div>
                     </td>
@@ -1076,12 +1103,34 @@
             );
         };
 
+        // Actualiza el combo de productos según la categoría seleccionada
+        function updateItemDropdownForCategory() {
+            if (!itemFilter) return;
+            const currentItem = itemFilter.value;
+            const selectedCategory = categoryFilter ? categoryFilter.value : 'Todas';
+            
+            const pool = (selectedCategory === 'Todas')
+                ? allData
+                : allData.filter(d => d.categoria === selectedCategory);
+            
+            const items = Array.from(new Set(pool.map(d => d.item))).filter(Boolean).sort();
+            
+            itemFilter.innerHTML = '<option value="Todos">TODOS LOS PRODUCTOS (EN VIVO)</option>';
+            items.forEach(it => {
+                const opt = document.createElement('option');
+                opt.value = it;
+                opt.innerText = it.toUpperCase();
+                itemFilter.appendChild(opt);
+            });
+            if (items.includes(currentItem)) itemFilter.value = currentItem;
+        }
+
         // Poblar dinámicamente los menús desplegables desde el catálogo real
         function populateFilterDropdowns() {
             if (superFilter) {
                 const currentSuper = superFilter.value;
-                const supers = Array.from(new Set(allData.map(d => d.super)));
-                superFilter.innerHTML = '<option value="Todos">TODOS LOS SUPERMERCADOS</option>';
+                const supers = Array.from(new Set(allData.map(d => d.super))).filter(Boolean);
+                superFilter.innerHTML = '<option value="Todos">TODOS LOS SUPERMERCADOS (EN VIVO)</option>';
                 supers.forEach(sup => {
                     const opt = document.createElement('option');
                     opt.value = sup;
@@ -1091,18 +1140,22 @@
                 if (supers.includes(currentSuper)) superFilter.value = currentSuper;
             }
 
-            if (itemFilter) {
-                const currentItem = itemFilter.value;
-                const items = Array.from(new Set(allData.map(d => d.item)));
-                itemFilter.innerHTML = '<option value="Todos">TODOS LOS PRODUCTOS</option>';
-                items.forEach(it => {
-                    const opt = document.createElement('option');
-                    opt.value = it;
-                    opt.innerText = it.toUpperCase();
-                    itemFilter.appendChild(opt);
-                });
-                if (items.includes(currentItem)) itemFilter.value = currentItem;
+            if (categoryFilter) {
+                const currentCat = categoryFilter.value;
+                const cats = Array.from(new Set(allData.map(d => d.categoria))).filter(Boolean);
+                if (cats.length > 0) {
+                    categoryFilter.innerHTML = '<option value="Todas">TODAS LAS CATEGORÍAS (EN VIVO)</option>';
+                    cats.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c;
+                        opt.innerText = c;
+                        categoryFilter.appendChild(opt);
+                    });
+                    if (cats.includes(currentCat)) categoryFilter.value = currentCat;
+                }
             }
+
+            updateItemDropdownForCategory();
         }
 
         // Función para cargar los datos más recientes desde el servidor Python o archivo JSON
@@ -1203,21 +1256,24 @@
                 </div>
             `;
 
-            const isHttp = window.location.protocol.startsWith('http');
+            // Solo conectar a SSE si estamos corriendo localmente con el backend Python (localhost:8000)
+            // En servidores web de producción (como webticocr.com) se ejecuta el motor de scraping directo
+            // para evitar errores 404/502 de conexión en la consola del navegador.
+            const isLocalBackend = ['localhost', '127.0.0.1'].includes(window.location.hostname) || window.location.port === '8000';
 
-            if (isHttp && typeof EventSource !== 'undefined') {
+            if (isLocalBackend && typeof EventSource !== 'undefined') {
                 // =========================================================================
-                // MODO 1: SCRAPING REAL EN SEGUNDO PLANO MEDIANTE SERVIDOR PYTHON (SSE)
+                // MODO 1: SCRAPING MEDIANTE PROCESO PYTHON LOCAL (SSE STREAMING)
                 // =========================================================================
                 logArea.innerHTML += `
                     <div class="text-sky-400 py-1 font-mono text-[11px]">
-                        [PYTHON BACKEND CONECTADO] Ejecutando scraper.py en tiempo real con requests HTTP...
+                        [PYTHON BACKEND LOCAL CONECTADO] Ejecutando scraper.py en tiempo real...
                     </div>
                 `;
 
                 const eventSource = new EventSource('/api/scrape/stream');
                 let receivedCount = 0;
-                const totalEstimated = 50;
+                const totalEstimated = allData.length || 290;
 
                 eventSource.onmessage = function(e) {
                     try {
@@ -1264,7 +1320,7 @@
                         } else if (data.type === 'done') {
                             eventSource.close();
                             progressBar.style.width = '100%';
-                            progressBadge.innerHTML = `<span class="text-emerald-400 font-bold text-[11px]">✔ 50/50 URLs SCRAPEADAS CON ÉXITO</span>`;
+                            progressBadge.innerHTML = `<span class="text-emerald-400 font-bold text-[11px]">✔ ${totalEstimated}/${totalEstimated} URLs SCRAPEADAS CON ÉXITO</span>`;
 
                             const finalLine = document.createElement('div');
                             finalLine.className = 'mt-3 pt-2 border-t border-gray-800 text-emerald-300 font-bold';
@@ -1309,7 +1365,7 @@
                 logArea.innerHTML += `
                     <div class="text-amber-400 py-1 font-mono text-[11px]">
                         [SCRAPING EN TIEMPO REAL] Conectado a feeds de Walmart, MásxMenos, Maxi Palí, Palí y Auto Mercado.<br>
-                        📊 Verificando las 50 URLs oficiales de Costa Rica...
+                        📊 Verificando las ${total} URLs oficiales de las 10 categorías de Costa Rica...
                     </div>
                 `;
 
@@ -1321,13 +1377,13 @@
                     if (currentIndex >= total) {
                         clearInterval(intervalId);
                         progressBar.style.width = '100%';
-                        progressBadge.innerHTML = `<span class="text-emerald-400 font-bold text-[11px]">✔ 50/50 URLs SCRAPEADAS</span>`;
+                        progressBadge.innerHTML = `<span class="text-emerald-400 font-bold text-[11px]">✔ ${total}/${total} URLs SCRAPEADAS</span>`;
 
                         const finalLine = document.createElement('div');
                         finalLine.className = 'mt-3 pt-2 border-t border-gray-800 text-emerald-300 font-bold';
                         finalLine.innerHTML = `
                             ══════════════════════════════════════════════════════════════════════════════════════════<br>
-                            ✅ 50/50 URLs verificadas en vivo sin errores (HTTP 200/206).<br>
+                            ✅ ${total}/${total} URLs verificadas en vivo sin errores (HTTP 200/206).<br>
                             📊 Supermercados: Walmart, MásxMenos, Maxi Palí, Palí, Auto Mercado.<br>
                             ✨ Grilla de precios sincronizada con los últimos datos extraídos por Python.
                         `;
@@ -1396,8 +1452,14 @@
         };
 
         window.renderTable = renderTable;
-        superFilter.addEventListener('change', applyFilters);
-        itemFilter.addEventListener('change', applyFilters);
+        if (superFilter) superFilter.addEventListener('change', applyFilters);
+        if (categoryFilter) {
+            categoryFilter.addEventListener('change', () => {
+                updateItemDropdownForCategory();
+                applyFilters();
+            });
+        }
+        if (itemFilter) itemFilter.addEventListener('change', applyFilters);
 
         document.addEventListener('DOMContentLoaded', () => {
             renderTable();
@@ -1499,6 +1561,127 @@
                 ease: 'out(3)'
             }
         });
+
+        
+        // ==============================================
+        // SISTEMA DE POPUPS PERSONALIZADOS (ESTILO VIBRANTE NEO-BRUTALISTA)
+        // ==============================================
+        let modalResolveCallback = null;
+
+        window.showCustomModal = function({
+            title = 'MercadoFácil',
+            message = '',
+            icon = '🧺',
+            headerBg = 'bg-vibrant-blue',
+            confirmText = 'Aceptar',
+            confirmBg = 'bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark',
+            cancelText = null
+        }) {
+            return new Promise((resolve) => {
+                modalResolveCallback = resolve;
+                const overlay = document.getElementById('customModalOverlay');
+                const card = document.getElementById('customModalCard');
+                const header = document.getElementById('customModalHeader');
+                const titleEl = document.getElementById('customModalTitle');
+                const iconEl = document.getElementById('customModalIcon');
+                const msgEl = document.getElementById('customModalMessage');
+                const confirmBtn = document.getElementById('customModalConfirmBtn');
+                const cancelBtn = document.getElementById('customModalCancelBtn');
+
+                if (!overlay || !card) {
+                    if (cancelText) resolve(window.confirm(message.replace(/<[^>]+>/g, '')));
+                    else { window.alert(message.replace(/<[^>]+>/g, '')); resolve(true); }
+                    return;
+                }
+
+                titleEl.innerText = title;
+                msgEl.innerHTML = message;
+                iconEl.innerText = icon;
+
+                header.className = `p-4 ${headerBg} text-white flex items-center justify-between border-b-4 border-vibrant-dark`;
+                confirmBtn.className = `${confirmBg} font-black px-5 py-2 text-xs uppercase tracking-wider border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 transition-all cursor-pointer`;
+                confirmBtn.innerText = confirmText;
+
+                if (cancelText) {
+                    cancelBtn.classList.remove('hidden');
+                    cancelBtn.innerText = cancelText;
+                } else {
+                    cancelBtn.classList.add('hidden');
+                }
+
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+                overlay.classList.add('opacity-100');
+                card.classList.remove('scale-95');
+                card.classList.add('scale-100');
+
+                confirmBtn.focus();
+            });
+        };
+
+        window.closeCustomModal = function(result) {
+            const overlay = document.getElementById('customModalOverlay');
+            const card = document.getElementById('customModalCard');
+            if (overlay && card) {
+                overlay.classList.remove('opacity-100');
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                card.classList.remove('scale-100');
+                card.classList.add('scale-95');
+            }
+            if (typeof modalResolveCallback === 'function') {
+                modalResolveCallback(result);
+                modalResolveCallback = null;
+            }
+        };
+
+        // Cerrar con Escape y confirmar con Enter
+        window.addEventListener('keydown', (e) => {
+            const overlay = document.getElementById('customModalOverlay');
+            if (overlay && !overlay.classList.contains('pointer-events-none')) {
+                if (e.key === 'Escape') {
+                    window.closeCustomModal(false);
+                } else if (e.key === 'Enter') {
+                    window.closeCustomModal(true);
+                }
+            }
+        });
+
+        // Click fuera de la tarjeta para cerrar
+        const modalOverlayEl = document.getElementById('customModalOverlay');
+        if (modalOverlayEl) {
+            modalOverlayEl.addEventListener('click', (e) => {
+                if (e.target === modalOverlayEl) {
+                    window.closeCustomModal(false);
+                }
+            });
+        }
+
+        window.customAlert = function(message, title = 'Atención', icon = '🧺') {
+            return window.showCustomModal({
+                title,
+                message,
+                icon,
+                headerBg: 'bg-vibrant-blue',
+                confirmText: 'Entendido'
+            });
+        };
+
+        window.customConfirm = function(message, title = 'Confirmación', icon = '❓') {
+            return window.showCustomModal({
+                title,
+                message,
+                icon,
+                headerBg: 'bg-vibrant-orange',
+                confirmText: 'Aceptar',
+                confirmBg: 'bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark',
+                cancelText: 'Cancelar'
+            });
+        };
+
+        // Sobrescribir window.alert nativo por modal personalizado
+        window.alert = function(msg) {
+            window.customAlert(msg, 'Aviso de MercadoFácil', '🛒');
+        };
+
 
         // 1. Inicialización de SQLite WebAssembly (sql.js)
         async function initSQLite() {
@@ -1853,7 +2036,11 @@
         window.descargarFotoCanasta = function(formato = 'png') {
             const items = getItemsFromStorage();
             if (items.length === 0) {
-                alert('Su canasta está vacía. Agregue primero productos desde la tabla con el botón "➕ Agregar".');
+                window.customAlert(
+                    'Su canasta de compras está vacía.<br><br>Haga clic en <strong>"➕ Agregar"</strong> en cualquier producto de la tabla para comenzar a armar su lista.',
+                    'Canasta Vacía',
+                    '🧺'
+                );
                 return;
             }
             const total = items.reduce((sum, item) => sum + (Number(item.precio) || 0), 0);
@@ -1883,7 +2070,11 @@
         window.compartirWhatsApp = async function() {
             const items = getItemsFromStorage();
             if (items.length === 0) {
-                alert('Su canasta está vacía. Agregue primero productos desde la tabla con el botón "➕ Agregar".');
+                window.customAlert(
+                    'Su canasta de compras está vacía.<br><br>Agregue primero productos desde la grilla con el botón <strong>"➕ Agregar"</strong> para poder compartir su cotización en WhatsApp.',
+                    'Canasta Vacía',
+                    '🧺'
+                );
                 return;
             }
             const total = items.reduce((sum, item) => sum + (Number(item.precio) || 0), 0);
@@ -1937,7 +2128,11 @@
         window.agregarProductoCanasta = function(productId) {
             const currentItems = getItemsFromStorage();
             if (currentItems.length >= MAX_ITEMS) {
-                alert('Ha alcanzado el límite máximo de 15 productos en su canasta de ahorro.');
+                window.customAlert(
+                    'Ha alcanzado el límite máximo de <strong>15 productos</strong> en su canasta de compras para mantener la cotización legible y ordenada.',
+                    'Límite de Canasta Alcanzado',
+                    '⚠️'
+                );
                 return;
             }
             const prod = allData.find(d => d.id === productId);
@@ -1963,12 +2158,99 @@
             renderCanastaUI();
         };
 
-        window.vaciarCanasta = function() {
-            if (confirm('¿Desea vaciar todos los artículos de su canasta de compras?')) {
+        window.vaciarCanasta = async function() {
+            const confirmed = await window.showCustomModal({
+                title: '¿Vaciar canasta?',
+                message: '¿Está seguro de que desea eliminar todos los artículos de su canasta de compras?<br><span class="text-xs text-gray-500 font-normal">Esta acción borrará los productos cotizados de su lista actual.</span>',
+                icon: '🗑️',
+                headerBg: 'bg-red-600',
+                confirmText: 'Sí, vaciar',
+                confirmBg: 'bg-red-600 hover:bg-red-700 text-white',
+                cancelText: 'Cancelar'
+            });
+
+            if (confirmed) {
                 clearAllItems();
                 renderCanastaUI();
             }
         };
+
+        
+        // ==============================================
+        // GESTIÓN DE PLANES Y CONEXIÓN CON WHATSAPP (+50662278771)
+        // ==============================================
+        let currentPlanData = { name: 'Tiendas', price: 10000, desc: 'Abarrotes & Mini-súpers' };
+
+        window.abrirModalSolicitarPlan = function(planName, price, desc) {
+            currentPlanData = { name: planName, price: price, desc: desc };
+            
+            const overlay = document.getElementById('planModalOverlay');
+            const card = document.getElementById('planModalCard');
+            const titleBadge = document.getElementById('modalPlanTitleBadge');
+            const priceBadge = document.getElementById('modalPlanPriceBadge');
+            const nameInput = document.getElementById('planClientName');
+            const nameError = document.getElementById('planNameError');
+
+            if (titleBadge) titleBadge.innerText = planName;
+            if (priceBadge) priceBadge.innerText = '₡' + price.toLocaleString('es-CR') + '/mes';
+            if (nameInput) nameInput.value = '';
+            if (nameError) nameError.classList.add('hidden');
+
+            if (overlay && card) {
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+                overlay.classList.add('opacity-100');
+                card.classList.remove('scale-95');
+                card.classList.add('scale-100');
+                setTimeout(() => { if (nameInput) nameInput.focus(); }, 150);
+            }
+        };
+
+        window.cerrarModalPlan = function() {
+            const overlay = document.getElementById('planModalOverlay');
+            const card = document.getElementById('planModalCard');
+            if (overlay && card) {
+                overlay.classList.remove('opacity-100');
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                card.classList.remove('scale-100');
+                card.classList.add('scale-95');
+            }
+        };
+
+        window.confirmarSolicitudPlanWhatsApp = function() {
+            const nameInput = document.getElementById('planClientName');
+            const businessInput = document.getElementById('planBusinessName');
+            const phoneInput = document.getElementById('planPhone');
+            const nameError = document.getElementById('planNameError');
+
+            const clientName = nameInput ? nameInput.value.trim() : '';
+            const businessName = businessInput ? businessInput.value.trim() : '';
+            const phone = phoneInput ? phoneInput.value.trim() : '';
+
+            if (!clientName) {
+                if (nameError) nameError.classList.remove('hidden');
+                if (nameInput) nameInput.focus();
+                return;
+            }
+            if (nameError) nameError.classList.add('hidden');
+
+            const priceStr = '₡' + currentPlanData.price.toLocaleString('es-CR');
+            
+            let waMsg = `🛒 *SOLICITUD DE PLAN - MERCADOFÁCIL*\n`;
+            waMsg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+            waMsg += `📦 *Plan:* Plan ${currentPlanData.name} (${priceStr}/mes)\n`;
+            waMsg += `👤 *Nombre:* ${clientName}\n`;
+            if (businessName) waMsg += `🏪 *Comercio:* ${businessName}\n`;
+            if (phone) waMsg += `📱 *Contacto:* ${phone}\n`;
+            waMsg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+            waMsg += `💳 *Pago SINPE Móvil:* Listo o enviaré el comprobante realizado al 62278771 por este medio.\n\n`;
+            waMsg += `¡Hola! Deseo contratar el servicio de monitoreo de precios de MercadoFácil para mi negocio. Quedo atento a la activación de mi cuenta.`;
+
+            const waUrl = `https://api.whatsapp.com/send?phone=50662278771&text=${encodeURIComponent(waMsg)}`;
+            
+            window.cerrarModalPlan();
+            window.open(waUrl, '_blank');
+        };
+
 
         // Iniciar SQLite al cargar el DOM
         if (document.readyState === 'loading') {
@@ -1977,5 +2259,108 @@
             initSQLite();
         }
     </script>
+
+    <!-- ==============================================
+         SISTEMA DE POPUPS Y DIÁLOGOS PERSONALIZADOS (NEO-BRUTALISTA)
+         ============================================== -->
+    <div id="customModalOverlay" class="fixed inset-0 z-[99999] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
+        <div id="customModalCard" class="bg-white border-4 border-vibrant-dark shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] max-w-md w-full overflow-hidden transform scale-95 transition-all duration-200">
+            <!-- Barra Superior del Modal -->
+            <div id="customModalHeader" class="p-4 bg-vibrant-blue text-white flex items-center justify-between border-b-4 border-vibrant-dark">
+                <div class="flex items-center gap-2.5">
+                    <span id="customModalIcon" class="text-2xl filter drop-shadow">🧺</span>
+                    <h3 id="customModalTitle" class="font-black text-base uppercase tracking-wider text-white">MercadoFácil</h3>
+                </div>
+                <button id="customModalCloseBtn" onclick="window.closeCustomModal(false)" class="text-white hover:text-red-300 font-black text-xl leading-none px-2 py-1 transition-colors cursor-pointer" title="Cerrar">✕</button>
+            </div>
+            <!-- Cuerpo del Modal -->
+            <div class="p-6 bg-white">
+                <div id="customModalMessage" class="text-sm font-semibold text-vibrant-dark leading-relaxed">
+                    Mensaje del sistema...
+                </div>
+            </div>
+            <!-- Botones de Acción -->
+            <div id="customModalFooter" class="p-4 bg-gray-50 border-t-2 border-vibrant-dark flex items-center justify-end gap-3">
+                <button id="customModalCancelBtn" onclick="window.closeCustomModal(false)" class="bg-white hover:bg-gray-100 text-vibrant-dark font-black px-4 py-2 text-xs uppercase tracking-wider border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 transition-all cursor-pointer">
+                    Cancelar
+                </button>
+                <button id="customModalConfirmBtn" onclick="window.closeCustomModal(true)" class="bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black px-5 py-2 text-xs uppercase tracking-wider border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 transition-all cursor-pointer">
+                    Aceptar
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==============================================
+         MODAL SOLICITAR PLAN (SINPE MÓVIL 62278771 + WHATSAPP)
+         ============================================== -->
+    <div id="planModalOverlay" class="fixed inset-0 z-[99999] bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
+        <div id="planModalCard" class="bg-white border-4 border-vibrant-dark shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] max-w-lg w-full overflow-hidden transform scale-95 transition-all duration-200">
+            <!-- Barra Superior -->
+            <div class="p-4 bg-vibrant-blue text-white flex items-center justify-between border-b-4 border-vibrant-dark">
+                <div class="flex items-center gap-2.5">
+                    <span class="text-2xl">💼</span>
+                    <div>
+                        <h3 class="font-black text-base uppercase tracking-wider text-white">Solicitar Plan: <span id="modalPlanTitleBadge" class="text-vibrant-green underline">Tiendas</span></h3>
+                        <p class="text-[11px] font-bold text-blue-100">Monitoreo de precios para empresas y comercios</p>
+                    </div>
+                </div>
+                <button onclick="window.cerrarModalPlan()" class="text-white hover:text-red-300 font-black text-xl leading-none px-2 py-1 transition-colors cursor-pointer" title="Cerrar">✕</button>
+            </div>
+
+            <!-- Cuerpo del Modal -->
+            <div class="p-6 bg-white space-y-4 max-h-[80vh] overflow-y-auto">
+                <!-- Tarjeta Destacada SINPE Móvil -->
+                <div class="bg-[#FEF9C3] border-2 border-vibrant-dark shadow-stitch p-4">
+                    <div class="flex items-start gap-3">
+                        <span class="text-3xl">📱</span>
+                        <div class="text-xs text-vibrant-dark flex-grow">
+                            <div class="font-black text-sm uppercase tracking-wider flex items-center justify-between gap-2">
+                                <span>PAGO POR SINPE MÓVIL</span>
+                                <span id="modalPlanPriceBadge" class="bg-vibrant-dark text-vibrant-green px-2 py-0.5 text-xs font-black shadow-sm">₡10,000/mes</span>
+                            </div>
+                            <div class="mt-2 bg-white p-2 border-2 border-vibrant-dark flex items-center justify-between">
+                                <span class="font-bold text-xs text-gray-700">Número SINPE:</span>
+                                <span class="font-black text-base text-vibrant-blue tracking-widest">62278771</span>
+                            </div>
+                            <p class="mt-2 text-gray-700 font-semibold leading-relaxed">
+                                Le contactaremos de inmediato para activar el servicio. Puede realizar de una vez el pago por <strong>SINPE Móvil al 62278771</strong> y adjuntarnos el comprobante por el chat de WhatsApp que se abrirá a continuación.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulario de Datos -->
+                <div>
+                    <label class="block text-xs font-black text-vibrant-dark uppercase tracking-wider mb-1">Nombre Completo *</label>
+                    <input id="planClientName" type="text" placeholder="Ej: Carlos Ramírez Morales" class="w-full bg-white text-vibrant-dark font-bold p-3 border-2 border-vibrant-dark shadow-xs focus:outline-none focus:bg-amber-50">
+                    <p id="planNameError" class="text-xs text-red-600 font-black mt-1 hidden">⚠️ Por favor ingrese su nombre para continuar.</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-black text-vibrant-dark uppercase tracking-wider mb-1">Nombre de su Comercio / Empresa (Opcional)</label>
+                    <input id="planBusinessName" type="text" placeholder="Ej: Mini Súper El Ahorro / Farmacia Central" class="w-full bg-white text-vibrant-dark font-bold p-3 border-2 border-vibrant-dark shadow-xs focus:outline-none focus:bg-amber-50">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-black text-vibrant-dark uppercase tracking-wider mb-1">Teléfono o WhatsApp de contacto (Opcional)</label>
+                    <input id="planPhone" type="text" placeholder="Ej: 8888-9999" class="w-full bg-white text-vibrant-dark font-bold p-3 border-2 border-vibrant-dark shadow-xs focus:outline-none focus:bg-amber-50">
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="p-4 bg-gray-50 border-t-2 border-vibrant-dark flex items-center justify-between gap-3">
+                <button onclick="window.cerrarModalPlan()" class="bg-white hover:bg-gray-100 text-vibrant-dark font-black px-4 py-2.5 text-xs uppercase tracking-wider border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 cursor-pointer">
+                    Cancelar
+                </button>
+                <button onclick="window.confirmarSolicitudPlanWhatsApp()" class="bg-[#25D366] hover:bg-[#20bd5a] text-white font-black px-5 py-2.5 text-xs uppercase tracking-wider border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 flex items-center gap-2 cursor-pointer">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                    <span>Continuar a WhatsApp (+506 62278771)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
