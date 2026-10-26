@@ -46,6 +46,9 @@
         }
     </script>
 
+    <!-- PocketBase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/pocketbase/dist/pocketbase.umd.js"></script>
+
     <!-- SQLite WebAssembly (sql.js) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
 
@@ -203,6 +206,35 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" d="M19 9l-7 7-7-7"></path></svg>
                     </div>
                 </div>
+
+                <!-- Google Login & Auth Container -->
+                <div id="authContainer" class="flex items-center gap-2">
+                    <!-- Botón Login Google (Visitante) -->
+                    <button id="btnLoginGoogle" onclick="window.loginConGoogle()" class="bg-white hover:bg-gray-100 text-vibrant-dark font-black py-1.5 px-3 border-2 border-vibrant-dark text-xs uppercase tracking-wider shadow-stitch hover:shadow-stitch-hover flex items-center gap-2 cursor-pointer transition-all active:translate-y-0.5">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                        </svg>
+                        <span class="hidden sm:inline">Entrar con Google</span>
+                        <span class="sm:hidden">Entrar</span>
+                    </button>
+
+                    <!-- Info Usuario y Cerrar Sesión (Usuario autenticado) -->
+                    <div id="userProfileBar" class="hidden flex items-center gap-2">
+                        <div class="bg-vibrant-dark text-white border-2 border-white px-2.5 py-1 text-xs font-bold flex items-center gap-1.5 shadow-stitch">
+                            <span class="w-2 h-2 rounded-full bg-vibrant-green animate-pulse"></span>
+                            <span id="userEmailLabel" class="max-w-[130px] truncate text-[11px]">usuario@gmail.com</span>
+                        </div>
+                        <button id="btnAdminPanel" onclick="window.abrirPanelAdmin()" class="hidden bg-amber-300 hover:bg-amber-400 text-vibrant-dark font-black px-2.5 py-1 text-xs border-2 border-vibrant-dark shadow-stitch uppercase cursor-pointer" title="Panel Exclusivo de Administrador">
+                            👑 Admin
+                        </button>
+                        <button onclick="window.cerrarSesion()" class="bg-white hover:bg-red-50 text-red-600 font-black px-2 py-1 text-xs border-2 border-vibrant-dark shadow-stitch uppercase cursor-pointer" title="Cerrar Sesión">
+                            Salir
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -272,7 +304,12 @@
                         <div>
                             <label class="block text-xs font-bold text-white uppercase tracking-widest mb-2">1. Supermercado</label>
                             <select id="superFilter" class="w-full bg-white text-vibrant-dark font-semibold py-3 px-4 shadow-sm">
-                                <option value="Todos">TODOS LOS SUPERMERCADOS (EN VIVO)</option>
+                                <option value="Todos">TODOS LOS SUPERMERCADOS 🔒 (REQUIERE PLAN MERCADOS)</option>
+                                <option value="Walmart" selected>WALMART</option>
+                                <option value="MásxMenos">MÁSXMENOS</option>
+                                <option value="Maxi Palí">MAXI PALÍ</option>
+                                <option value="Palí">PALÍ</option>
+                                <option value="Auto Mercado">AUTO MERCADO</option>
                             </select>
                         </div>
                         <div>
@@ -536,7 +573,30 @@
                     </p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+                    
+                    <!-- Plan Mercados (Destacado Multi-Supermercados) -->
+                    <div class="bg-[#FEF9C3] stitch-box shadow-stitch p-6 flex flex-col relative border-4 border-vibrant-dark hover:shadow-none hover:translate-y-1 hover:translate-x-1 transition-all">
+                        <div class="absolute top-0 right-0 -mt-3.5 mr-3 bg-vibrant-blue text-white text-[10px] font-black px-3 py-1 uppercase tracking-widest border-2 border-vibrant-dark shadow-stitch">
+                            MULTI-SÚPER
+                        </div>
+                        <div class="flex-grow">
+                            <h3 class="text-2xl font-black text-vibrant-dark mb-1 uppercase">Plan Mercados</h3>
+                            <p class="text-xs font-black text-vibrant-blue mb-4 uppercase tracking-wider">Comparador Completo</p>
+                            <ul class="space-y-2.5 text-xs font-bold text-vibrant-dark mb-6">
+                                <li class="flex items-start gap-1.5"><span class="text-vibrant-blue font-black">➔</span> Comparativa de <strong>TODOS los supermercados</strong> a la vez.</li>
+                                <li class="flex items-start gap-1.5"><span class="text-vibrant-blue font-black">➔</span> Acceso habilitado con su cuenta de Google.</li>
+                                <li class="flex items-start gap-1.5"><span class="text-vibrant-blue font-black">➔</span> Walmart, MásxMenos, Maxi Palí, Palí y Auto Mercado.</li>
+                                <li class="flex items-start gap-1.5"><span class="text-vibrant-blue font-black">➔</span> Detección de las mejores ofertas de la canasta básica.</li>
+                            </ul>
+                        </div>
+                        <div class="stitch-border-t border-vibrant-dark pt-4 mt-auto">
+                            <div class="text-3xl font-black text-vibrant-dark mb-3">₡10,000 <span class="text-xs font-bold uppercase opacity-80">/mes</span></div>
+                            <button onclick="window.abrirModalSolicitarPlan('Mercados', 10000, 'Comparador Multi-Supermercados')" class="w-full bg-vibrant-blue hover:bg-blue-700 text-white font-black py-2.5 uppercase tracking-wider shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 transition-all text-xs cursor-pointer">
+                                Solicitar Plan Mercados
+                            </button>
+                        </div>
+                    </div>
                     
                     <!-- Tiendas (Naranja) -->
                     <div class="bg-vibrant-orange stitch-box shadow-stitch p-8 flex flex-col hover:shadow-none hover:translate-y-1 hover:translate-x-1 transition-all">
@@ -949,7 +1009,12 @@
         }
 
         const applyFilters = () => {
-            const selectedSuper = superFilter ? superFilter.value : 'Todos';
+            let selectedSuper = superFilter ? superFilter.value : 'Walmart';
+            const hasPlan = Boolean(window.hasAccessToAllSupermarkets && window.hasAccessToAllSupermarkets());
+            if (selectedSuper === 'Todos' && !hasPlan) {
+                selectedSuper = 'Walmart';
+                if (superFilter) superFilter.value = 'Walmart';
+            }
             const selectedCategory = categoryFilter ? categoryFilter.value : 'Todas';
             const selectedItem = itemFilter ? itemFilter.value : 'Todos';
 
@@ -1128,16 +1193,32 @@
         // Poblar dinámicamente los menús desplegables desde el catálogo real
         function populateFilterDropdowns() {
             if (superFilter) {
+                const hasPlan = Boolean(window.hasAccessToAllSupermarkets && window.hasAccessToAllSupermarkets());
                 const currentSuper = superFilter.value;
                 const supers = Array.from(new Set(allData.map(d => d.super))).filter(Boolean);
-                superFilter.innerHTML = '<option value="Todos">TODOS LOS SUPERMERCADOS (EN VIVO)</option>';
+                const todosLabel = hasPlan 
+                    ? 'TODOS LOS SUPERMERCADOS 🔓 (PLAN MERCADOS ACTIVO)' 
+                    : 'TODOS LOS SUPERMERCADOS 🔒 (REQUIERE PLAN MERCADOS)';
+                
+                superFilter.innerHTML = `<option value="Todos">${todosLabel}</option>`;
                 supers.forEach(sup => {
                     const opt = document.createElement('option');
                     opt.value = sup;
                     opt.innerText = sup.toUpperCase();
                     superFilter.appendChild(opt);
                 });
-                if (supers.includes(currentSuper)) superFilter.value = currentSuper;
+
+                if (currentSuper === 'Todos') {
+                    if (hasPlan) {
+                        superFilter.value = 'Todos';
+                    } else {
+                        superFilter.value = supers.includes('Walmart') ? 'Walmart' : (supers[0] || 'Todos');
+                    }
+                } else if (supers.includes(currentSuper)) {
+                    superFilter.value = currentSuper;
+                } else {
+                    superFilter.value = supers.includes('Walmart') ? 'Walmart' : (supers[0] || 'Todos');
+                }
             }
 
             if (categoryFilter) {
@@ -1181,8 +1262,9 @@
                             continue;
                         }
                         const json = JSON.parse(text);
-                        if (json && Array.isArray(json.products) && json.products.length > 0) {
-                            allData = json.products;
+                        const prods = Array.isArray(json) ? json : (json && Array.isArray(json.products) ? json.products : null);
+                        if (prods && prods.length > 0) {
+                            allData = prods;
                             window.allData = allData;
                             isLoadingProducts = false;
                             updateMinPrices();
@@ -1343,6 +1425,7 @@
                             isScrapingRunning = false;
 
                             loadProductsData();
+            verificarEstadoSesion();
                         }
                     } catch (err) {
                         console.error('Error parseando evento SSE:', err);
@@ -1452,7 +1535,17 @@
         };
 
         window.renderTable = renderTable;
-        if (superFilter) superFilter.addEventListener('change', applyFilters);
+        if (superFilter) {
+            superFilter.addEventListener('change', () => {
+                if (superFilter.value === 'Todos' && !window.hasAccessToAllSupermarkets()) {
+                    window.mostrarModalBloqueoTodos();
+                    superFilter.value = 'Walmart';
+                    applyFilters();
+                    return;
+                }
+                applyFilters();
+            });
+        }
         if (categoryFilter) {
             categoryFilter.addEventListener('change', () => {
                 updateItemDropdownForCategory();
@@ -2189,12 +2282,23 @@
             const titleBadge = document.getElementById('modalPlanTitleBadge');
             const priceBadge = document.getElementById('modalPlanPriceBadge');
             const nameInput = document.getElementById('planClientName');
+            const emailInput = document.getElementById('planEmail');
             const nameError = document.getElementById('planNameError');
+            const emailError = document.getElementById('planEmailError');
 
             if (titleBadge) titleBadge.innerText = planName;
             if (priceBadge) priceBadge.innerText = '₡' + price.toLocaleString('es-CR') + '/mes';
             if (nameInput) nameInput.value = '';
+            if (emailInput) {
+                // Si el usuario está logueado en PocketBase, precargar su Gmail
+                if (pb && pb.authStore && pb.authStore.model && pb.authStore.model.email) {
+                    emailInput.value = pb.authStore.model.email;
+                } else {
+                    emailInput.value = '';
+                }
+            }
             if (nameError) nameError.classList.add('hidden');
+            if (emailError) emailError.classList.add('hidden');
 
             if (overlay && card) {
                 overlay.classList.remove('opacity-0', 'pointer-events-none');
@@ -2218,37 +2322,313 @@
 
         window.confirmarSolicitudPlanWhatsApp = function() {
             const nameInput = document.getElementById('planClientName');
+            const emailInput = document.getElementById('planEmail');
             const businessInput = document.getElementById('planBusinessName');
-            const phoneInput = document.getElementById('planPhone');
             const nameError = document.getElementById('planNameError');
+            const emailError = document.getElementById('planEmailError');
 
             const clientName = nameInput ? nameInput.value.trim() : '';
+            const clientEmail = emailInput ? emailInput.value.trim() : '';
             const businessName = businessInput ? businessInput.value.trim() : '';
-            const phone = phoneInput ? phoneInput.value.trim() : '';
 
+            let hasError = false;
             if (!clientName) {
                 if (nameError) nameError.classList.remove('hidden');
                 if (nameInput) nameInput.focus();
-                return;
+                hasError = true;
+            } else if (nameError) {
+                nameError.classList.add('hidden');
             }
-            if (nameError) nameError.classList.add('hidden');
+
+            if (!clientEmail || !clientEmail.includes('@') || !clientEmail.includes('.')) {
+                if (emailError) emailError.classList.remove('hidden');
+                if (!hasError && emailInput) emailInput.focus();
+                hasError = true;
+            } else if (emailError) {
+                emailError.classList.add('hidden');
+            }
+
+            if (hasError) return;
 
             const priceStr = '₡' + currentPlanData.price.toLocaleString('es-CR');
             
             let waMsg = `🛒 *SOLICITUD DE PLAN - MERCADOFÁCIL*\n`;
             waMsg += `━━━━━━━━━━━━━━━━━━━━━\n`;
             waMsg += `📦 *Plan:* Plan ${currentPlanData.name} (${priceStr}/mes)\n`;
-            waMsg += `👤 *Nombre:* ${clientName}\n`;
+            waMsg += `👤 *Cliente:* ${clientName}\n`;
+            waMsg += `📧 *Gmail para Acceso:* ${clientEmail}\n`;
             if (businessName) waMsg += `🏪 *Comercio:* ${businessName}\n`;
-            if (phone) waMsg += `📱 *Contacto:* ${phone}\n`;
             waMsg += `━━━━━━━━━━━━━━━━━━━━━\n`;
-            waMsg += `💳 *Pago SINPE Móvil:* Listo o enviaré el comprobante realizado al 62278771 por este medio.\n\n`;
-            waMsg += `¡Hola! Deseo contratar el servicio de monitoreo de precios de MercadoFácil para mi negocio. Quedo atento a la activación de mi cuenta.`;
+            waMsg += `💳 *Pago SINPE Móvil:* Pago listo o adjunto comprobante realizado al 62278771 por este medio.\n\n`;
+            waMsg += `¡Hola! Deseo contratar el servicio de MercadoFácil. Quedo atento a la activación de mi cuenta para el correo ${clientEmail}.`;
 
             const waUrl = `https://api.whatsapp.com/send?phone=50662278771&text=${encodeURIComponent(waMsg)}`;
             
             window.cerrarModalPlan();
             window.open(waUrl, '_blank');
+        };
+
+
+        
+        // ==============================================
+        // AUTENTICACIÓN POCKETBASE GOOGLE OAUTH2 Y CONTROL DE ACCESO
+        // ==============================================
+        const pb = (typeof PocketBase !== 'undefined') ? new PocketBase('https://pb-mercadofacil.webticocr.com') : null;
+        const ADMIN_EMAIL = 'corea3000@gmail.com';
+        const APPROVED_USERS_KEY = 'mercadofacil_approved_users';
+
+        // Obtener correos autorizados
+        function getApprovedEmails() {
+            try {
+                let list = JSON.parse(localStorage.getItem(APPROVED_USERS_KEY) || '[]');
+                if (!Array.isArray(list)) list = [];
+                if (!list.map(e => e.toLowerCase()).includes(ADMIN_EMAIL.toLowerCase())) {
+                    list.push(ADMIN_EMAIL);
+                }
+                return list;
+            } catch {
+                return [ADMIN_EMAIL];
+            }
+        }
+
+        function saveApprovedEmails(list) {
+            localStorage.setItem(APPROVED_USERS_KEY, JSON.stringify(list));
+        }
+
+        // Verifica si el usuario actual tiene acceso a comparar todos los supermercados
+        window.hasAccessToAllSupermarkets = function() {
+            if (!pb || !pb.authStore || !pb.authStore.isValid) return false;
+            const model = pb.authStore.model;
+            if (!model || !model.email) return false;
+            const email = model.email.toLowerCase();
+            if (email === ADMIN_EMAIL.toLowerCase()) return true;
+            const approved = getApprovedEmails().map(e => e.toLowerCase());
+            return approved.includes(email);
+        };
+
+        // Login con Google OAuth2
+        window.loginConGoogle = async function() {
+            if (!pb) {
+                window.customAlert('PocketBase no está disponible en este momento.', 'Aviso', '⚠️');
+                return;
+            }
+            try {
+                const authData = await pb.collection('users').authWithOAuth2({ provider: 'google' });
+                console.log("Autenticación exitosa. Datos de la conexión:", authData);
+                verificarEstadoSesion();
+                
+                const userEmail = (pb.authStore.model && pb.authStore.model.email) ? pb.authStore.model.email : '';
+                if (window.hasAccessToAllSupermarkets()) {
+                    window.customAlert(`¡Bienvenido <strong>${pb.authStore.model.name || userEmail}</strong>!<br><br>Su cuenta cuenta con acceso activo al <strong>Plan Mercados</strong> para comparar todos los supermercados.`, 'Sesión Iniciada', '🎉');
+                } else {
+                    window.customAlert(`¡Bienvenido <strong>${pb.authStore.model.name || userEmail}</strong>!<br><br>Para comparar entre todos los supermercados a la vez, solicite la activación de su <strong>Plan Mercados (₡10,000/mes)</strong> pagando por SINPE Móvil al 62278771.`, 'Sesión Iniciada', '👤');
+                }
+            } catch (error) {
+                console.error("Fallo en la autenticación OAuth2:", error);
+                if (error.name !== 'AbortError' && !String(error).includes('autocancelled')) {
+                    window.customAlert('No se pudo completar la autenticación con Google: ' + (error.message || error), 'Error de Autenticación', '⚠️');
+                }
+            }
+        };
+
+        // Cerrar Sesión
+        window.cerrarSesion = function() {
+            if (pb && pb.authStore) {
+                pb.authStore.clear();
+            }
+            verificarEstadoSesion();
+            // Si estaba en 'Todos' y ya no tiene permiso, revertir a Walmart
+            if (superFilter && superFilter.value === 'Todos') {
+                superFilter.value = 'Walmart';
+                applyFilters();
+            }
+            window.customAlert('Ha cerrado sesión exitosamente.', 'Sesión Cerrada', '👋');
+        };
+
+        // Verificar y actualizar UI según estado de sesión
+        function verificarEstadoSesion() {
+            const btnLogin = document.getElementById('btnLoginGoogle');
+            const userProfileBar = document.getElementById('userProfileBar');
+            const userEmailLabel = document.getElementById('userEmailLabel');
+            const btnAdminPanel = document.getElementById('btnAdminPanel');
+
+            if (pb && pb.authStore && pb.authStore.isValid) {
+                const usuario = pb.authStore.model;
+                console.log("Sesión activa. Usuario:", usuario);
+                if (btnLogin) btnLogin.classList.add('hidden');
+                if (userProfileBar) userProfileBar.classList.remove('hidden');
+                if (userEmailLabel) userEmailLabel.innerText = usuario.email || usuario.name || 'Usuario';
+                
+                if (btnAdminPanel) {
+                    if (usuario.email && usuario.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                        btnAdminPanel.classList.remove('hidden');
+                    } else {
+                        btnAdminPanel.classList.add('hidden');
+                    }
+                }
+            } else {
+                console.log("Sin sesión activa.");
+                if (btnLogin) btnLogin.classList.remove('hidden');
+                if (userProfileBar) userProfileBar.classList.add('hidden');
+                if (btnAdminPanel) btnAdminPanel.classList.add('hidden');
+            }
+
+            if (typeof populateFilterDropdowns === 'function' && window.allData && window.allData.length > 0) {
+                populateFilterDropdowns();
+                applyFilters();
+            }
+        }
+
+        // Modal Bloqueo al intentar comparar 'Todos' sin permiso
+        window.mostrarModalBloqueoTodos = function() {
+            const isLogged = pb && pb.authStore && pb.authStore.isValid;
+            const userEmail = isLogged && pb.authStore.model ? pb.authStore.model.email : '';
+
+            if (!isLogged) {
+                window.showCustomModal({
+                    title: '🔒 Acceso Plan Mercados Requerido',
+                    message: `Para comparar precios simultáneamente entre <strong>TODOS los supermercados de Costa Rica</strong> (Walmart, MásxMenos, Maxi Palí, Palí y Auto Mercado), debe iniciar sesión con su cuenta de Google y contar con el <strong>Plan Mercados (₡10,000/mes)</strong>.<br><br>Si aún no lo tiene contratado, solicítelo y pague por <strong>SINPE Móvil al 62278771</strong> para que el administrador le active su cuenta.`,
+                    icon: '🔒',
+                    headerBg: 'bg-vibrant-blue',
+                    confirmText: 'Entrar con Google',
+                    confirmBg: 'bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark',
+                    cancelText: 'Ver Planes'
+                }).then(result => {
+                    if (result) {
+                        window.loginConGoogle();
+                    } else {
+                        window.abrirModalSolicitarPlan('Mercados', 10000, 'Comparador Multi-Supermercados');
+                    }
+                });
+            } else {
+                window.showCustomModal({
+                    title: '🔒 Plan Mercados Requerido',
+                    message: `Hola <strong>${pb.authStore.model.name || userEmail}</strong>.<br><br>Su cuenta de Google (<strong>${userEmail}</strong>) aún no tiene habilitado el <strong>Plan Mercados (₡10,000/mes)</strong> para comparar precios entre todos los supermercados al mismo tiempo.<br><br>Puede cancelar por <strong>SINPE Móvil al 62278771</strong> y el administrador le activará el acceso de inmediato.`,
+                    icon: '🔒',
+                    headerBg: 'bg-vibrant-orange',
+                    confirmText: 'Pagar Plan Mercados (₡10,000)',
+                    confirmBg: 'bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark',
+                    cancelText: 'Continuar Navegando'
+                }).then(result => {
+                    if (result) {
+                        window.abrirModalSolicitarPlan('Mercados', 10000, 'Comparador Multi-Supermercados');
+                    }
+                });
+            }
+        };
+
+        // ==============================================
+        // PANEL ADMINISTRADOR (Solo corea3000@gmail.com)
+        // ==============================================
+        window.abrirPanelAdmin = function() {
+            if (!pb || !pb.authStore || !pb.authStore.isValid || !pb.authStore.model || pb.authStore.model.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+                window.customAlert('Acceso denegado: Esta sección es exclusiva para el administrador del sistema (corea3000@gmail.com).', 'Acceso Denegado', '⛔');
+                return;
+            }
+
+            const overlay = document.getElementById('adminModalOverlay');
+            const card = document.getElementById('adminModalCard');
+            window.renderAdminList();
+
+            if (overlay && card) {
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+                overlay.classList.add('opacity-100');
+                card.classList.remove('scale-95');
+                card.classList.add('scale-100');
+            }
+        };
+
+        window.cerrarPanelAdmin = function() {
+            const overlay = document.getElementById('adminModalOverlay');
+            const card = document.getElementById('adminModalCard');
+            if (overlay && card) {
+                overlay.classList.remove('opacity-100');
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                card.classList.remove('scale-100');
+                card.classList.add('scale-95');
+            }
+        };
+
+        window.adminAgregarCliente = function() {
+            const input = document.getElementById('adminNewClientEmail');
+            const feedback = document.getElementById('adminFeedback');
+            if (!input) return;
+            const email = input.value.trim().toLowerCase();
+
+            if (!email || !email.includes('@') || !email.includes('.')) {
+                if (feedback) {
+                    feedback.className = 'text-xs font-black mt-2 text-red-600 block';
+                    feedback.innerText = '⚠️ Ingrese un correo de Gmail válido.';
+                }
+                return;
+            }
+
+            let list = getApprovedEmails();
+            if (list.map(e => e.toLowerCase()).includes(email)) {
+                if (feedback) {
+                    feedback.className = 'text-xs font-black mt-2 text-amber-600 block';
+                    feedback.innerText = 'ℹ️ Este correo ya se encuentra autorizado.';
+                }
+                return;
+            }
+
+            list.push(email);
+            saveApprovedEmails(list);
+            input.value = '';
+            if (feedback) {
+                feedback.className = 'text-xs font-black mt-2 text-green-700 block';
+                feedback.innerText = `✅ Acceso otorgado con éxito a ${email}`;
+                setTimeout(() => feedback.classList.add('hidden'), 3500);
+            }
+            window.renderAdminList();
+        };
+
+        window.adminRevocarCliente = async function(emailToRevoke) {
+            if (emailToRevoke.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                window.customAlert('No se puede revocar el acceso del administrador principal.', 'Administrador Principal', '👑');
+                return;
+            }
+            const confirmed = await window.showCustomModal({
+                title: 'Revocar Acceso',
+                message: `¿Está seguro de que desea revocar el acceso al Plan Mercados para <strong>${emailToRevoke}</strong>?`,
+                icon: '⚠️',
+                headerBg: 'bg-red-500',
+                confirmText: 'Sí, Revocar',
+                confirmBg: 'bg-red-600 hover:bg-red-700 text-white',
+                cancelText: 'Cancelar'
+            });
+            if (confirmed) {
+                let list = getApprovedEmails();
+                list = list.filter(e => e.toLowerCase() !== emailToRevoke.toLowerCase());
+                saveApprovedEmails(list);
+                window.renderAdminList();
+                window.customAlert(`Acceso revocado exitosamente para <strong>${emailToRevoke}</strong>.`, 'Acceso Revocado', '✅');
+            }
+        };
+
+        window.renderAdminList = function() {
+            const listContainer = document.getElementById('adminUsersList');
+            const countBadge = document.getElementById('adminCountBadge');
+            const list = getApprovedEmails();
+
+            if (countBadge) countBadge.innerText = `${list.length} ${list.length === 1 ? 'cuenta' : 'cuentas'}`;
+            if (!listContainer) return;
+
+            listContainer.innerHTML = '';
+            list.forEach(email => {
+                const isAdmin = email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+                const row = document.createElement('div');
+                row.className = 'p-3 flex items-center justify-between hover:bg-gray-50 text-xs font-bold';
+                row.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span>${isAdmin ? '👑' : '👤'}</span>
+                        <span class="text-vibrant-dark ${isAdmin ? 'font-black' : ''}">${email}</span>
+                        ${isAdmin ? '<span class="bg-amber-200 text-vibrant-dark text-[10px] font-black px-1.5 py-0.2 border border-vibrant-dark">ADMIN</span>' : '<span class="bg-green-100 text-green-800 text-[10px] font-black px-1.5 py-0.2 border border-green-300">PLAN MERCADOS</span>'}
+                    </div>
+                    ${isAdmin ? '<span class="text-[10px] text-gray-400 font-bold">Propietario</span>' : `<button onclick="window.adminRevocarCliente('${email}')" class="text-red-600 hover:text-red-800 font-black px-2 py-0.5 border border-red-300 bg-red-50 hover:bg-red-100 text-[10px] uppercase cursor-pointer">Revocar ✕</button>`}
+                `;
+                listContainer.appendChild(row);
+            });
         };
 
 
@@ -2331,21 +2711,23 @@
                     </div>
                 </div>
 
-                <!-- Formulario de Datos -->
+                <!-- Formulario de Datos (Nombre + Gmail Obligatorio para Acceso) -->
                 <div>
                     <label class="block text-xs font-black text-vibrant-dark uppercase tracking-wider mb-1">Nombre Completo *</label>
                     <input id="planClientName" type="text" placeholder="Ej: Carlos Ramírez Morales" class="w-full bg-white text-vibrant-dark font-bold p-3 border-2 border-vibrant-dark shadow-xs focus:outline-none focus:bg-amber-50">
-                    <p id="planNameError" class="text-xs text-red-600 font-black mt-1 hidden">⚠️ Por favor ingrese su nombre para continuar.</p>
+                    <p id="planNameError" class="text-xs text-red-600 font-black mt-1 hidden">⚠️ Por favor ingrese su nombre completo.</p>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-black text-vibrant-dark uppercase tracking-wider mb-1">Nombre de su Comercio / Empresa (Opcional)</label>
+                    <label class="block text-xs font-black text-vibrant-dark uppercase tracking-wider mb-1">Correo Electrónico (Gmail) *</label>
+                    <input id="planEmail" type="email" placeholder="su.cuenta@gmail.com" class="w-full bg-white text-vibrant-dark font-bold p-3 border-2 border-vibrant-dark shadow-xs focus:outline-none focus:bg-amber-50">
+                    <p class="text-[11px] text-gray-500 font-semibold mt-1">🔑 Con este correo de Gmail se le habilitará el acceso en el sistema al verificar su pago.</p>
+                    <p id="planEmailError" class="text-xs text-red-600 font-black mt-1 hidden">⚠️ Por favor ingrese un correo de Gmail válido.</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-black text-vibrant-dark uppercase tracking-wider mb-1">Nombre de su Comercio / Negocio (Opcional)</label>
                     <input id="planBusinessName" type="text" placeholder="Ej: Mini Súper El Ahorro / Farmacia Central" class="w-full bg-white text-vibrant-dark font-bold p-3 border-2 border-vibrant-dark shadow-xs focus:outline-none focus:bg-amber-50">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-black text-vibrant-dark uppercase tracking-wider mb-1">Teléfono o WhatsApp de contacto (Opcional)</label>
-                    <input id="planPhone" type="text" placeholder="Ej: 8888-9999" class="w-full bg-white text-vibrant-dark font-bold p-3 border-2 border-vibrant-dark shadow-xs focus:outline-none focus:bg-amber-50">
                 </div>
             </div>
 
@@ -2357,6 +2739,60 @@
                 <button onclick="window.confirmarSolicitudPlanWhatsApp()" class="bg-[#25D366] hover:bg-[#20bd5a] text-white font-black px-5 py-2.5 text-xs uppercase tracking-wider border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 flex items-center gap-2 cursor-pointer">
                     <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
                     <span>Continuar a WhatsApp (+506 62278771)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==============================================
+         PANEL ADMINISTRADOR EXCLUSIVO (corea3000@gmail.com)
+         ============================================== -->
+    <div id="adminModalOverlay" class="fixed inset-0 z-[99999] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
+        <div id="adminModalCard" class="bg-white border-4 border-vibrant-dark shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] max-w-lg w-full overflow-hidden transform scale-95 transition-all duration-200">
+            <!-- Barra Superior -->
+            <div class="p-4 bg-amber-400 text-vibrant-dark flex items-center justify-between border-b-4 border-vibrant-dark">
+                <div class="flex items-center gap-2.5">
+                    <span class="text-2xl">👑</span>
+                    <div>
+                        <h3 class="font-black text-base uppercase tracking-wider text-vibrant-dark">Panel de Control Admin</h3>
+                        <p class="text-[11px] font-bold text-gray-800">corea3000@gmail.com · MercadoFácil</p>
+                    </div>
+                </div>
+                <button onclick="window.cerrarPanelAdmin()" class="text-vibrant-dark hover:text-red-700 font-black text-xl leading-none px-2 py-1 transition-colors cursor-pointer" title="Cerrar">✕</button>
+            </div>
+
+            <!-- Cuerpo del Panel -->
+            <div class="p-6 bg-white space-y-4 max-h-[75vh] overflow-y-auto">
+                <!-- Agregar Cliente -->
+                <div class="bg-gray-50 border-2 border-vibrant-dark p-4 shadow-stitch">
+                    <h4 class="text-xs font-black uppercase text-vibrant-dark tracking-wider mb-2">Habilitar Plan Mercados a un Cliente</h4>
+                    <p class="text-xs text-gray-600 font-medium mb-3">Ingrese el Gmail del cliente que realizó el pago por SINPE Móvil para desbloquearle la comparativa de todos los supermercados:</p>
+                    <div class="flex gap-2">
+                        <input id="adminNewClientEmail" type="email" placeholder="cliente@gmail.com" class="flex-grow bg-white text-vibrant-dark font-bold p-2.5 border-2 border-vibrant-dark text-xs focus:outline-none">
+                        <button onclick="window.adminAgregarCliente()" class="bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black px-4 py-2.5 text-xs uppercase border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 cursor-pointer whitespace-nowrap">
+                            ➕ Autorizar
+                        </button>
+                    </div>
+                    <p id="adminFeedback" class="text-xs font-black mt-2 hidden"></p>
+                </div>
+
+                <!-- Lista de Usuarios Autorizados -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="text-xs font-black uppercase text-vibrant-dark tracking-wider">Cuentas con Acceso Activo</h4>
+                        <span id="adminCountBadge" class="bg-vibrant-dark text-white text-[11px] font-black px-2 py-0.5">1 cuenta</span>
+                    </div>
+                    <div id="adminUsersList" class="border-2 border-vibrant-dark divide-y-2 divide-gray-200 max-h-52 overflow-y-auto bg-white">
+                        <!-- Generado dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pie -->
+            <div class="p-4 bg-gray-50 border-t-2 border-vibrant-dark flex justify-end">
+                <button onclick="window.cerrarPanelAdmin()" class="bg-vibrant-dark text-white font-black px-5 py-2 text-xs uppercase tracking-wider border-2 border-vibrant-dark shadow-stitch hover:bg-black cursor-pointer">
+                    Cerrar Panel
                 </button>
             </div>
         </div>
