@@ -94,18 +94,22 @@
 
         /* --- Estilos para Animaciones Anime.js (Text Splitter & Layout) --- */
         #text-split .text-xl {
-            font-size: 1.5rem;
-            color: currentColor;
-            letter-spacing: 0.06em;
-            line-height: 1.35;
+            font-size: 2.25rem;
+            color: #0F172A;
+            letter-spacing: -0.02em;
+            line-height: 1.15;
+            font-weight: 900;
+        }
+
+        @media (min-width: 768px) {
+            #text-split .text-xl {
+                font-size: 3.5rem;
+            }
         }
 
         #text-split {
             overflow: hidden;
-            min-height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: block;
         }
 
         .layout-container {
@@ -156,7 +160,6 @@
                 MERCADOFÁCIL
             </div>
             <div class="flex items-center gap-6 text-sm font-bold">
-                <a href="#animaciones" class="text-white hover:text-vibrant-orange transition-colors hidden md:block uppercase tracking-wide">Animaciones</a>
                 <a href="#dashboard" class="text-white hover:text-vibrant-green transition-colors hidden md:block uppercase tracking-wide">Comparar Precios</a>
                 <a href="#premium" class="text-white hover:text-vibrant-orange transition-colors hidden md:block uppercase tracking-wide">Para Empresas</a>
                 
@@ -189,10 +192,12 @@
                     <div class="inline-flex items-center gap-2 bg-vibrant-green text-vibrant-dark font-black text-xs px-3 py-1 mb-4 border-2 border-vibrant-dark shadow-stitch uppercase tracking-wider">
                         🛒 Canasta básica al mejor precio
                     </div>
-                    <h1 class="text-5xl md:text-7xl font-black text-vibrant-dark tracking-tighter mb-6 leading-none">
-                        ¿DÓNDE SALE<br>
-                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-vibrant-blue via-vibrant-green to-vibrant-orange">MÁS BARATO?</span>
-                    </h1>
+                    <div class="large centered grid square-grid mb-6" id="text-split">
+                        <p class="text-xl font-black text-vibrant-dark tracking-tighter uppercase leading-none">
+                            ¿Dónde sale más barato?<br>
+                            Compare precios y ahorre hoy
+                        </p>
+                    </div>
                     <p class="text-lg text-gray-700 font-medium mb-8 max-w-lg leading-relaxed">
                         Compare los precios de los productos esenciales en los supermercados de Costa Rica antes de salir de compras. Cuide el presupuesto de su hogar y encuentre datos confiables para su negocio.
                     </p>
@@ -209,69 +214,6 @@
                 <div id="three-container" class="relative w-full h-96 flex justify-center items-center">
                     <!-- Three.js renders here -->
                 </div>
-            </div>
-        </section>
-
-        <!-- Section: Animaciones Anime.js v4 (Text Splitter & Layout Interactivo) -->
-        <section id="animaciones" class="py-14 bg-white stitch-border-b">
-            <div class="max-w-6xl mx-auto px-6">
-                
-                <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
-                    <div>
-                        <div class="inline-block bg-vibrant-green text-vibrant-dark text-xs font-black px-3 py-1 uppercase tracking-widest mb-2 border-2 border-vibrant-dark shadow-stitch">
-                            Anime.js v4 Interactivo
-                        </div>
-                        <h2 class="text-3xl md:text-4xl font-black text-vibrant-dark tracking-tight uppercase">Animaciones Dinámicas</h2>
-                        <p class="text-gray-600 font-medium mt-1">Demostración en vivo de división de texto y reorganización automática de elementos en tiempo real.</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-                    
-                    <!-- Text Splitter Showcase -->
-                    <div class="bg-vibrant-dark text-white p-8 stitch-box shadow-stitch border-2 border-vibrant-dark flex flex-col justify-between">
-                        <div>
-                            <div class="inline-block bg-vibrant-blue text-white text-[11px] font-black px-2.5 py-1 uppercase tracking-widest mb-3 border border-white">
-                                SplitText & Timeline
-                            </div>
-                            <h3 class="text-2xl font-black text-white uppercase tracking-tight mb-2">Efecto Text Splitter</h3>
-                            <p class="text-gray-300 text-sm font-medium mb-6">División automática y animación por letras y palabras en bucle continuo con interpolación y stagger.</p>
-                        </div>
-
-                        <!-- Markup exacto proporcionado: <div class="large centered grid square-grid"> con id="text-split" -->
-                        <div class="large centered grid square-grid bg-[#1E293B] border-2 border-white shadow-stitch p-6 text-center my-auto" id="text-split">
-                            <p class="text-xl font-black">
-                                All-in-one text splitter<br>
-                                テキストスプリッター
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Layout Animation Showcase (createLayout) -->
-                    <div class="bg-vibrant-bg p-8 stitch-box shadow-stitch border-2 border-vibrant-dark flex flex-col justify-between">
-                        <div>
-                            <div class="inline-block bg-vibrant-orange text-white text-[11px] font-black px-2.5 py-1 uppercase tracking-widest mb-3 border-2 border-vibrant-dark shadow-stitch">
-                                createLayout Dinámico
-                            </div>
-                            <h3 class="text-2xl font-black text-vibrant-dark uppercase tracking-tight mb-2">Simulador de Canasta</h3>
-                            <p class="text-gray-600 text-sm font-medium mb-6">Pulse el botón para agregar productos. Cada elemento entra con animación de escala y reorganiza la cuadrícula.</p>
-                        </div>
-
-                        <div class="controls mb-4 flex items-center justify-between gap-3">
-                            <button class="bg-vibrant-orange text-vibrant-dark font-black py-3 px-6 shadow-stitch hover:shadow-stitch-hover border-2 border-vibrant-dark uppercase tracking-wider text-xs flex items-center gap-2 cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">
-                                <span>🛒</span> + AGREGAR PRODUCTO
-                            </button>
-                            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Máx. 15 artículos</span>
-                        </div>
-
-                        <!-- Contenedor Layout Anime.js -->
-                        <div class="layout-container min-h-[140px] p-4 bg-white border-2 border-vibrant-dark shadow-stitch">
-                            <!-- Items añadidos por addItem() con clase item col -->
-                        </div>
-                    </div>
-
-                </div>
-
             </div>
         </section>
 
@@ -351,6 +293,31 @@
                         </div>
                         <div class="flex gap-2 font-bold flex-wrap" id="paginationControls">
                             <!-- JS Populated -->
+                        </div>
+                    </div>
+
+                    <!-- Mi Canasta de Compras (createLayout) -->
+                    <div class="p-6 stitch-border-t bg-gray-50">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                            <div>
+                                <h3 class="text-sm font-black text-vibrant-dark uppercase tracking-tight flex items-center gap-2">
+                                    <span>🧺</span> Mi Canasta de Compras
+                                </h3>
+                                <p class="text-xs text-gray-600 font-medium mt-0.5">
+                                    Agregue artículos para armar su lista del súper:
+                                </p>
+                            </div>
+                            <div class="controls flex items-center gap-3">
+                                <button class="bg-vibrant-orange text-vibrant-dark font-black py-2.5 px-5 shadow-stitch hover:shadow-stitch-hover border-2 border-vibrant-dark uppercase tracking-wider text-xs flex items-center gap-2 cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <span>🛒</span> + Agregar a mi canasta
+                                </button>
+                                <span class="text-[11px] font-bold text-gray-500 uppercase">Máx. 15</span>
+                            </div>
+                        </div>
+
+                        <!-- Contenedor Layout Anime.js -->
+                        <div class="layout-container min-h-[70px] p-3 bg-white border-2 border-vibrant-dark shadow-stitch">
+                            <!-- Items añadidos por addItem() con clase item col -->
                         </div>
                     </div>
                 </div>
