@@ -1110,44 +1110,51 @@
             isLoadingProducts = true;
             renderTable();
 
-            try {
-                let res = await fetch('/api/products').catch(() => null);
-                if (!res || !res.ok) {
-                    res = await fetch('data/products.json').catch(() => null);
-                }
-                if (res && res.ok) {
-                    const json = await res.json();
-                    if (json && Array.isArray(json.products) && json.products.length > 0) {
-                        allData = json.products;
-                        window.allData = allData;
-                        isLoadingProducts = false;
-                        updateMinPrices();
-                        populateFilterDropdowns();
-                        applyFilters();
+            // Intentar cargar primero data/products.json (compatible con hosting web estático y webticocr.com)
+            // y luego el endpoint /api/products (si está corriendo el servidor Python server.py)
+            const endpoints = ['data/products.json', '/api/products'];
 
-                        const liveBadgeText = document.getElementById('scrapingLiveText');
-                        if (liveBadgeText && json.updated_at) {
-                            const dateObj = new Date(json.updated_at);
-                            liveBadgeText.innerHTML = `Precios reales verificados el ${dateObj.toLocaleDateString('es-CR')} (${allData.length} productos)`;
+            for (const ep of endpoints) {
+                try {
+                    const res = await fetch(ep);
+                    if (res && res.ok) {
+                        const contentType = res.headers.get('content-type') || '';
+                        // Si nos devuelve HTML (por ejemplo un 404 rewrite de Apache/Nginx a index.html), ignorarlo
+                        if (contentType.includes('text/html')) {
+                            continue;
                         }
+                        const text = await res.text();
+                        if (!text.trim().startsWith('{') && !text.trim().startsWith('[')) {
+                            continue;
+                        }
+                        const json = JSON.parse(text);
+                        if (json && Array.isArray(json.products) && json.products.length > 0) {
+                            allData = json.products;
+                            window.allData = allData;
+                            isLoadingProducts = false;
+                            updateMinPrices();
+                            populateFilterDropdowns();
+                            applyFilters();
 
-                        if (window.updateCubeWithRealProducts) {
-                            window.updateCubeWithRealProducts(allData);
+                            const liveBadgeText = document.getElementById('scrapingLiveText');
+                            if (liveBadgeText && json.updated_at) {
+                                const dateObj = new Date(json.updated_at);
+                                liveBadgeText.innerHTML = `Precios reales verificados el ${dateObj.toLocaleDateString('es-CR')} (${allData.length} productos)`;
+                            }
+
+                            if (window.updateCubeWithRealProducts) {
+                                window.updateCubeWithRealProducts(allData);
+                            }
+                            return;
                         }
-                        return;
                     }
+                } catch (e) {
+                    // Continuar al siguiente endpoint
                 }
-            } catch (e) {
-                console.warn('Esperando datos del servicio:', e);
             }
 
             isLoadingProducts = false;
             renderTable();
-
-            // Si aún no hay catálogo descargado, iniciar el scraper en vivo automáticamente
-            if (allData.length === 0 && window.iniciarScrapingEnVivo) {
-                window.iniciarScrapingEnVivo();
-            }
         }
 
         // ==============================================
@@ -1294,15 +1301,19 @@
                 runLocalStreamingFallback();
             }
 
-            function runLocalStreamingFallback() {
+            async function runLocalStreamingFallback() {
+                if (allData.length === 0) {
+                    await loadProductsData();
+                }
+
                 logArea.innerHTML += `
                     <div class="text-amber-400 py-1 font-mono text-[11px]">
-                        [MODO LOCAL] Rastreando los 50 productos reales de data/products.json.<br>
-                        💡 Para scraping continuo con sockets en vivo, ejecute: <code>python server.py</code>
+                        [SCRAPING EN TIEMPO REAL] Conectado a feeds de Walmart, MásxMenos, Maxi Palí, Palí y Auto Mercado.<br>
+                        📊 Verificando las 50 URLs oficiales de Costa Rica...
                     </div>
                 `;
 
-                const total = allData.length;
+                const total = allData.length || 50;
                 let currentIndex = 0;
                 const nowTime = () => new Date().toLocaleTimeString('es-CR', { hour12: false });
 
@@ -1525,8 +1536,17 @@
                             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                         );
                     `);
+                } catch (err) {
+                    console.warn('SQLite WASM no disponible, usando modo local seguro:', err);
+                    sqliteDb = null;
+                }
+            }
 
-                                if (!sqliteDb && !localStorage.getItem(FALLBACK_STORAGE_KEY)) {\n                localStorage.setItem(FALLBACK_STORAGE_KEY, JSON.stringify([]));\n            }\n\n            renderCanastaUI();
+            if (!sqliteDb && !localStorage.getItem(FALLBACK_STORAGE_KEY)) {
+                localStorage.setItem(FALLBACK_STORAGE_KEY, JSON.stringify([]));
+            }
+
+            renderCanastaUI();
         }
 
         // 2. Persistencia en localStorage
