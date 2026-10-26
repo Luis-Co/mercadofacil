@@ -257,7 +257,7 @@
                                     <th class="py-4 px-6 text-xs font-black text-vibrant-dark uppercase tracking-widest stitch-border-r">Supermercado</th>
                                     <th class="py-4 px-6 text-xs font-black text-vibrant-dark uppercase tracking-widest stitch-border-r">Producto</th>
                                     <th class="py-4 px-6 text-xs font-black text-vibrant-dark uppercase tracking-widest text-right stitch-border-r">Precio Actual</th>
-                                    <th class="py-4 px-4 text-xs font-black text-vibrant-dark uppercase tracking-widest text-center w-32">Canasta</th>
+                                    <th class="py-4 px-4 text-xs font-black text-vibrant-dark uppercase tracking-widest text-center w-32">Agregar</th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody" class="divide-y-2 divide-vibrant-dark font-medium">
@@ -292,17 +292,28 @@
                                     <span>🧺</span> Mi Canasta de Compras
                                 </h3>
                                 <p class="text-xs text-gray-600 font-medium mt-0.5">
-                                    Consulte los artículos seleccionados, supermercado, fecha cotizada y precio total. Se guarda en su navegador sin necesidad de iniciar sesión.
+                                    Arme su canasta agregando productos desde la grilla con el botón "Agregar". Se guarda automáticamente en su navegador.
                                 </p>
                             </div>
-                            <div class="controls flex flex-wrap items-center gap-2.5">
-                                <select id="canastaQuickSelect" class="bg-white border-2 border-vibrant-dark text-vibrant-dark text-xs font-bold py-2 px-3 shadow-stitch max-w-[240px]">
-                                    <!-- Populated via JS -->
-                                </select>
-                                <button id="btnAgregarQuick" class="bg-vibrant-orange text-vibrant-dark font-black py-2 px-4 shadow-stitch hover:shadow-stitch-hover border-2 border-vibrant-dark uppercase tracking-wider text-xs flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5">
-                                    <span>🛒</span> + Agregar
+                            <div class="controls flex flex-wrap items-center gap-2">
+                                <!-- Botón Compartir en WhatsApp -->
+                                <button onclick="window.compartirWhatsApp && window.compartirWhatsApp()" class="bg-[#25D366] hover:bg-[#20bd5a] text-white font-black py-2 px-3.5 shadow-stitch hover:shadow-stitch-hover border-2 border-vibrant-dark uppercase tracking-wider text-xs flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5" title="Enviar cotización a su propio WhatsApp o a un familiar">
+                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                                    <span>WhatsApp</span>
                                 </button>
-                                <button id="btnVaciarCanasta" onclick="window.vaciarCanasta && window.vaciarCanasta()" class="bg-white hover:bg-red-50 text-red-600 font-bold py-2 px-3 border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover text-xs uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-all active:translate-y-0.5">
+                                
+                                <!-- Botón Descargar Foto PNG -->
+                                <button onclick="window.descargarFotoCanasta && window.descargarFotoCanasta('png')" class="bg-vibrant-orange hover:bg-orange-400 text-vibrant-dark font-black py-2 px-3.5 shadow-stitch hover:shadow-stitch-hover border-2 border-vibrant-dark uppercase tracking-wider text-xs flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5" title="Guardar foto de la cotización en formato PNG">
+                                    <span>📸</span> Foto (.PNG)
+                                </button>
+
+                                <!-- Botón Descargar Foto JPG -->
+                                <button onclick="window.descargarFotoCanasta && window.descargarFotoCanasta('jpeg')" class="bg-white hover:bg-gray-100 text-vibrant-dark font-black py-2 px-3 border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover text-xs uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-all active:translate-y-0.5" title="Guardar foto de la cotización en formato JPEG">
+                                    <span>🖼️</span> .JPG
+                                </button>
+
+                                <!-- Botón Vaciar -->
+                                <button id="btnVaciarCanasta" onclick="window.vaciarCanasta && window.vaciarCanasta()" class="bg-white hover:bg-red-50 text-red-600 font-bold py-2 px-3 border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover text-xs uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-all active:translate-y-0.5" title="Vaciar toda la canasta">
                                     <span>🗑️</span> Vaciar
                                 </button>
                                 <span class="text-[11px] font-bold text-gray-500 uppercase ml-1">Máx. 15</span>
@@ -322,7 +333,7 @@
                                 </div>
                             </div>
                             <div class="text-xs font-semibold text-gray-600 flex items-center gap-2">
-                                <span>💡</span> <span id="canastaTipText">Haga clic en "+ Canasta" en cualquier fila de la tabla para agregar ese producto con su fecha y precio.</span>
+                                <span>💡</span> <span id="canastaTipText">Seleccione productos de la grilla de arriba pulsando "➕ Agregar" para armar su lista del súper.</span>
                             </div>
                         </div>
 
@@ -362,7 +373,7 @@
                             </ul>
                         </div>
                         <div class="stitch-border-t border-vibrant-dark pt-6 mt-auto">
-                            <div class="text-4xl font-black text-vibrant-dark mb-4">₡10,000 <span class="text-sm font-bold uppercase opacity-80">/mes (₡10 mil)</span></div>
+                            <div class="text-4xl font-black text-vibrant-dark mb-4">₡10,000 <span class="text-sm font-bold uppercase opacity-80">/mes</span></div>
                             <button class="w-full bg-vibrant-dark text-white font-black py-3 uppercase tracking-wider hover:bg-black transition-colors">
                                 Solicitar Plan
                             </button>
@@ -384,7 +395,7 @@
                             </ul>
                         </div>
                         <div class="stitch-border-t border-vibrant-dark pt-6 mt-auto">
-                            <div class="text-4xl font-black text-vibrant-dark mb-4">₡15,000 <span class="text-sm font-bold uppercase opacity-80">/mes (₡15 mil)</span></div>
+                            <div class="text-4xl font-black text-vibrant-dark mb-4">₡15,000 <span class="text-sm font-bold uppercase opacity-80">/mes</span></div>
                             <button class="w-full bg-vibrant-dark text-white font-black py-3 uppercase tracking-wider hover:bg-black transition-colors">
                                 Solicitar Plan
                             </button>
@@ -403,7 +414,7 @@
                             </ul>
                         </div>
                         <div class="stitch-border-t border-white pt-6 mt-auto">
-                            <div class="text-4xl font-black text-white mb-4">₡20,000 <span class="text-sm font-bold uppercase opacity-80">/mes (₡20 mil)</span></div>
+                            <div class="text-4xl font-black text-white mb-4">₡20,000 <span class="text-sm font-bold uppercase opacity-80">/mes</span></div>
                             <button class="w-full bg-white text-vibrant-blue font-black py-3 uppercase tracking-wider hover:bg-gray-100 transition-colors">
                                 Solicitar Plan
                             </button>
@@ -845,8 +856,8 @@
                     </td>
                     <td class="py-4 px-6 stitch-border-r border-b-2 border-vibrant-dark text-lg font-black ${isBestPrice ? 'text-green-700' : 'text-vibrant-blue'} text-right">${formatCRC(row.precio)}</td>
                     <td class="py-4 px-4 border-b-2 border-vibrant-dark text-center">
-                        <button onclick="window.agregarProductoCanasta(${row.id})" class="bg-vibrant-green hover:bg-green-400 text-vibrant-dark font-black px-3 py-1.5 text-xs border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 transition-all inline-flex items-center gap-1 cursor-pointer">
-                            <span>🛒</span> + Canasta
+                        <button id="add-btn-${row.id}" onclick="window.agregarProductoCanasta(${row.id})" class="bg-vibrant-green hover:bg-green-400 text-vibrant-dark font-black px-3.5 py-1.5 text-xs border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 transition-all inline-flex items-center gap-1 cursor-pointer">
+                            <span>➕</span> Agregar
                         </button>
                     </td>
                 `;
@@ -894,7 +905,7 @@
     </script>
 
     <!-- ==============================================
-         MERCADOFÁCIL: MI CANASTA DE COMPRAS (SQLite + Anime.js v4)
+         MERCADOFÁCIL: MI CANASTA DE COMPRAS (SQLite + Anime.js v4 + Foto & WhatsApp)
          ============================================== -->
     <script type="module">
         import { createLayout } from 'animejs';
@@ -983,7 +994,6 @@
                 localStorage.setItem(FALLBACK_STORAGE_KEY, JSON.stringify(initialFallback));
             }
 
-            populateQuickSelect();
             renderCanastaUI();
         }
 
@@ -1083,21 +1093,18 @@
             // Actualizar contadores y badges
             const countBadge = document.getElementById('canastaCountBadge');
             const totalBadge = document.getElementById('canastaTotalBadge');
-            const btnQuick = document.getElementById('btnAgregarQuick');
             const tipText = document.getElementById('canastaTipText');
 
             if (countBadge) countBadge.innerText = `${count} ${count === 1 ? 'artículo' : 'artículos'}`;
             if (totalBadge) totalBadge.innerText = formatCRC(total);
 
-            if (btnQuick) {
-                const isFull = count >= MAX_ITEMS;
-                btnQuick.disabled = isFull;
-                if (isFull) {
-                    btnQuick.innerText = 'Límite (15)';
-                    if (tipText) tipText.innerText = 'Ha alcanzado el límite máximo de 15 productos en su canasta de ahorro.';
+            if (tipText) {
+                if (count >= MAX_ITEMS) {
+                    tipText.innerText = 'Ha alcanzado el límite de 15 productos en su canasta.';
+                } else if (count === 0) {
+                    tipText.innerText = 'Seleccione productos de la grilla de arriba pulsando "➕ Agregar" para armar su lista.';
                 } else {
-                    btnQuick.innerHTML = '<span>🛒</span> + Agregar';
-                    if (tipText) tipText.innerText = 'Haga clic en "+ Canasta" en cualquier fila de la tabla para agregar ese producto con su fecha y precio.';
+                    tipText.innerText = `Tiene ${count} artículos. Puede guardar la cotización como foto (.PNG/.JPG) o enviársela por WhatsApp.`;
                 }
             }
 
@@ -1110,7 +1117,7 @@
                     emptyNotice.className = 'col-span-full py-8 text-center text-gray-500 font-semibold text-sm';
                     emptyNotice.innerHTML = `
                         🧺 Su canasta de compras está vacía.<br>
-                        <span class="text-xs text-gray-400 font-normal">Haga clic en <strong>"+ Canasta"</strong> en la tabla de precios o use el selector rápido para armar su lista.</span>
+                        <span class="text-xs text-gray-400 font-normal">Haga clic en <strong>"➕ Agregar"</strong> en cualquier producto de la tabla de arriba para comenzar a armar su lista del súper.</span>
                     `;
                     root.appendChild(emptyNotice);
                     return;
@@ -1138,30 +1145,243 @@
             });
         }
 
-        // 5. Poblar el selector rápido con los mejores precios
-        function populateQuickSelect() {
-            const quickSelect = document.getElementById('canastaQuickSelect');
-            if (!quickSelect) return;
-            quickSelect.innerHTML = '';
+        // 5. Generador de Imagen de la Canasta (Canvas de alta resolución)
+        function generarCanvasCotizacion(items, total, formato = 'png') {
+            const width = 800;
+            const headerHeight = 160;
+            const tableHeadHeight = 44;
+            const rowHeight = 60;
+            const footerHeight = 210;
+            const height = headerHeight + tableHeadHeight + (items.length * rowHeight) + footerHeight;
 
-            const featuredItems = [
-                { id: 3, label: 'Arroz Tío Pelón 1.8kg (Palí - ₡1,790)' },
-                { id: 8, label: 'Frijoles Don Pedro 800g (Palí - ₡1,390)' },
-                { id: 13, label: 'Leche Dos Pinos 1L (Palí - ₡945)' },
-                { id: 18, label: 'Huevos Blancos x30 (Palí - ₡2,950)' },
-                { id: 23, label: 'Café 1820 250g (Palí - ₡1,690)' },
-                { id: 25, label: 'Atún Sardimar 140g (Maxi Palí - ₡1,100)' }
-            ];
+            const canvas = document.createElement('canvas');
+            const scale = 2; // Retina sharpness
+            canvas.width = width * scale;
+            canvas.height = height * scale;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(scale, scale);
 
-            featuredItems.forEach(item => {
-                const opt = document.createElement('option');
-                opt.value = item.id;
-                opt.innerText = item.label;
-                quickSelect.appendChild(opt);
+            // Fondo blanco
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, width, height);
+
+            // Marco grueso estilo Neo-Brutalista
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = '#0F172A';
+            ctx.strokeRect(5, 5, width - 10, height - 10);
+
+            // Encabezado Azul Vibrante
+            ctx.fillStyle = '#2962FF';
+            ctx.fillRect(10, 10, width - 20, headerHeight - 10);
+
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#0F172A';
+            ctx.strokeRect(10, 10, width - 20, headerHeight - 10);
+
+            // Badge superior
+            ctx.fillStyle = '#00E676';
+            ctx.fillRect(35, 26, 300, 26);
+            ctx.strokeStyle = '#0F172A';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(35, 26, 300, 26);
+            ctx.fillStyle = '#0F172A';
+            ctx.font = 'bold 12px Inter, Arial, sans-serif';
+            ctx.fillText('🛒 CANASTA BÁSICA · COSTA RICA', 45, 43);
+
+            // Título Principal
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '900 32px Inter, Arial, sans-serif';
+            ctx.fillText('MERCADOFÁCIL', 35, 92);
+
+            ctx.font = '600 15px Inter, Arial, sans-serif';
+            ctx.fillStyle = '#E0E7FF';
+            ctx.fillText('Cotización de Precios Más Económicos para el Hogar', 35, 120);
+
+            // Fecha y Fuente
+            ctx.textAlign = 'right';
+            const todayStr = new Date().toLocaleDateString('es-CR', { day: 'numeric', month: 'short', year: 'numeric' });
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 14px Inter, Arial, sans-serif';
+            ctx.fillText('📅 ' + todayStr, width - 35, 60);
+
+            ctx.fillStyle = '#00E676';
+            ctx.font = 'bold 13px Inter, Arial, sans-serif';
+            ctx.fillText('webticocr.com', width - 35, 84);
+            ctx.textAlign = 'left';
+
+            // Cabecera de la Tabla
+            const theadY = headerHeight + 15;
+            ctx.fillStyle = '#0F172A';
+            ctx.fillRect(20, theadY, width - 40, tableHeadHeight);
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 12px Inter, Arial, sans-serif';
+            ctx.fillText('ARTÍCULO', 35, theadY + 27);
+            ctx.fillText('SUPERMERCADO', 380, theadY + 27);
+            ctx.fillText('COTIZACIÓN', 530, theadY + 27);
+            ctx.textAlign = 'right';
+            ctx.fillText('PRECIO', width - 35, theadY + 27);
+            ctx.textAlign = 'left';
+
+            // Filas de Artículos
+            items.forEach((it, i) => {
+                const rowY = theadY + tableHeadHeight + (i * rowHeight);
+
+                // Alternancia de filas
+                ctx.fillStyle = (i % 2 === 0) ? '#FFFFFF' : '#F8FAFC';
+                ctx.fillRect(20, rowY, width - 40, rowHeight);
+
+                // Borde fila
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = '#E2E8F0';
+                ctx.strokeRect(20, rowY, width - 40, rowHeight);
+
+                // Nombre
+                ctx.fillStyle = '#0F172A';
+                ctx.font = 'bold 14px Inter, Arial, sans-serif';
+                ctx.fillText(it.item, 35, rowY + 35);
+
+                // Supermercado pill
+                ctx.fillStyle = '#FF6B35';
+                ctx.fillRect(380, rowY + 16, 120, 28);
+                ctx.strokeStyle = '#0F172A';
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(380, rowY + 16, 120, 28);
+                ctx.fillStyle = '#0F172A';
+                ctx.font = 'bold 11px Inter, Arial, sans-serif';
+                ctx.fillText(it.super.toUpperCase(), 390, rowY + 34);
+
+                // Fecha
+                ctx.fillStyle = '#64748B';
+                ctx.font = '600 13px Inter, Arial, sans-serif';
+                ctx.fillText(it.fecha, 530, rowY + 35);
+
+                // Precio
+                ctx.textAlign = 'right';
+                ctx.fillStyle = '#2962FF';
+                ctx.font = '900 17px Inter, Arial, sans-serif';
+                ctx.fillText(formatCRC(it.precio), width - 35, rowY + 35);
+                ctx.textAlign = 'left';
             });
+
+            // Pie de Cotización (Totalizador)
+            const footerY = theadY + tableHeadHeight + (items.length * rowHeight) + 15;
+            
+            // Tarjeta Total estilo Neo-Brutal
+            ctx.fillStyle = '#FEF9C3';
+            ctx.fillRect(20, footerY, width - 40, 95);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#0F172A';
+            ctx.strokeRect(20, footerY, width - 40, 95);
+
+            ctx.fillStyle = '#0F172A';
+            ctx.font = '800 14px Inter, Arial, sans-serif';
+            ctx.fillText(`TOTAL ESTIMADO (${items.length} ${items.length === 1 ? 'ARTÍCULO' : 'ARTÍCULOS'}):`, 40, footerY + 38);
+
+            ctx.fillStyle = '#475569';
+            ctx.font = '600 12px Inter, Arial, sans-serif';
+            ctx.fillText('✓ Precios registrados para compra eficiente e inteligente', 40, footerY + 66);
+
+            ctx.textAlign = 'right';
+            ctx.fillStyle = '#0F172A';
+            ctx.font = '900 36px Inter, Arial, sans-serif';
+            ctx.fillText(formatCRC(total), width - 40, footerY + 60);
+            ctx.textAlign = 'left';
+
+            // Notas finales y firma de webticocr.com
+            ctx.fillStyle = '#64748B';
+            ctx.font = '600 12px Inter, Arial, sans-serif';
+            ctx.fillText('Cotización generada sin costo para control del presupuesto familiar · webticocr.com', 35, footerY + 130);
+            ctx.fillText('Consulte variaciones diarias y más productos en MercadoFácil Costa Rica', 35, footerY + 152);
+
+            return canvas;
         }
 
-        // 6. Funciones globales expuestas para interacción del usuario
+        // 6. Descargar Foto (.PNG o .JPEG)
+        window.descargarFotoCanasta = function(formato = 'png') {
+            const items = getItemsFromStorage();
+            if (items.length === 0) {
+                alert('Su canasta está vacía. Agregue primero productos desde la tabla con el botón "➕ Agregar".');
+                return;
+            }
+            const total = items.reduce((sum, item) => sum + (Number(item.precio) || 0), 0);
+            const canvas = generarCanvasCotizacion(items, total, formato);
+
+            const mime = formato === 'jpeg' ? 'image/jpeg' : 'image/png';
+            const ext = formato === 'jpeg' ? 'jpg' : 'png';
+            const dataUrl = canvas.toDataURL(mime, 0.95);
+
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = `Mi_Canasta_MercadoFacil_${Date.now()}.${ext}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            // Mensaje informativo
+            const tipText = document.getElementById('canastaTipText');
+            if (tipText) {
+                const originalText = tipText.innerText;
+                tipText.innerHTML = `📸 <strong class="text-green-700">¡Foto (.${ext.toUpperCase()}) descargada con éxito!</strong> Puede adjuntarla en WhatsApp.`;
+                setTimeout(() => { tipText.innerText = originalText; }, 4000);
+            }
+        };
+
+        // 7. Compartir Canasta por WhatsApp con texto formateado e imagen
+        window.compartirWhatsApp = async function() {
+            const items = getItemsFromStorage();
+            if (items.length === 0) {
+                alert('Su canasta está vacía. Agregue primero productos desde la tabla con el botón "➕ Agregar".');
+                return;
+            }
+            const total = items.reduce((sum, item) => sum + (Number(item.precio) || 0), 0);
+            const canvas = generarCanvasCotizacion(items, total, 'png');
+
+            // Texto formateado para WhatsApp
+            const todayStr = new Date().toLocaleDateString('es-CR', { day: 'numeric', month: 'short', year: 'numeric' });
+            let waText = `🛒 *MI CANASTA DE COMPRAS - MERCADOFÁCIL*\n`;
+            waText += `📅 *Fecha:* ${todayStr}\n`;
+            waText += `━━━━━━━━━━━━━━━━━━━━━\n`;
+            items.forEach((it, idx) => {
+                waText += `${idx + 1}. *${it.item}*\n`;
+                waText += `   🏪 ${it.super} · ₡${Number(it.precio).toLocaleString('es-CR')} (Cot: ${it.fecha})\n`;
+            });
+            waText += `━━━━━━━━━━━━━━━━━━━━━\n`;
+            waText += `💰 *TOTAL ESTIMADO: ₡${Number(total).toLocaleString('es-CR')}*\n`;
+            waText += `📦 *Total de artículos:* ${items.length}\n\n`;
+            waText += `✨ Comparado en: https://webticocr.com`;
+
+            // Intentar compartir con foto si el navegador lo soporta (móviles)
+            canvas.toBlob(async (blob) => {
+                if (blob && navigator.canShare) {
+                    const file = new File([blob], 'Mi_Canasta_MercadoFacil.png', { type: 'image/png' });
+                    if (navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({
+                                title: 'Mi Canasta de Compras - MercadoFácil',
+                                text: waText,
+                                files: [file]
+                            });
+                            return;
+                        } catch (err) {
+                            if (err.name !== 'AbortError') {
+                                console.warn('Error al invocar navigator.share:', err);
+                            } else {
+                                return;
+                            }
+                        }
+                    }
+                }
+
+                // Fallback para escritorio o navegadores sin soporte de archivo compartido directo:
+                // Descarga la foto automáticamente para tenerla a mano y abre WhatsApp Web con el texto precargado
+                window.descargarFotoCanasta('png');
+                const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(waText)}`;
+                window.open(waUrl, '_blank');
+            }, 'image/png');
+        };
+
+        // 8. Funciones globales expuestas para agregar, eliminar y vaciar
         window.agregarProductoCanasta = function(productId) {
             const currentItems = getItemsFromStorage();
             if (currentItems.length >= MAX_ITEMS) {
@@ -1172,6 +1392,18 @@
             if (!prod) return;
             insertItem(prod.item, prod.super, prod.precio, prod.fecha);
             renderCanastaUI();
+
+            // Feedback visual en el botón de la fila
+            const btn = document.getElementById(`add-btn-${productId}`);
+            if (btn) {
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<span>✓</span> Agregado';
+                btn.classList.add('bg-green-300');
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.classList.remove('bg-green-300');
+                }, 1200);
+            }
         };
 
         window.eliminarDeCanasta = function(id) {
@@ -1185,17 +1417,6 @@
                 renderCanastaUI();
             }
         };
-
-        // Event listener para el botón de agregar rápido
-        const btnAgregarQuick = document.getElementById('btnAgregarQuick');
-        if (btnAgregarQuick) {
-            btnAgregarQuick.addEventListener('click', () => {
-                const quickSelect = document.getElementById('canastaQuickSelect');
-                if (!quickSelect) return;
-                const selectedId = parseInt(quickSelect.value, 10);
-                window.agregarProductoCanasta(selectedId);
-            });
-        }
 
         // Iniciar SQLite al cargar el DOM
         if (document.readyState === 'loading') {
