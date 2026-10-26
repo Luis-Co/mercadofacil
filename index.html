@@ -119,6 +119,51 @@
             transform: translate(-1px, -1px);
             box-shadow: 4px 4px 0px 0px rgba(15, 23, 42, 1);
         }
+
+        /* --- Estilos para la Animación de Grilla (Anime.js Grid Stagger) --- */
+        .grid-transition-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 30;
+            background: rgba(15, 23, 42, 0.94);
+            backdrop-filter: blur(4px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .grid-transition-overlay.is-active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .grid-animation-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .small.justified.row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 7px;
+        }
+
+        .square {
+            width: 14px;
+            height: 14px;
+            background-color: #00E676;
+            color: #00E676;
+            border-radius: 2px;
+            transform: scale(0);
+        }
     </style>
 
     <!-- Import Map para Anime.js v4 -->
@@ -249,7 +294,69 @@
                     </div>
 
                     <!-- Tabla -->
-                    <div class="overflow-x-auto">
+                    <div class="overflow-x-auto relative min-h-[360px]">
+                        <!-- Overlay Animación Grilla (Anime.js Grid Stagger) -->
+                        <div id="grid-transition-overlay" class="grid-transition-overlay">
+                            <div class="inline-flex items-center gap-2 bg-vibrant-dark text-vibrant-green text-xs font-black px-3.5 py-1 mb-4 border-2 border-vibrant-green uppercase tracking-widest shadow-stitch">
+                                <span class="w-2 h-2 rounded-full bg-vibrant-green animate-ping"></span>
+                                <span>Actualizando Grilla de Precios</span>
+                            </div>
+                            <div class="grid-animation-wrapper">
+                                <div class="small justified row">
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                </div>
+                                <div class="small justified row">
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                </div>
+                                <div class="small justified row">
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                </div>
+                                <div class="small justified row">
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                  <div class="square"></div>
+                                </div>
+                            </div>
+                        </div>
+
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-gray-100 stitch-border-b">
@@ -431,9 +538,11 @@
         <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6 font-bold uppercase text-xs tracking-widest">
             <div class="flex items-center gap-3">
                 <img src="https://img.icons8.com/color/48/shopping-cart--v1.png" alt="Logo" class="w-6 h-6 grayscale brightness-200">
-                &copy; 2026 MERCADOFÁCIL · Comparador de precios y canasta básica de Costa Rica
+                <span>&copy; 2026 MERCADOFÁCIL · Comparador de precios y canasta básica de Costa Rica</span>
             </div>
-            <div class="flex gap-8">
+            <div class="flex flex-wrap items-center gap-6">
+                <span>Creado por <a href="https://webticocr.com" target="_blank" rel="noopener noreferrer" class="text-vibrant-green hover:underline">webticocr.com</a></span>
+                <span class="text-gray-500">|</span>
                 <a href="#" class="hover:text-vibrant-orange transition-colors">Términos</a>
                 <a href="#" class="hover:text-vibrant-green transition-colors">Privacidad</a>
                 <a href="#" class="hover:text-vibrant-blue transition-colors">Ayuda y Contacto</a>
@@ -805,12 +914,24 @@
             filteredData.sort((a, b) => a.precio - b.precio);
             
             currentPage = 1;
-            renderTable();
+            if (window.triggerGridAnimation) {
+                window.triggerGridAnimation(() => renderTable());
+            } else {
+                renderTable();
+            }
         };
 
         const changePage = (pageNumber) => {
-            currentPage = pageNumber;
-            renderTable();
+            if (pageNumber === currentPage) return;
+            if (window.triggerGridAnimation) {
+                window.triggerGridAnimation(() => {
+                    currentPage = pageNumber;
+                    renderTable();
+                });
+            } else {
+                currentPage = pageNumber;
+                renderTable();
+            }
         };
 
         const renderTable = () => {
@@ -898,6 +1019,7 @@
             );
         };  
 
+        window.renderTable = renderTable;
         superFilter.addEventListener('change', applyFilters);
         itemFilter.addEventListener('change', applyFilters);
 
@@ -905,10 +1027,79 @@
     </script>
 
     <!-- ==============================================
-         MERCADOFÁCIL: MI CANASTA DE COMPRAS (SQLite + Anime.js v4 + Foto & WhatsApp)
+         MERCADOFÁCIL: MI CANASTA DE COMPRAS (SQLite + Anime.js v4) & ANIMACIÓN DE GRILLA
          ============================================== -->
     <script type="module">
-        import { createLayout } from 'animejs';
+        import { animate, stagger, utils, createLayout } from 'animejs';
+
+        // ==============================================
+        // ANIMACIÓN DE GRILLA (Anime.js Grid Stagger)
+        // ==============================================
+        const $squares = utils.$('.square');
+        let isGridLooping = false;
+
+        function animateGrid() {
+            animate($squares, {
+                scale: [
+                    { to: [0, 1.25] },
+                    { to: 0 }
+                ],
+                boxShadow: [
+                    { to: '0 0 1rem 0 currentColor' },
+                    { to: '0 0 0rem 0 currentColor' }
+                ],
+                delay: stagger(100, {
+                    grid: [11, 4],
+                    from: utils.random(0, 11 * 4)
+                }),
+                onComplete: () => {
+                    if (isGridLooping) {
+                        animateGrid();
+                    }
+                }
+            });
+        }
+
+        // Función invocada en la entrada de la grilla y en cada cambio de página
+        window.triggerGridAnimation = function(onPageRender) {
+            const overlay = document.getElementById('grid-transition-overlay');
+            if (!overlay) {
+                if (onPageRender) onPageRender();
+                return;
+            }
+
+            isGridLooping = true;
+            overlay.classList.add('is-active');
+            animateGrid();
+
+            // A los 350ms actualizamos los datos de la grilla
+            setTimeout(() => {
+                if (onPageRender) onPageRender();
+
+                // A los 700ms desvanecemos el overlay y animamos las filas
+                setTimeout(() => {
+                    isGridLooping = false;
+                    overlay.classList.remove('is-active');
+
+                    animate('#tableBody tr', {
+                        opacity: [0, 1],
+                        translateY: [15, 0],
+                        delay: stagger(45),
+                        duration: 250,
+                        ease: 'outQuad'
+                    });
+                }, 350);
+            }, 350);
+        };
+
+        // Animación de entrada inicial al cargar la página
+        setTimeout(() => {
+            if (window.triggerGridAnimation) {
+                window.triggerGridAnimation(() => {
+                    if (window.renderTable) window.renderTable();
+                });
+            }
+        }, 150);
 
         // Constantes de almacenamiento
         const SQLITE_STORAGE_KEY = 'mercadofacil_sqlite_bin';
@@ -1349,7 +1540,7 @@
             waText += `━━━━━━━━━━━━━━━━━━━━━\n`;
             waText += `💰 *TOTAL ESTIMADO: ₡${Number(total).toLocaleString('es-CR')}*\n`;
             waText += `📦 *Total de artículos:* ${items.length}\n\n`;
-            waText += `✨ Comparado en: https://webticocr.com`;
+            waText += `✨ Comparado en: https://mercadofacil.webticocr.com`;
 
             // Intentar compartir con foto si el navegador lo soporta (móviles)
             canvas.toBlob(async (blob) => {
