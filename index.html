@@ -2425,7 +2425,8 @@
         };
 
         // Login con Google OAuth2
-        // REGLA: El cliente NO puede loguearse si no está previamente autorizado con algún plan en PocketBase
+        // REGLA: El cliente NO puede loguearse si no está previamente registrado en la colección de usuarios de PocketBase
+        // y NO se debe permitir la creación de cuentas no autorizadas en la base de datos
         window.loginConGoogle = async function() {
             if (!pb) {
                 window.customAlert('PocketBase no está disponible en este momento.', 'Aviso', '⚠️');
@@ -2444,12 +2445,14 @@
                 if (!isSuperAdmin && (!isAuthorized || authData.isNew)) {
                     console.warn("Intento de login sin plan activo en PocketBase:", userEmail);
                     
-                    // Si PocketBase creó un row al hacer OAuth2 pero el usuario no estaba previamente autorizado, eliminarlo
+                    // Si PocketBase creó un row al hacer OAuth2 pero el usuario no estaba previamente autorizado,
+                    // eliminarlo inmediatamente de la base de datos para no dejar registros no autorizados
                     if (authData.isNew && userRecord && userRecord.id) {
                         try {
                             await pb.collection('users').delete(userRecord.id);
+                            console.log("Registro no autorizado auto-creado por OAuth2 eliminado de PocketBase:", userEmail);
                         } catch(delErr) {
-                            console.warn("No se pudo eliminar row no autorizado:", delErr);
+                            console.warn("No se pudo eliminar row no autorizado (configure Delete rule en PB):", delErr);
                         }
                     }
 
@@ -2458,12 +2461,12 @@
                     localStorage.removeItem('pocketbase_auth');
                     verificarEstadoSesion();
 
-                    // Mostrar mensaje explicativo
+                    // Mostrar pop-up de bloqueo indicando que no está en la colección
                     window.showCustomModal({
-                        title: '🔒 Acceso No Autorizado',
-                        message: `La cuenta de Google (<strong>${userEmail}</strong>) no se encuentra registrada con un plan activo en la base de datos.<br><br>Para obtener acceso a comparar precios de todos los supermercados, debe solicitar y cancelar el <strong>Plan Mercados (₡10,000/mes)</strong> por SINPE Móvil al <strong>62278771</strong>. Una vez confirmado su pago, el administrador le activará su cuenta en el sistema.`,
+                        title: '🔒 Usuario No Registrado',
+                        message: `La cuenta de Google <strong>${userEmail || ''}</strong> no se encuentra en la colección de usuarios autorizados de MercadoFácil.<br><br>El sistema <strong>no permite el acceso ni la creación de cuentas no autorizadas</strong> en la base de datos.<br><br>Para comparar precios entre todos los supermercados, debe solicitar y cancelar el <strong>Plan Mercados (₡10,000/mes)</strong> por SINPE Móvil al <strong>62278771</strong> para que el administrador le active su cuenta.`,
                         icon: '🔒',
-                        headerBg: 'bg-vibrant-orange',
+                        headerBg: 'bg-red-600',
                         confirmText: 'Solicitar Plan Mercados (₡10,000)',
                         confirmBg: 'bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark',
                         cancelText: 'Entendido'
@@ -2502,8 +2505,41 @@
                 }
 
             } catch (error) {
-                console.error("Fallo en la autenticación OAuth2:", error);
-                if (error.name !== 'AbortError' && !String(error).includes('autocancelled')) {
+                console.error("Fallo o rechazo en la autenticación OAuth2:", error);
+                
+                // Si el usuario simplemente cerró la ventana emergente de Google
+                const errStr = String(error && (error.message || error)).toLowerCase();
+                if (error.name === 'AbortError' || errStr.includes('autocancelled') || errStr.includes('popup_closed') || errStr.includes('closed')) {
+                    return;
+                }
+
+                // Limpiar cualquier estado residual
+                if (pb && pb.authStore) pb.authStore.clear();
+                localStorage.removeItem('pocketbase_auth');
+                verificarEstadoSesion();
+
+                // Si PocketBase bloqueó la creación porque el usuario no está en la colección (regla @request.context != 'oauth2')
+                const isCreationBlocked = error.status === 400 || error.status === 403 || 
+                                          errStr.includes('failed to create') ||
+                                          errStr.includes('failed to authenticate') ||
+                                          errStr.includes('something went wrong') ||
+                                          errStr.includes('validation');
+
+                if (isCreationBlocked) {
+                    window.showCustomModal({
+                        title: '🔒 Usuario No Registrado',
+                        message: `Su cuenta de Google no se encuentra registrada en la colección de usuarios autorizados de MercadoFácil.<br><br>El sistema <strong>no permite el acceso ni la creación de cuentas no autorizadas</strong> en la base de datos.<br><br>Para comparar precios entre todos los supermercados, debe solicitar y cancelar el <strong>Plan Mercados (₡10,000/mes)</strong> por SINPE Móvil al <strong>62278771</strong>. Una vez confirmado su pago, el administrador habilitará su cuenta en el sistema.`,
+                        icon: '🔒',
+                        headerBg: 'bg-red-600',
+                        confirmText: 'Solicitar Plan Mercados (₡10,000)',
+                        confirmBg: 'bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark',
+                        cancelText: 'Cerrar'
+                    }).then(res => {
+                        if (res) {
+                            window.abrirModalSolicitarPlan('Mercados', 10000, 'Comparador Multi-Supermercados');
+                        }
+                    });
+                } else {
                     window.customAlert('No se pudo completar la autenticación con Google: ' + (error.message || error), 'Error de Autenticación', '⚠️');
                 }
             }
@@ -2885,11 +2921,23 @@
                 if (countBadge) countBadge.innerText = 'Colección PocketBase';
                 listContainer.innerHTML = `
                     <div class="p-3 bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed">
-                        <p class="font-black mb-1">ℹ️ Nota de Configuración PocketBase (API Rules):</p>
-                        <p>La regla <strong>List/Search rule</strong> de la colección <code>users</code> en PocketBase está configurada como <code>id = @request.auth.id</code>, lo cual limita la lista vía API únicamente al usuario actual.</p>
-                        <p class="mt-1.5">Para listar y activar usuarios directamente desde este botón, configure en PocketBase (Edit collection &gt; API rules):</p>
-                        <code class="block bg-white p-1 border border-amber-300 font-mono text-[11px] my-1 font-bold">@request.auth.admin = true || id = @request.auth.id</code>
-                        <p class="mt-1 text-gray-700">O también puede activar los campos <strong>plan1, plan2, etc.</strong> directamente en su consola de PocketBase.</p>
+                        <p class="font-black mb-1.5 text-sm">ℹ️ Reglas de Seguridad PocketBase (API Rules):</p>
+                        <p class="mb-2">Para garantizar que Google OAuth <strong>NUNCA cree registros de personas no autorizadas</strong> en la base de datos, configure en su consola PocketBase (<em>Edit collection 'users' &gt; API Rules</em>):</p>
+                        
+                        <div class="space-y-1.5">
+                            <div>
+                                <span class="font-black text-amber-950">1. Create rule (Bloquea creación por OAuth2 a desconocidos):</span>
+                                <code class="block bg-white p-1 border border-amber-300 font-mono text-[11px] my-0.5 font-bold">@request.auth.admin = true || @request.context != 'oauth2'</code>
+                            </div>
+                            <div>
+                                <span class="font-black text-amber-950">2. Delete rule (Permite borrar y auto-purgar cuentas no autorizadas):</span>
+                                <code class="block bg-white p-1 border border-amber-300 font-mono text-[11px] my-0.5 font-bold">@request.auth.admin = true || id = @request.auth.id</code>
+                            </div>
+                            <div>
+                                <span class="font-black text-amber-950">3. List/Search rule (Permite al Admin ver la lista completa):</span>
+                                <code class="block bg-white p-1 border border-amber-300 font-mono text-[11px] my-0.5 font-bold">@request.auth.admin = true || id = @request.auth.id</code>
+                            </div>
+                        </div>
                     </div>
                 `;
             }
