@@ -101,12 +101,17 @@
         /* --- Estilos para Mi Canasta de Compras & Anime.js Layout --- */
         .layout-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 12px;
             align-content: start;
+            align-items: stretch;
         }
 
         .basket-card {
+            width: 100%;
+            height: 100%;
+            min-height: 145px;
+            box-sizing: border-box;
             background-color: #FFFFFF;
             border: 2px solid #0F172A;
             box-shadow: 3px 3px 0px 0px rgba(15, 23, 42, 1);
@@ -115,11 +120,11 @@
             flex-direction: column;
             justify-content: space-between;
             position: relative;
-            transition: transform 0.15s ease;
+            transform: none !important; /* Garantiza 100% que la última card mantenga exactamente el mismo tamaño y alineación */
+            transition: box-shadow 0.15s ease;
         }
 
         .basket-card:hover {
-            transform: translate(-1px, -1px);
             box-shadow: 4px 4px 0px 0px rgba(15, 23, 42, 1);
         }
 
@@ -642,9 +647,7 @@
 
                     <!-- Farmacias (Verde) -->
                     <div class="bg-vibrant-green stitch-box shadow-stitch p-8 flex flex-col relative transform md:-translate-y-4">
-                        <div class="absolute top-0 right-0 -mt-4 mr-4 bg-vibrant-dark text-white text-xs font-black px-4 py-2 uppercase tracking-widest border-2 border-white shadow-stitch">
-                            MÁS POPULAR
-                        </div>
+                        
                         <div class="flex-grow">
                             <h3 class="text-3xl font-black text-vibrant-dark mb-2 uppercase">Farmacias</h3>
                             <p class="text-sm font-bold text-vibrant-dark opacity-80 mb-6 uppercase tracking-wider">Salud & Medicamentos</p>
@@ -664,6 +667,9 @@
 
                     <!-- Comercios (Azul) -->
                     <div class="bg-vibrant-blue stitch-box shadow-stitch p-8 flex flex-col hover:shadow-none hover:translate-y-1 hover:translate-x-1 transition-all">
+                        <div class="absolute top-0 right-0 -mt-4 mr-4 bg-vibrant-dark text-white text-xs font-black px-4 py-2 uppercase tracking-widest border-2 border-white shadow-stitch">
+                            MÁS POPULAR
+                        </div>
                         <div class="flex-grow">
                             <h3 class="text-3xl font-black text-white mb-2 uppercase">Comercios</h3>
                             <p class="text-sm font-bold text-white opacity-80 mb-6 uppercase tracking-wider">Retail, Hogar y Tecnología</p>
@@ -1468,15 +1474,15 @@
                     await loadProductsData();
                 }
 
+                const total = allData.length || 50;
+                let currentIndex = 0;
+
                 logArea.innerHTML += `
                     <div class="text-amber-400 py-1 font-mono text-[11px]">
                         [SCRAPING EN TIEMPO REAL] Conectado a feeds de Walmart, MásxMenos, Maxi Palí, Palí y Auto Mercado.<br>
                         📊 Verificando las ${total} URLs oficiales de las 10 categorías de Costa Rica...
                     </div>
                 `;
-
-                const total = allData.length || 50;
-                let currentIndex = 0;
                 const nowTime = () => new Date().toLocaleTimeString('es-CR', { hour12: false });
 
                 const intervalId = setInterval(() => {
@@ -1668,13 +1674,10 @@
 
         // Inicializar layout de Anime.js v4
         const layout = createLayout('.layout-container', {
-            duration: 250,
+            duration: 200,
             ease: 'outQuad',
             enterFrom: {
-                transform: 'translateY(35px) scale(.8)',
-                opacity: 0,
-                duration: 350,
-                ease: 'out(3)'
+                opacity: 0
             }
         });
 
@@ -1824,7 +1827,7 @@
                         sqliteDb = new SQL.Database();
                     }
 
-                    // Crear tabla si no existe
+                    // Crear tabla si no existe con columna cantidad
                     sqliteDb.run(`
                         CREATE TABLE IF NOT EXISTS canasta (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1832,9 +1835,14 @@
                             super TEXT NOT NULL,
                             precio INTEGER NOT NULL,
                             fecha TEXT NOT NULL,
+                            cantidad INTEGER DEFAULT 1,
                             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                         );
                     `);
+                    // Migración retrocompatible si la tabla ya existía sin cantidad
+                    try {
+                        sqliteDb.run("ALTER TABLE canasta ADD COLUMN cantidad INTEGER DEFAULT 1;");
+                    } catch(e) {}
                 } catch (err) {
                     console.warn('SQLite WASM no disponible, usando modo local seguro:', err);
                     sqliteDb = null;
@@ -1868,12 +1876,13 @@
         function getItemsFromStorage() {
             if (sqliteDb) {
                 try {
-                    const res = sqliteDb.exec("SELECT id, item, super, precio, fecha FROM canasta ORDER BY id DESC");
+                    const res = sqliteDb.exec("SELECT id, item, super, precio, fecha, cantidad FROM canasta ORDER BY id DESC");
                     if (res && res.length > 0) {
                         const cols = res[0].columns;
                         return res[0].values.map(val => {
                             const row = {};
                             cols.forEach((c, idx) => row[c] = val[idx]);
+                            row.cantidad = Number(row.cantidad) || 1;
                             return row;
                         });
                     }
@@ -1883,28 +1892,82 @@
                 }
             }
             try {
-                return JSON.parse(localStorage.getItem(FALLBACK_STORAGE_KEY) || '[]');
+                const raw = JSON.parse(localStorage.getItem(FALLBACK_STORAGE_KEY) || '[]');
+                return raw.map(i => ({ ...i, cantidad: Number(i.cantidad) || 1 }));
             } catch {
                 return [];
             }
         }
 
+        // Insertar producto: Si ya existe en la canasta (mismo producto y mismo súper), le suma 1 en lugar de duplicar card
         function insertItem(item, superName, precio, fecha) {
             localStorage.removeItem(CLEARED_FLAG_KEY);
             if (sqliteDb) {
                 try {
-                    sqliteDb.run("INSERT INTO canasta (item, super, precio, fecha) VALUES (?, ?, ?, ?)", [item, superName, precio, fecha]);
-                    persistSQLite();
-                    return;
+                    const existing = sqliteDb.exec("SELECT id, cantidad FROM canasta WHERE item = ? AND super = ?", [item, superName]);
+                    if (existing && existing.length > 0 && existing[0].values.length > 0) {
+                        const existingId = existing[0].values[0][0];
+                        const currentQty = Number(existing[0].values[0][1]) || 1;
+                        sqliteDb.run("UPDATE canasta SET cantidad = ? WHERE id = ?", [currentQty + 1, existingId]);
+                        persistSQLite();
+                        return;
+                    } else {
+                        sqliteDb.run("INSERT INTO canasta (item, super, precio, fecha, cantidad) VALUES (?, ?, ?, ?, 1)", [item, superName, precio, fecha]);
+                        persistSQLite();
+                        return;
+                    }
                 } catch (e) {
                     console.error('Error al insertar en SQLite:', e);
                 }
             }
             const items = getItemsFromStorage();
-            const newId = items.length ? Math.max(...items.map(i => i.id || 0)) + 1 : 1;
-            items.unshift({ id: newId, item, super: superName, precio, fecha });
+            const existing = items.find(i => i.item === item && i.super === superName);
+            if (existing) {
+                existing.cantidad = (Number(existing.cantidad) || 1) + 1;
+            } else {
+                const newId = items.length ? Math.max(...items.map(i => i.id || 0)) + 1 : 1;
+                items.unshift({ id: newId, item, super: superName, precio, fecha, cantidad: 1 });
+            }
             localStorage.setItem(FALLBACK_STORAGE_KEY, JSON.stringify(items));
         }
+
+        // Modificar cantidad (+1 o -1) desde la canasta
+        function updateItemQuantity(id, delta) {
+            if (sqliteDb) {
+                try {
+                    const res = sqliteDb.exec("SELECT cantidad FROM canasta WHERE id = ?", [id]);
+                    if (res && res.length > 0 && res[0].values.length > 0) {
+                        const currentQty = Number(res[0].values[0][0]) || 1;
+                        const newQty = currentQty + delta;
+                        if (newQty <= 0) {
+                            deleteItem(id);
+                        } else {
+                            sqliteDb.run("UPDATE canasta SET cantidad = ? WHERE id = ?", [newQty, id]);
+                            persistSQLite();
+                        }
+                        return;
+                    }
+                } catch (e) {
+                    console.error('Error al actualizar cantidad en SQLite:', e);
+                }
+            }
+            let items = getItemsFromStorage();
+            const target = items.find(i => i.id === id);
+            if (target) {
+                const newQty = (Number(target.cantidad) || 1) + delta;
+                if (newQty <= 0) {
+                    items = items.filter(i => i.id !== id);
+                } else {
+                    target.cantidad = newQty;
+                }
+                localStorage.setItem(FALLBACK_STORAGE_KEY, JSON.stringify(items));
+            }
+        }
+
+        window.cambiarCantidadCanasta = function(id, delta) {
+            updateItemQuantity(id, delta);
+            renderCanastaUI();
+        };
 
         function deleteItem(id) {
             if (sqliteDb) {
@@ -1938,24 +2001,26 @@
         // 4. Renderizado reactivo con Anime.js createLayout
         function renderCanastaUI() {
             const items = getItemsFromStorage();
-            const count = items.length;
-            const total = items.reduce((sum, item) => sum + (Number(item.precio) || 0), 0);
+            const totalUnits = items.reduce((sum, item) => sum + (Number(item.cantidad) || 1), 0);
+            const totalColones = items.reduce((sum, item) => sum + ((Number(item.precio) || 0) * (Number(item.cantidad) || 1)), 0);
 
             // Actualizar contadores y badges
             const countBadge = document.getElementById('canastaCountBadge');
             const totalBadge = document.getElementById('canastaTotalBadge');
             const tipText = document.getElementById('canastaTipText');
 
-            if (countBadge) countBadge.innerText = `${count} ${count === 1 ? 'artículo' : 'artículos'}`;
-            if (totalBadge) totalBadge.innerText = formatCRC(total);
+            if (countBadge) {
+                countBadge.innerText = `${totalUnits} ${totalUnits === 1 ? 'artículo' : 'artículos'}${items.length !== totalUnits ? ` (${items.length} productos)` : ''}`;
+            }
+            if (totalBadge) totalBadge.innerText = formatCRC(totalColones);
 
             if (tipText) {
-                if (count >= MAX_ITEMS) {
-                    tipText.innerText = 'Ha alcanzado el límite de 15 productos en su canasta.';
-                } else if (count === 0) {
+                if (items.length >= MAX_ITEMS) {
+                    tipText.innerText = 'Ha alcanzado el límite de 15 productos diferentes en su canasta.';
+                } else if (items.length === 0) {
                     tipText.innerText = 'Seleccione productos de la grilla de arriba pulsando "➕ Agregar" para armar su lista.';
                 } else {
-                    tipText.innerText = `Tiene ${count} artículos. Puede guardar la cotización como foto (.PNG/.JPG) o enviársela por WhatsApp.`;
+                    tipText.innerText = `Tiene ${totalUnits} ${totalUnits === 1 ? 'artículo' : 'artículos'} (${items.length} ${items.length === 1 ? 'producto' : 'productos'}). Puede guardar la cotización como foto (.PNG/.JPG) o enviársela por WhatsApp.`;
                 }
             }
 
@@ -1975,20 +2040,38 @@
                 }
 
                 items.forEach(it => {
+                    const qty = Number(it.cantidad) || 1;
+                    const subtotal = (Number(it.precio) || 0) * qty;
+
                     const card = document.createElement('div');
                     card.className = 'basket-card item col';
                     card.innerHTML = `
-                        <div class="flex items-start justify-between gap-2 mb-2">
-                            <span class="inline-block bg-vibrant-dark text-white text-[10px] font-black px-2 py-0.5 uppercase tracking-wider">${it.super}</span>
-                            <button onclick="window.eliminarDeCanasta(${it.id})" class="text-gray-400 hover:text-red-600 font-black text-sm leading-none p-1 transition-colors" title="Quitar de la canasta">✕</button>
+                        <div>
+                            <div class="flex items-start justify-between gap-2 mb-2">
+                                <span class="inline-block bg-vibrant-dark text-white text-[10px] font-black px-2 py-0.5 uppercase tracking-wider">${it.super}</span>
+                                <button onclick="window.eliminarDeCanasta(${it.id})" class="text-gray-400 hover:text-red-600 font-black text-sm leading-none p-1 transition-colors cursor-pointer" title="Quitar de la canasta">✕</button>
+                            </div>
+                            <div class="font-black text-sm text-vibrant-dark mb-1 leading-snug">${it.item}</div>
+                            <div class="text-[11px] text-gray-500 font-bold mb-3 flex items-center gap-1">
+                                <span>📅</span> Cotizado: ${it.fecha}
+                            </div>
                         </div>
-                        <div class="font-black text-sm text-vibrant-dark mb-1 leading-snug">${it.item}</div>
-                        <div class="text-[11px] text-gray-500 font-bold mb-3 flex items-center gap-1">
-                            <span>📅</span> Cotizado: ${it.fecha}
-                        </div>
-                        <div class="mt-auto pt-2 border-t border-gray-200 flex items-center justify-between">
-                            <span class="text-xs font-bold text-gray-500">Precio:</span>
-                            <span class="text-base font-black text-vibrant-blue">${formatCRC(it.precio)}</span>
+
+                        <div class="mt-auto pt-2 border-t border-gray-200">
+                            <div class="flex items-center justify-between gap-2">
+                                <!-- Control de Cantidad (+ / -) -->
+                                <div class="flex items-center border-2 border-vibrant-dark bg-white shadow-xs">
+                                    <button onclick="window.cambiarCantidadCanasta(${it.id}, -1)" class="w-6 h-6 flex items-center justify-center font-black text-xs hover:bg-red-50 text-vibrant-dark border-r border-gray-200 cursor-pointer transition-colors" title="Restar una unidad">－</button>
+                                    <span class="font-black text-xs px-2 min-w-[24px] text-center text-vibrant-dark select-none">${qty}</span>
+                                    <button onclick="window.cambiarCantidadCanasta(${it.id}, 1)" class="w-6 h-6 flex items-center justify-center font-black text-xs hover:bg-green-50 text-vibrant-dark border-l border-gray-200 cursor-pointer transition-colors" title="Sumar una unidad">＋</button>
+                                </div>
+
+                                <!-- Precio / Subtotal -->
+                                <div class="text-right">
+                                    <span class="text-base font-black text-vibrant-blue block leading-tight">${formatCRC(subtotal)}</span>
+                                    ${qty > 1 ? `<span class="text-[10px] text-gray-400 font-bold block leading-none">(${formatCRC(it.precio)} c/u)</span>` : ''}
+                                </div>
+                            </div>
                         </div>
                     `;
                     root.appendChild(card);
@@ -2074,9 +2157,11 @@
             ctx.fillText('PRECIO', width - 35, theadY + 27);
             ctx.textAlign = 'left';
 
-            // Filas de Artículos
+            // Filas de Artículos con Cantidad y Subtotal
             items.forEach((it, i) => {
                 const rowY = theadY + tableHeadHeight + (i * rowHeight);
+                const qty = Number(it.cantidad) || 1;
+                const subtotal = (Number(it.precio) || 0) * qty;
 
                 // Alternancia de filas
                 ctx.fillStyle = (i % 2 === 0) ? '#FFFFFF' : '#F8FAFC';
@@ -2087,10 +2172,11 @@
                 ctx.strokeStyle = '#E2E8F0';
                 ctx.strokeRect(20, rowY, width - 40, rowHeight);
 
-                // Nombre
+                // Nombre y cantidad
                 ctx.fillStyle = '#0F172A';
                 ctx.font = 'bold 14px Inter, Arial, sans-serif';
-                ctx.fillText(it.item, 35, rowY + 35);
+                const nameText = qty > 1 ? `${it.item} (x${qty})` : it.item;
+                ctx.fillText(nameText, 35, rowY + 35);
 
                 // Supermercado pill
                 ctx.fillStyle = '#FF6B35';
@@ -2107,11 +2193,11 @@
                 ctx.font = '600 13px Inter, Arial, sans-serif';
                 ctx.fillText(it.fecha, 530, rowY + 35);
 
-                // Precio
+                // Precio Subtotal
                 ctx.textAlign = 'right';
                 ctx.fillStyle = '#2962FF';
                 ctx.font = '900 17px Inter, Arial, sans-serif';
-                ctx.fillText(formatCRC(it.precio), width - 35, rowY + 35);
+                ctx.fillText(formatCRC(subtotal), width - 35, rowY + 35);
                 ctx.textAlign = 'left';
             });
 
@@ -2201,13 +2287,16 @@
             let waText = `🛒 *MI CANASTA DE COMPRAS - MERCADOFÁCIL*\n`;
             waText += `📅 *Fecha:* ${todayStr}\n`;
             waText += `━━━━━━━━━━━━━━━━━━━━━\n`;
+            const totalUnits = items.reduce((sum, item) => sum + (Number(item.cantidad) || 1), 0);
             items.forEach((it, idx) => {
-                waText += `${idx + 1}. *${it.item}*\n`;
-                waText += `   🏪 ${it.super} · ₡${Number(it.precio).toLocaleString('es-CR')} (Cot: ${it.fecha})\n`;
+                const qty = Number(it.cantidad) || 1;
+                const sub = (Number(it.precio) || 0) * qty;
+                waText += `${idx + 1}. *${it.item}* ${qty > 1 ? `(x${qty})` : ''}\n`;
+                waText += `   🏪 ${it.super} · ₡${Number(sub).toLocaleString('es-CR')}${qty > 1 ? ` (₡${Number(it.precio).toLocaleString('es-CR')} c/u)` : ''} (Cot: ${it.fecha})\n`;
             });
             waText += `━━━━━━━━━━━━━━━━━━━━━\n`;
             waText += `💰 *TOTAL ESTIMADO: ₡${Number(total).toLocaleString('es-CR')}*\n`;
-            waText += `📦 *Total de artículos:* ${items.length}\n\n`;
+            waText += `📦 *Total:* ${totalUnits} ${totalUnits === 1 ? 'artículo' : 'artículos'}${items.length !== totalUnits ? ` (${items.length} productos)` : ''}\n\n`;
             waText += `✨ Comparado en: https://mercadofacil.webticocr.com`;
 
             // Intentar compartir con foto si el navegador lo soporta (móviles)
@@ -2243,16 +2332,20 @@
         // 8. Funciones globales expuestas para agregar, eliminar y vaciar
         window.agregarProductoCanasta = function(productId) {
             const currentItems = getItemsFromStorage();
-            if (currentItems.length >= MAX_ITEMS) {
+            const prod = allData.find(d => d.id === productId);
+            if (!prod) return;
+
+            const yaExiste = currentItems.some(i => i.item === prod.item && i.super === prod.super);
+
+            if (!yaExiste && currentItems.length >= MAX_ITEMS) {
                 window.customAlert(
-                    'Ha alcanzado el límite máximo de <strong>15 productos</strong> en su canasta de compras para mantener la cotización legible y ordenada.',
+                    'Ha alcanzado el límite máximo de <strong>15 productos diferentes</strong> en su canasta de compras para mantener la cotización legible y ordenada.',
                     'Límite de Canasta Alcanzado',
                     '⚠️'
                 );
                 return;
             }
-            const prod = allData.find(d => d.id === productId);
-            if (!prod) return;
+
             insertItem(prod.item, prod.super, prod.precio, prod.fecha);
             renderCanastaUI();
 
@@ -2260,12 +2353,12 @@
             const btn = document.getElementById(`add-btn-${productId}`);
             if (btn) {
                 const originalHtml = btn.innerHTML;
-                btn.innerHTML = '<span>✓</span> Agregado';
+                btn.innerHTML = yaExiste ? '<span>+1</span> Sumado' : '<span>✓</span> Agregado';
                 btn.classList.add('bg-green-300');
                 setTimeout(() => {
                     btn.innerHTML = originalHtml;
                     btn.classList.remove('bg-green-300');
-                }, 1200);
+                }, 1000);
             }
         };
 
