@@ -223,7 +223,7 @@
                                         if (btn) btn.classList.add('hidden');
                                         if (bar) bar.classList.remove('hidden');
                                         if (lbl) lbl.innerText = parsed.model.email || parsed.model.name || 'Usuario';
-                                        if (adminBtn && parsed.model.email && parsed.model.email.toLowerCase() === 'corea3000@gmail.com') {
+                                        if (adminBtn && (parsed.model.admin === true || parsed.model.admin === 'true' || parsed.model.admin === 1)) {
                                             adminBtn.classList.remove('hidden');
                                         }
                                     }
@@ -2396,25 +2396,36 @@
         // AUTENTICACIÓN POCKETBASE GOOGLE OAUTH2 Y CONTROL DE ACCESO
         // ==============================================
         const pb = (typeof PocketBase !== 'undefined') ? new PocketBase('https://pb-mercadofacil.webticocr.com') : null;
-        const ADMIN_EMAIL = 'corea3000@gmail.com';
+
+        // Helper para comprobar si un modelo tiene algún plan activo o es admin
+        // Se verifica directamente contra la base de datos PocketBase (admin: true)
+        window.userHasAnyPlanOrAdmin = function(model) {
+            if (!model) return false;
+            if (model.admin === true || model.admin === 'true' || model.admin === 1) return true;
+            return Boolean(
+                model.plan1 === true || model.plan1 === 'true' || model.plan1 === 1 ||
+                model.plan2 === true || model.plan2 === 'true' || model.plan2 === 1 ||
+                model.plan3 === true || model.plan3 === 'true' || model.plan3 === 1 ||
+                model.plan4 === true || model.plan4 === 'true' || model.plan4 === 1
+            );
+        };
 
         // Verifica si el usuario actual tiene acceso a comparar todos los supermercados
-        // consultando directamente el modelo devuelto por la base de datos PocketBase
+        // Se permite si es admin O si tiene activo el plan1 (Plan Mercados) en PocketBase
         window.hasAccessToAllSupermarkets = function() {
             if (!pb || !pb.authStore || !pb.authStore.isValid) return false;
             const model = pb.authStore.model;
             if (!model) return false;
-            
-            const email = (model.email || '').toLowerCase().trim();
-            
-            // 1. Propietario / Master Admin (corea3000@gmail.com)
-            if (email === ADMIN_EMAIL.toLowerCase()) return true;
 
-            // 2. Acceso por campo 'admin' en la colección users de PocketBase
-            return Boolean(model.admin === true || model.admin === 'true' || model.admin === 1);
+            // Admin o Plan 1 (Plan Mercados) activo en PocketBase
+            if (model.admin === true || model.admin === 'true' || model.admin === 1) return true;
+            if (model.plan1 === true || model.plan1 === 'true' || model.plan1 === 1) return true;
+
+            return false;
         };
 
         // Login con Google OAuth2
+        // REGLA: El cliente NO puede loguearse si no está previamente autorizado con algún plan en PocketBase
         window.loginConGoogle = async function() {
             if (!pb) {
                 window.customAlert('PocketBase no está disponible en este momento.', 'Aviso', '⚠️');
@@ -2422,15 +2433,74 @@
             }
             try {
                 const authData = await pb.collection('users').authWithOAuth2({ provider: 'google' });
-                console.log("Autenticación exitosa en PocketBase:", authData);
-                verificarEstadoSesion();
+                console.log("Autenticación OAuth2 exitosa en PocketBase:", authData);
                 
-                const userEmail = (pb.authStore.model && pb.authStore.model.email) ? pb.authStore.model.email : '';
-                if (window.hasAccessToAllSupermarkets()) {
-                    window.customAlert(`¡Bienvenido <strong>${pb.authStore.model.name || userEmail}</strong>!<br><br>Su cuenta cuenta con acceso activo al <strong>Plan Mercados</strong> para comparar todos los supermercados.`, 'Sesión Iniciada', '🎉');
-                } else {
-                    window.customAlert(`¡Bienvenido <strong>${pb.authStore.model.name || userEmail}</strong>!<br><br>Para comparar entre todos los supermercados a la vez, solicite la activación de su <strong>Plan Mercados (₡10,000/mes)</strong> pagando por SINPE Móvil al 62278771.`, 'Sesión Iniciada', '👤');
+                const userRecord = authData.record || pb.authStore.model;
+                const userEmail = (userRecord && userRecord.email) ? userRecord.email.toLowerCase().trim() : '';
+                const isSuperAdmin = Boolean(userRecord && (userRecord.admin === true || userRecord.admin === 'true' || userRecord.admin === 1));
+                const isAuthorized = window.userHasAnyPlanOrAdmin(userRecord);
+
+                // Si NO es admin y NO tiene ningún plan activo (o si fue un row auto-creado sin autorización previa)
+                if (!isSuperAdmin && (!isAuthorized || authData.isNew)) {
+                    console.warn("Intento de login sin plan activo en PocketBase:", userEmail);
+                    
+                    // Si PocketBase creó un row al hacer OAuth2 pero el usuario no estaba previamente autorizado, eliminarlo
+                    if (authData.isNew && userRecord && userRecord.id) {
+                        try {
+                            await pb.collection('users').delete(userRecord.id);
+                        } catch(delErr) {
+                            console.warn("No se pudo eliminar row no autorizado:", delErr);
+                        }
+                    }
+
+                    // Limpiar la sesión inmediatamente
+                    pb.authStore.clear();
+                    localStorage.removeItem('pocketbase_auth');
+                    verificarEstadoSesion();
+
+                    // Mostrar mensaje explicativo
+                    window.showCustomModal({
+                        title: '🔒 Acceso No Autorizado',
+                        message: `La cuenta de Google (<strong>${userEmail}</strong>) no se encuentra registrada con un plan activo en la base de datos.<br><br>Para obtener acceso a comparar precios de todos los supermercados, debe solicitar y cancelar el <strong>Plan Mercados (₡10,000/mes)</strong> por SINPE Móvil al <strong>62278771</strong>. Una vez confirmado su pago, el administrador le activará su cuenta en el sistema.`,
+                        icon: '🔒',
+                        headerBg: 'bg-vibrant-orange',
+                        confirmText: 'Solicitar Plan Mercados (₡10,000)',
+                        confirmBg: 'bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark',
+                        cancelText: 'Entendido'
+                    }).then(res => {
+                        if (res) {
+                            window.abrirModalSolicitarPlan('Mercados', 10000, 'Comparador Multi-Supermercados');
+                        }
+                    });
+                    return;
                 }
+
+                // Si el usuario sí está autorizado:
+                // Actualizar name en PocketBase desde Google OAuth2 si estaba vacío o cambió
+                if (userRecord && authData.meta) {
+                    const updatePayload = {};
+                    if (authData.meta.name && userRecord.name !== authData.meta.name) {
+                        updatePayload.name = authData.meta.name;
+                    }
+                    if (Object.keys(updatePayload).length > 0) {
+                        try {
+                            const updatedUser = await pb.collection('users').update(userRecord.id, updatePayload);
+                            pb.authStore.save(pb.authStore.token, updatedUser);
+                        } catch(upErr) {
+                            console.warn("No se pudo actualizar nombre/avatar en el row:", upErr);
+                        }
+                    }
+                }
+
+                verificarEstadoSesion();
+
+                if (isSuperAdmin) {
+                    window.customAlert(`¡Bienvenido Administrador <strong>${userRecord.name || userEmail}</strong>!<br><br>Tiene acceso total y al panel de administración de usuarios y planes.`, 'Sesión Administrador', '👑');
+                } else {
+                    const planText = userRecord.plan1 ? 'Plan Mercados (Comparador Multi-Supermercados)' : 'Plan Activo';
+                    window.customAlert(`¡Bienvenido <strong>${userRecord.name || userEmail}</strong>!<br><br>Su cuenta cuenta con acceso activo a <strong>${planText}</strong>.`, 'Sesión Iniciada', '🎉');
+                }
+
             } catch (error) {
                 console.error("Fallo en la autenticación OAuth2:", error);
                 if (error.name !== 'AbortError' && !String(error).includes('autocancelled')) {
@@ -2444,6 +2514,7 @@
             if (pb && pb.authStore) {
                 pb.authStore.clear();
             }
+            localStorage.removeItem('pocketbase_auth');
             verificarEstadoSesion();
             if (superFilter) {
                 superFilter.value = 'Walmart';
@@ -2453,13 +2524,32 @@
         };
 
         // Refrescar y sincronizar token con la base de datos PocketBase
+        // Si el usuario fue eliminado o ya no tiene planes activos ni es admin, cierra sesión de inmediato
         async function refrescarSesionPocketBase() {
             if (pb && pb.authStore && pb.authStore.isValid) {
                 try {
-                    await pb.collection('users').authRefresh();
+                    const authData = await pb.collection('users').authRefresh();
+                    const model = authData && authData.record ? authData.record : pb.authStore.model;
+                    const hasAccess = window.userHasAnyPlanOrAdmin(model);
+                    
+                    if (!hasAccess) {
+                        console.warn("Usuario sin planes activos en PocketBase. Cerrando sesión...");
+                        pb.authStore.clear();
+                        localStorage.removeItem('pocketbase_auth');
+                        verificarEstadoSesion();
+                        return;
+                    }
                     verificarEstadoSesion();
                 } catch (e) {
-                    console.log("Estado de sesión verificado con PocketBase");
+                    // El usuario fue eliminado de PocketBase (404/401)
+                    console.warn("Sesión invalidada por PocketBase (usuario eliminado o token inválido):", e);
+                    pb.authStore.clear();
+                    localStorage.removeItem('pocketbase_auth');
+                    verificarEstadoSesion();
+                    if (superFilter && superFilter.value === 'Todos') {
+                        superFilter.value = 'Walmart';
+                        applyFilters();
+                    }
                 }
             }
         }
@@ -2473,15 +2563,25 @@
 
             if (pb && pb.authStore && pb.authStore.isValid && pb.authStore.model) {
                 const usuario = pb.authStore.model;
-                const email = (usuario.email || '').toLowerCase();
-                console.log("Sesión activa en PocketBase. Usuario:", email, "admin en DB:", usuario.admin);
-                
+                const email = (usuario.email || '').toLowerCase().trim();
+                const isSuperAdmin = Boolean(usuario.admin === true || usuario.admin === 'true' || usuario.admin === 1);
+                const isAuthorized = window.userHasAnyPlanOrAdmin(usuario);
+
+                if (!isSuperAdmin && !isAuthorized) {
+                    if (btnLogin) btnLogin.classList.remove('hidden');
+                    if (userProfileBar) userProfileBar.classList.add('hidden');
+                    if (btnAdminPanel) btnAdminPanel.classList.add('hidden');
+                    return;
+                }
+
+                console.log("Sesión activa en PocketBase. Usuario:", email, "admin:", usuario.admin, "plan1:", usuario.plan1);
                 if (btnLogin) btnLogin.classList.add('hidden');
                 if (userProfileBar) userProfileBar.classList.remove('hidden');
-                if (userEmailLabel) userEmailLabel.innerText = usuario.email || usuario.name || 'Usuario';
+                if (userEmailLabel) userEmailLabel.innerText = usuario.name || usuario.email || 'Usuario';
                 
+                // El botón Admin SOLO se muestra para usuarios con admin === true en la base de datos PocketBase
                 if (btnAdminPanel) {
-                    if (email === ADMIN_EMAIL.toLowerCase()) {
+                    if (isSuperAdmin) {
                         btnAdminPanel.classList.remove('hidden');
                     } else {
                         btnAdminPanel.classList.add('hidden');
@@ -2524,7 +2624,7 @@
             } else {
                 window.showCustomModal({
                     title: '🔒 Plan Mercados Requerido',
-                    message: `Hola <strong>${pb.authStore.model.name || userEmail}</strong>.<br><br>Su cuenta de Google (<strong>${userEmail}</strong>) aún no tiene habilitado el <strong>Plan Mercados (₡10,000/mes)</strong> para comparar precios entre todos los supermercados al mismo tiempo.<br><br>Puede cancelar por <strong>SINPE Móvil al 62278771</strong> y el administrador le activará el acceso en la base de datos de inmediato.`,
+                    message: `Hola <strong>${pb.authStore.model.name || userEmail}</strong>.<br><br>Su cuenta (<strong>${userEmail}</strong>) aún no tiene habilitado el <strong>Plan Mercados (plan1)</strong> para comparar precios entre todos los supermercados al mismo tiempo.<br><br>Puede cancelar por <strong>SINPE Móvil al 62278771</strong> y el administrador le activará el acceso en la base de datos de inmediato.`,
                     icon: '🔒',
                     headerBg: 'bg-vibrant-orange',
                     confirmText: 'Pagar Plan Mercados (₡10,000)',
@@ -2539,17 +2639,24 @@
         };
 
         // ==============================================
-        // PANEL ADMINISTRADOR (Solo corea3000@gmail.com)
-        // Conexión y gestión en vivo con la colección 'users' de PocketBase
+        // PANEL ADMINISTRADOR (Solo usuarios con admin: true en PocketBase)
+        // Conexión y gestión en vivo de los planes (plan1, plan2, plan3, plan4) en PocketBase
         // ==============================================
         window.abrirPanelAdmin = async function() {
-            if (!pb || !pb.authStore || !pb.authStore.isValid || !pb.authStore.model || pb.authStore.model.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
-                window.customAlert('Acceso denegado: Esta sección es exclusiva para el administrador del sistema (corea3000@gmail.com).', 'Acceso Denegado', '⛔');
+            const isSuperAdmin = Boolean(pb && pb.authStore && pb.authStore.isValid && pb.authStore.model && (
+                pb.authStore.model.admin === true || pb.authStore.model.admin === 'true' || pb.authStore.model.admin === 1
+            ));
+            if (!isSuperAdmin) {
+                window.customAlert('Acceso denegado: Esta sección es exclusiva para usuarios con privilegios de administrador en la base de datos.', 'Acceso Denegado', '⛔');
                 return;
             }
 
             const overlay = document.getElementById('adminModalOverlay');
             const card = document.getElementById('adminModalCard');
+            const subtitle = document.getElementById('adminModalUserSubtitle');
+            if (subtitle && pb.authStore.model) {
+                subtitle.innerText = `${pb.authStore.model.email || pb.authStore.model.name || 'Admin'} · MercadoFácil`;
+            }
             
             if (overlay && card) {
                 overlay.classList.remove('opacity-0', 'pointer-events-none');
@@ -2572,18 +2679,49 @@
             }
         };
 
-        // Actualizar campo 'admin' en la base de datos PocketBase
-        window.adminCambiarPermisoPocketBase = async function(userId, newStatus, userEmail) {
+        // Actualizar un plan específico (plan1, plan2, plan3, plan4) en PocketBase
+        window.adminCambiarPlanPocketBase = async function(userId, planField, newStatus, userEmail) {
             try {
-                await pb.collection('users').update(userId, { admin: newStatus });
-                window.customAlert(`El usuario <strong>${userEmail}</strong> fue actualizado en PocketBase:<br><br><strong>admin: ${newStatus ? 'True (Plan Mercados Habilitado)' : 'False (Sin Plan)'}</strong>`, 'Base de Datos PocketBase', '✅');
+                const updatePayload = {};
+                updatePayload[planField] = newStatus;
+                await pb.collection('users').update(userId, updatePayload);
+                const planNames = { plan1: 'Plan Mercados', plan2: 'Tiendas', plan3: 'Farmacias', plan4: 'Comercios' };
+                const pName = planNames[planField] || planField;
+                window.customAlert(`El plan <strong>${pName}</strong> para <strong>${userEmail}</strong> fue actualizado a: <strong>${newStatus ? 'Activo (True)' : 'Inactivo (False)'}</strong> en PocketBase.`, 'Base de Datos PocketBase', '✅');
                 await window.renderAdminList();
             } catch (err) {
-                console.error("Error al actualizar PocketBase:", err);
-                window.customAlert(`No se pudo actualizar el registro en PocketBase: <strong>${err.message || err}</strong><br><br><strong>Instrucción para PocketBase:</strong><br>1. En la consola de PocketBase, abra <em>Collections &gt; users &gt; Edit collection &gt; API rules</em>.<br>2. En <strong>Update rule</strong> configure: <code>@request.auth.email = "corea3000@gmail.com" || id = @request.auth.id</code>.<br><br>O bien, cambie el campo <strong>admin a True</strong> directamente en la tabla de PocketBase.`, 'Regla de Permisos PocketBase', '⚠️');
+                console.error("Error al actualizar plan en PocketBase:", err);
+                window.customAlert(`No se pudo actualizar el registro en PocketBase: <strong>${err.message || err}</strong><br><br>Verifique en la consola de PocketBase que la regla <strong>Update rule</strong> de la colección 'users' permita la actualización a administradores (@request.auth.admin = true), o modifíquelo directamente en la tabla de PocketBase.`, 'Regla de Permisos PocketBase', '⚠️');
             }
         };
 
+        // Eliminar registro de usuario completamente en PocketBase
+        window.adminEliminarUsuarioPocketBase = async function(userId, userEmail) {
+            if (pb && pb.authStore && pb.authStore.model && userId === pb.authStore.model.id) {
+                window.customAlert('No puede eliminar su propia cuenta de administrador mientras está en sesión activa.', 'Administrador', '👑');
+                return;
+            }
+            const confirmed = await window.showCustomModal({
+                title: 'Eliminar Usuario de PocketBase',
+                message: `¿Está seguro de que desea <strong>eliminar completamente</strong> el registro de <strong>${userEmail}</strong> de la base de datos PocketBase?<br><br>El usuario ya no podrá iniciar sesión en MercadoFácil.`,
+                icon: '🗑️',
+                headerBg: 'bg-red-600',
+                confirmText: 'Sí, Eliminar de la Base de Datos',
+                confirmBg: 'bg-red-600 hover:bg-red-700 text-white',
+                cancelText: 'Cancelar'
+            });
+            if (confirmed) {
+                try {
+                    await pb.collection('users').delete(userId);
+                    window.customAlert(`El usuario <strong>${userEmail}</strong> ha sido eliminado de la base de datos PocketBase.`, 'Usuario Eliminado', '✅');
+                    await window.renderAdminList();
+                } catch(err) {
+                    window.customAlert(`Error al eliminar usuario en PocketBase: ${err.message || err}`, 'Error', '⚠️');
+                }
+            }
+        };
+
+        // Crear o actualizar row de usuario en PocketBase con los planes seleccionados
         window.adminAgregarCliente = async function() {
             const input = document.getElementById('adminNewClientEmail');
             const feedback = document.getElementById('adminFeedback');
@@ -2601,33 +2739,85 @@
                 return;
             }
 
+            // Obtener planes seleccionados en los checkboxes
+            const plan1Val = Boolean(document.getElementById('adminPlan1')?.checked);
+            const plan2Val = Boolean(document.getElementById('adminPlan2')?.checked);
+            const plan3Val = Boolean(document.getElementById('adminPlan3')?.checked);
+            const plan4Val = Boolean(document.getElementById('adminPlan4')?.checked);
+
+            if (!plan1Val && !plan2Val && !plan3Val && !plan4Val) {
+                if (feedback) {
+                    feedback.className = 'text-xs font-black mt-2 text-amber-700 block';
+                    feedback.innerText = '⚠️ Seleccione al menos un plan para activar al cliente.';
+                }
+                return;
+            }
+
             if (feedback) {
                 feedback.className = 'text-xs font-black mt-2 text-blue-600 block';
-                feedback.innerText = '🔍 Consultando usuario en la base de datos PocketBase...';
+                feedback.innerText = '⏳ Guardando usuario en la colección users de PocketBase...';
             }
 
             try {
-                const user = await pb.collection('users').getFirstListItem(`email="${email}"`);
-                if (user) {
-                    await pb.collection('users').update(user.id, { admin: true });
+                // 1. Verificar si ya existe en PocketBase
+                let existingUser = null;
+                try {
+                    existingUser = await pb.collection('users').getFirstListItem(`email="${email}"`);
+                } catch(e) {
+                    existingUser = null;
+                }
+
+                if (existingUser) {
+                    // Ya existe: actualizar sus planes en PocketBase (manteniendo admin = false para usuarios normales)
+                    await pb.collection('users').update(existingUser.id, {
+                        plan1: plan1Val,
+                        plan2: plan2Val,
+                        plan3: plan3Val,
+                        plan4: plan4Val
+                    });
                     input.value = '';
                     if (feedback) {
                         feedback.className = 'text-xs font-black mt-2 text-green-700 block';
-                        feedback.innerText = `✅ Plan Mercados activado en PocketBase para ${email} (admin: true)`;
-                        setTimeout(() => feedback.classList.add('hidden'), 4000);
+                        feedback.innerText = `✅ Planes actualizados en PocketBase para ${email} (Plan1: ${plan1Val}, Plan2: ${plan2Val}, Plan3: ${plan3Val}, Plan4: ${plan4Val})`;
+                        setTimeout(() => feedback.classList.add('hidden'), 5000);
                     }
-                    await window.renderAdminList();
-                    return;
+                } else {
+                    // NO existe: CREAR EL ROW EN LA COLECCIÓN USERS DE POCKETBASE
+                    // admin: false (usuarios normales), solo los planes quedan activos
+                    const randomPass = 'Mercado_' + Math.random().toString(36).substring(2, 10) + '!' + Date.now();
+                    const newRecord = await pb.collection('users').create({
+                        email: email,
+                        password: randomPass,
+                        passwordConfirm: randomPass,
+                        emailVisibility: true,
+                        verified: true,
+                        admin: false,
+                        plan1: plan1Val,
+                        plan2: plan2Val,
+                        plan3: plan3Val,
+                        plan4: plan4Val,
+                        name: email.split('@')[0]
+                    });
+                    console.log("Nuevo usuario creado en PocketBase con planes:", newRecord);
+                    input.value = '';
+                    if (feedback) {
+                        feedback.className = 'text-xs font-black mt-2 text-green-700 block leading-relaxed';
+                        feedback.innerText = `✅ Row creado en PocketBase para ${email} con sus planes activos (admin: false). Ahora el cliente puede ingresar con "Entrar con Google" y el sistema actualizará su nombre y avatar.`;
+                        setTimeout(() => feedback.classList.add('hidden'), 6000);
+                    }
                 }
+                await window.renderAdminList();
             } catch (err) {
+                console.error("Error al crear/actualizar usuario en PocketBase:", err);
                 if (feedback) {
-                    feedback.className = 'text-xs font-black mt-2 text-amber-800 block leading-relaxed';
-                    feedback.innerHTML = `ℹ️ La cuenta <strong>${email}</strong> aún no se ha conectado por primera vez a MercadoFácil.<br>El cliente debe ingresar al menos una vez con el botón <strong>"Entrar con Google"</strong> para que PocketBase cree su registro en la colección <em>users</em>. Una vez registrado, puede activar su campo <strong>admin: True</strong>.`;
+                    feedback.className = 'text-xs font-black mt-2 text-red-600 block leading-relaxed';
+                    feedback.innerHTML = `⚠️ Error en PocketBase: ${err.message || err}<br><small>Verifique en la consola de PocketBase que las reglas API de 'users' permitan crear o editar registros.</small>`;
                 }
             }
         };
 
         // Renderizar lista consultando directamente la colección users de PocketBase
+        // Muestra el estado de admin y los 4 planes (plan1, plan2, plan3, plan4) con botones interactivos
         window.renderAdminList = async function() {
             const listContainer = document.getElementById('adminUsersList');
             const countBadge = document.getElementById('adminCountBadge');
@@ -2645,33 +2835,46 @@
                 }
 
                 listContainer.innerHTML = '';
+                const currentUserId = pb && pb.authStore && pb.authStore.model ? pb.authStore.model.id : null;
                 records.forEach(user => {
                     const email = (user.email || user.username || '').toLowerCase();
-                    const isAdmin = email === ADMIN_EMAIL.toLowerCase();
-                    const hasPlan = Boolean(user.admin === true || user.admin === 'true' || user.admin === 1);
+                    const isAdmin = Boolean(user.admin === true || user.admin === 'true' || user.admin === 1);
+                    const isSelf = Boolean(currentUserId && user.id === currentUserId);
+                    const p1 = Boolean(user.plan1 === true || user.plan1 === 'true' || user.plan1 === 1);
+                    const p2 = Boolean(user.plan2 === true || user.plan2 === 'true' || user.plan2 === 1);
+                    const p3 = Boolean(user.plan3 === true || user.plan3 === 'true' || user.plan3 === 1);
+                    const p4 = Boolean(user.plan4 === true || user.plan4 === 'true' || user.plan4 === 1);
 
                     const row = document.createElement('div');
-                    row.className = 'p-3 flex items-center justify-between hover:bg-gray-50 text-xs font-bold border-b border-gray-100 last:border-b-0';
+                    row.className = 'p-3 flex flex-col md:flex-row md:items-center justify-between hover:bg-gray-50 text-xs font-bold border-b border-gray-100 last:border-b-0 gap-2.5';
                     row.innerHTML = `
-                        <div class="flex items-center gap-2.5">
-                            <span class="text-base">${isAdmin ? '👑' : (hasPlan ? '⭐' : '👤')}</span>
-                            <div>
-                                <span class="text-vibrant-dark ${isAdmin ? 'font-black' : ''}">${user.name ? `${user.name} (${email})` : email}</span>
-                                <div class="mt-0.5 flex items-center gap-1.5">
-                                    ${isAdmin 
-                                        ? '<span class="bg-amber-200 text-vibrant-dark text-[10px] font-black px-1.5 py-0.2 border border-vibrant-dark">ADMIN / PROPIETARIO</span>' 
-                                        : (hasPlan 
-                                            ? '<span class="bg-green-100 text-green-800 text-[10px] font-black px-1.5 py-0.2 border border-green-300">PLAN MERCADOS ACTIVO (admin: true)</span>' 
-                                            : '<span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-1.5 py-0.2 border border-gray-300">SIN PLAN (admin: false)</span>')}
+                        <div class="flex items-start gap-2.5 min-w-0">
+                            <span class="text-base flex-shrink-0 mt-0.5">${isAdmin ? '👑' : '👤'}</span>
+                            <div class="min-w-0">
+                                <div class="text-vibrant-dark truncate ${isAdmin ? 'font-black' : ''}">${user.name ? `${user.name} (${email})` : email}</div>
+                                <div class="mt-1 flex items-center gap-1.5 flex-wrap">
+                                    ${isAdmin ? '<span class="bg-amber-200 text-vibrant-dark text-[10px] font-black px-1.5 py-0.2 border border-vibrant-dark">ADMINISTRADOR</span>' : '<span class="bg-gray-200 text-gray-700 text-[10px] font-bold px-1.5 py-0.2">CLIENTE (admin: false)</span>'}
+                                    
+                                    <!-- Badges clickeables de los 4 planes -->
+                                    <button onclick="window.adminCambiarPlanPocketBase('${user.id}', 'plan1', ${!p1}, '${email}')" class="text-[10px] font-black px-1.5 py-0.5 border cursor-pointer transition-all ${p1 ? 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200' : 'bg-gray-100 text-gray-400 border-gray-200 line-through opacity-75 hover:opacity-100'}" title="Clic para alternar Plan 1 Mercados">
+                                        🛒 Plan 1: Mercados ${p1 ? '✓' : '✗'}
+                                    </button>
+                                    <button onclick="window.adminCambiarPlanPocketBase('${user.id}', 'plan2', ${!p2}, '${email}')" class="text-[10px] font-black px-1.5 py-0.5 border cursor-pointer transition-all ${p2 ? 'bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-200' : 'bg-gray-100 text-gray-400 border-gray-200 line-through opacity-75 hover:opacity-100'}" title="Clic para alternar Plan 2 Tiendas">
+                                        🏪 Plan 2: Tiendas ${p2 ? '✓' : '✗'}
+                                    </button>
+                                    <button onclick="window.adminCambiarPlanPocketBase('${user.id}', 'plan3', ${!p3}, '${email}')" class="text-[10px] font-black px-1.5 py-0.5 border cursor-pointer transition-all ${p3 ? 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200' : 'bg-gray-100 text-gray-400 border-gray-200 line-through opacity-75 hover:opacity-100'}" title="Clic para alternar Plan 3 Farmacias">
+                                        💊 Plan 3: Farmacias ${p3 ? '✓' : '✗'}
+                                    </button>
+                                    <button onclick="window.adminCambiarPlanPocketBase('${user.id}', 'plan4', ${!p4}, '${email}')" class="text-[10px] font-black px-1.5 py-0.5 border cursor-pointer transition-all ${p4 ? 'bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200' : 'bg-gray-100 text-gray-400 border-gray-200 line-through opacity-75 hover:opacity-100'}" title="Clic para alternar Plan 4 Comercios">
+                                        🏬 Plan 4: Comercios ${p4 ? '✓' : '✗'}
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                        <div>
-                            ${isAdmin 
-                                ? '<span class="text-[10px] text-gray-400 font-bold">Propietario</span>' 
-                                : (hasPlan 
-                                    ? `<button onclick="window.adminCambiarPermisoPocketBase('${user.id}', false, '${email}')" class="text-red-600 hover:text-red-800 font-black px-2.5 py-1 border border-red-300 bg-red-50 hover:bg-red-100 text-[10px] uppercase cursor-pointer">Revocar Plan ✕</button>`
-                                    : `<button onclick="window.adminCambiarPermisoPocketBase('${user.id}', true, '${email}')" class="bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black px-2.5 py-1 border-2 border-vibrant-dark text-[10px] uppercase cursor-pointer shadow-xs">➕ Activar Plan</button>`)}
+                        <div class="flex items-center gap-1.5 flex-shrink-0 self-end md:self-center">
+                            ${isSelf
+                                ? '<span class="text-[10px] text-gray-400 font-bold px-2">Sesión Actual</span>' 
+                                : `<button onclick="window.adminEliminarUsuarioPocketBase('${user.id}', '${email}')" class="text-red-600 hover:text-red-800 font-black px-2 py-1 border border-red-300 bg-red-50 hover:bg-red-100 text-[10px] uppercase cursor-pointer" title="Eliminar registro completamente de PocketBase">Eliminar 🗑️</button>`}
                         </div>
                     `;
                     listContainer.appendChild(row);
@@ -2685,8 +2888,8 @@
                         <p class="font-black mb-1">ℹ️ Nota de Configuración PocketBase (API Rules):</p>
                         <p>La regla <strong>List/Search rule</strong> de la colección <code>users</code> en PocketBase está configurada como <code>id = @request.auth.id</code>, lo cual limita la lista vía API únicamente al usuario actual.</p>
                         <p class="mt-1.5">Para listar y activar usuarios directamente desde este botón, configure en PocketBase (Edit collection &gt; API rules):</p>
-                        <code class="block bg-white p-1 border border-amber-300 font-mono text-[11px] my-1 font-bold">@request.auth.email = "corea3000@gmail.com" || id = @request.auth.id</code>
-                        <p class="mt-1 text-gray-700">O también puede cambiar el campo <strong>admin a True</strong> directamente en su consola de PocketBase (como se observa en su captura).</p>
+                        <code class="block bg-white p-1 border border-amber-300 font-mono text-[11px] my-1 font-bold">@request.auth.admin = true || id = @request.auth.id</code>
+                        <p class="mt-1 text-gray-700">O también puede activar los campos <strong>plan1, plan2, etc.</strong> directamente en su consola de PocketBase.</p>
                     </div>
                 `;
             }
@@ -2826,7 +3029,7 @@
 
 
     <!-- ==============================================
-         PANEL ADMINISTRADOR EXCLUSIVO (corea3000@gmail.com)
+         PANEL ADMINISTRADOR EXCLUSIVO
          ============================================== -->
     <div id="adminModalOverlay" class="fixed inset-0 z-[99999] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
         <div id="adminModalCard" class="bg-white border-4 border-vibrant-dark shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] max-w-lg w-full overflow-hidden transform scale-95 transition-all duration-200">
@@ -2836,7 +3039,7 @@
                     <span class="text-2xl">👑</span>
                     <div>
                         <h3 class="font-black text-base uppercase tracking-wider text-vibrant-dark">Panel de Control Admin</h3>
-                        <p class="text-[11px] font-bold text-gray-800">corea3000@gmail.com · MercadoFácil</p>
+                        <p id="adminModalUserSubtitle" class="text-[11px] font-bold text-gray-800">Administrador · MercadoFácil</p>
                     </div>
                 </div>
                 <button onclick="window.cerrarPanelAdmin()" class="text-vibrant-dark hover:text-red-700 font-black text-xl leading-none px-2 py-1 transition-colors cursor-pointer" title="Cerrar">✕</button>
@@ -2846,13 +3049,38 @@
             <div class="p-6 bg-white space-y-4 max-h-[75vh] overflow-y-auto">
                 <!-- Agregar Cliente -->
                 <div class="bg-gray-50 border-2 border-vibrant-dark p-4 shadow-stitch">
-                    <h4 class="text-xs font-black uppercase text-vibrant-dark tracking-wider mb-2">Habilitar Plan Mercados a un Cliente</h4>
-                    <p class="text-xs text-gray-600 font-medium mb-3">Ingrese el Gmail del cliente que realizó el pago por SINPE Móvil para desbloquearle la comparativa de todos los supermercados:</p>
-                    <div class="flex gap-2">
-                        <input id="adminNewClientEmail" type="email" placeholder="cliente@gmail.com" class="flex-grow bg-white text-vibrant-dark font-bold p-2.5 border-2 border-vibrant-dark text-xs focus:outline-none">
-                        <button onclick="window.adminAgregarCliente()" class="bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black px-4 py-2.5 text-xs uppercase border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 cursor-pointer whitespace-nowrap">
-                            ➕ Autorizar
-                        </button>
+                    <h4 class="text-xs font-black uppercase text-vibrant-dark tracking-wider mb-2">Habilitar / Crear Cliente en PocketBase</h4>
+                    <p class="text-xs text-gray-600 font-medium mb-3">Ingrese el Gmail del cliente y seleccione los planes a los que tiene acceso:</p>
+                    <div class="space-y-3">
+                        <div class="flex gap-2">
+                            <input id="adminNewClientEmail" type="email" placeholder="cliente@gmail.com" class="flex-grow bg-white text-vibrant-dark font-bold p-2.5 border-2 border-vibrant-dark text-xs focus:outline-none">
+                            <button onclick="window.adminAgregarCliente()" class="bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black px-4 py-2.5 text-xs uppercase border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 cursor-pointer whitespace-nowrap">
+                                ➕ Autorizar
+                            </button>
+                        </div>
+                        
+                        <!-- Selección de Planes Activos -->
+                        <div class="bg-white p-3 border-2 border-vibrant-dark">
+                            <span class="block text-[11px] font-black uppercase tracking-wider text-vibrant-dark mb-2">Planes a Activar para el Cliente:</span>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-bold text-vibrant-dark">
+                                <label class="flex items-center gap-2 cursor-pointer bg-green-50 p-2 border border-green-300">
+                                    <input type="checkbox" id="adminPlan1" checked class="w-4 h-4 accent-green-600 cursor-pointer">
+                                    <span>Plan 1: Mercados (Multi-Súper)</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer bg-orange-50 p-2 border border-orange-300">
+                                    <input type="checkbox" id="adminPlan2" class="w-4 h-4 accent-orange-600 cursor-pointer">
+                                    <span>Plan 2: Tiendas (Abarrotes)</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer bg-emerald-50 p-2 border border-emerald-300">
+                                    <input type="checkbox" id="adminPlan3" class="w-4 h-4 accent-emerald-600 cursor-pointer">
+                                    <span>Plan 3: Farmacias (Salud)</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer bg-blue-50 p-2 border border-blue-300">
+                                    <input type="checkbox" id="adminPlan4" class="w-4 h-4 accent-blue-600 cursor-pointer">
+                                    <span>Plan 4: Comercios (Retail)</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
                     <p id="adminFeedback" class="text-xs font-black mt-2 hidden"></p>
                 </div>
