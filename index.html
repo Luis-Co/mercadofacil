@@ -614,7 +614,7 @@
                         </div>
                         <div class="stitch-border-t border-vibrant-dark pt-4 mt-auto">
                             <div class="text-3xl font-black text-vibrant-dark mb-3">₡10,000 <span class="text-xs font-bold uppercase opacity-80">/mes</span></div>
-                            <button onclick="window.abrirModalSolicitarPlan('Mercados', 10000, 'Comparador Multi-Supermercados')" class="w-full bg-vibrant-blue hover:bg-blue-700 text-white font-black py-2.5 uppercase tracking-wider shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 transition-all text-xs cursor-pointer">
+                            <button onclick="window.abrirModalRegistroPlanes('', 'plan1')" class="w-full bg-vibrant-blue hover:bg-blue-700 text-white font-black py-2.5 uppercase tracking-wider shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 transition-all text-xs cursor-pointer">
                                 Solicitar Plan Mercados
                             </button>
                         </div>
@@ -633,7 +633,7 @@
                         </div>
                         <div class="stitch-border-t border-vibrant-dark pt-6 mt-auto">
                             <div class="text-4xl font-black text-vibrant-dark mb-4">₡10,000 <span class="text-sm font-bold uppercase opacity-80">/mes</span></div>
-                            <button onclick="window.abrirModalSolicitarPlan('Tiendas', 10000, 'Abarrotes & Mini-súpers')" class="w-full bg-vibrant-dark text-white font-black py-3 uppercase tracking-wider hover:bg-black shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 transition-all cursor-pointer">
+                            <button onclick="window.abrirModalRegistroPlanes('', 'plan2')" class="w-full bg-vibrant-dark text-white font-black py-3 uppercase tracking-wider hover:bg-black shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 transition-all cursor-pointer">
                                 Solicitar Plan
                             </button>
                         </div>
@@ -655,7 +655,7 @@
                         </div>
                         <div class="stitch-border-t border-vibrant-dark pt-6 mt-auto">
                             <div class="text-4xl font-black text-vibrant-dark mb-4">₡15,000 <span class="text-sm font-bold uppercase opacity-80">/mes</span></div>
-                            <button onclick="window.abrirModalSolicitarPlan('Farmacias', 15000, 'Salud & Medicamentos')" class="w-full bg-vibrant-dark text-white font-black py-3 uppercase tracking-wider hover:bg-black shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 transition-all cursor-pointer">
+                            <button onclick="window.abrirModalRegistroPlanes('', 'plan3')" class="w-full bg-vibrant-dark text-white font-black py-3 uppercase tracking-wider hover:bg-black shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 transition-all cursor-pointer">
                                 Solicitar Plan
                             </button>
                         </div>
@@ -674,7 +674,7 @@
                         </div>
                         <div class="stitch-border-t border-white pt-6 mt-auto">
                             <div class="text-4xl font-black text-white mb-4">₡20,000 <span class="text-sm font-bold uppercase opacity-80">/mes</span></div>
-                            <button onclick="window.abrirModalSolicitarPlan('Comercios', 20000, 'Retail, Hogar y Tecnología')" class="w-full bg-white text-vibrant-blue font-black py-3 uppercase tracking-wider hover:bg-gray-100 shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 transition-all cursor-pointer">
+                            <button onclick="window.abrirModalRegistroPlanes('', 'plan4')" class="w-full bg-white text-vibrant-blue font-black py-3 uppercase tracking-wider hover:bg-gray-100 shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 transition-all cursor-pointer">
                                 Solicitar Plan
                             </button>
                         </div>
@@ -2297,38 +2297,12 @@
         let currentPlanData = { name: 'Tiendas', price: 10000, desc: 'Abarrotes & Mini-súpers' };
 
         window.abrirModalSolicitarPlan = function(planName, price, desc) {
-            currentPlanData = { name: planName, price: price, desc: desc };
-            
-            const overlay = document.getElementById('planModalOverlay');
-            const card = document.getElementById('planModalCard');
-            const titleBadge = document.getElementById('modalPlanTitleBadge');
-            const priceBadge = document.getElementById('modalPlanPriceBadge');
-            const nameInput = document.getElementById('planClientName');
-            const emailInput = document.getElementById('planEmail');
-            const nameError = document.getElementById('planNameError');
-            const emailError = document.getElementById('planEmailError');
-
-            if (titleBadge) titleBadge.innerText = planName;
-            if (priceBadge) priceBadge.innerText = '₡' + price.toLocaleString('es-CR') + '/mes';
-            if (nameInput) nameInput.value = '';
-            if (emailInput) {
-                // Si el usuario está logueado en PocketBase, precargar su Gmail
-                if (pb && pb.authStore && pb.authStore.model && pb.authStore.model.email) {
-                    emailInput.value = pb.authStore.model.email;
-                } else {
-                    emailInput.value = '';
-                }
-            }
-            if (nameError) nameError.classList.add('hidden');
-            if (emailError) emailError.classList.add('hidden');
-
-            if (overlay && card) {
-                overlay.classList.remove('opacity-0', 'pointer-events-none');
-                overlay.classList.add('opacity-100');
-                card.classList.remove('scale-95');
-                card.classList.add('scale-100');
-                setTimeout(() => { if (nameInput) nameInput.focus(); }, 150);
-            }
+            let pKey = 'plan1';
+            const pLow = (planName || '').toLowerCase();
+            if (pLow.includes('tienda')) pKey = 'plan2';
+            else if (pLow.includes('farmacia')) pKey = 'plan3';
+            else if (pLow.includes('comercio')) pKey = 'plan4';
+            window.abrirModalRegistroPlanes('', pKey);
         };
 
         window.cerrarModalPlan = function() {
@@ -2396,6 +2370,9 @@
         // AUTENTICACIÓN POCKETBASE GOOGLE OAUTH2 Y CONTROL DE ACCESO
         // ==============================================
         const pb = (typeof PocketBase !== 'undefined') ? new PocketBase('https://pb-mercadofacil.webticocr.com') : null;
+        if (pb) {
+            pb.autoCancellation(false);
+        }
 
         // Helper para comprobar si un modelo tiene algún plan activo o es admin
         // Se verifica directamente contra la base de datos PocketBase (admin: true)
@@ -2422,6 +2399,171 @@
             if (model.plan1 === true || model.plan1 === 'true' || model.plan1 === 1) return true;
 
             return false;
+        };
+
+        // ==============================================
+        // MODAL DE REGISTRO / ELECCIÓN DE LOS 4 PLANES CON CHECKS
+        // ==============================================
+        const PLAN_DETAILS = {
+            plan1: { name: 'Plan 1: Mercados', price: 10000, desc: 'Multi-Supermercados (Walmart, MásxMenos, Maxi Palí, Palí, Auto Mercado)' },
+            plan2: { name: 'Plan 2: Tiendas', price: 10000, desc: 'Abarrotes & Mini-súpers' },
+            plan3: { name: 'Plan 3: Farmacias', price: 15000, desc: 'Salud & Medicamentos (Fischel, Sucre, La Bomba)' },
+            plan4: { name: 'Plan 4: Comercios', price: 20000, desc: 'Retail, Hogar & Tecnología (Gollo, Monge, Siman)' }
+        };
+
+        window.abrirModalRegistroPlanes = function(userEmail = '', preSelectedPlan = 'plan1') {
+            const overlay = document.getElementById('modalRegistroPlanesOverlay');
+            const card = document.getElementById('modalRegistroPlanesCard');
+            const emailInput = document.getElementById('regClientEmail');
+            const nameInput = document.getElementById('regClientName');
+            const emailNotice = document.getElementById('regUserEmailNotice');
+            const nameError = document.getElementById('regNameError');
+            const emailError = document.getElementById('regEmailError');
+
+            if (nameError) nameError.classList.add('hidden');
+            if (emailError) emailError.classList.add('hidden');
+
+            const p1 = document.getElementById('regPlan1');
+            const p2 = document.getElementById('regPlan2');
+            const p3 = document.getElementById('regPlan3');
+            const p4 = document.getElementById('regPlan4');
+
+            if (p1) p1.checked = (preSelectedPlan === 'plan1');
+            if (p2) p2.checked = (preSelectedPlan === 'plan2');
+            if (p3) p3.checked = (preSelectedPlan === 'plan3');
+            if (p4) p4.checked = (preSelectedPlan === 'plan4');
+
+            const emailToUse = userEmail || (pb && pb.authStore && pb.authStore.model ? pb.authStore.model.email : '');
+            if (emailInput) emailInput.value = emailToUse;
+            if (emailNotice) {
+                if (emailToUse) {
+                    emailNotice.innerHTML = `La cuenta de Google (<strong>${emailToUse}</strong>) aún no cuenta con un plan activo.`;
+                } else {
+                    emailNotice.innerText = 'Su cuenta aún no se encuentra registrada con un plan activo.';
+                }
+            }
+
+            window.actualizarTotalPlanesRegistro();
+
+            if (overlay && card) {
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+                overlay.classList.add('opacity-100');
+                card.classList.remove('scale-95');
+                card.classList.add('scale-100');
+                setTimeout(() => {
+                    if (nameInput && !nameInput.value) nameInput.focus();
+                }, 150);
+            }
+        };
+
+        window.cerrarModalRegistroPlanes = function() {
+            const overlay = document.getElementById('modalRegistroPlanesOverlay');
+            const card = document.getElementById('modalRegistroPlanesCard');
+            if (overlay && card) {
+                overlay.classList.remove('opacity-100');
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                card.classList.remove('scale-100');
+                card.classList.add('scale-95');
+            }
+        };
+
+        window.actualizarTotalPlanesRegistro = function() {
+            let total = 0;
+            let count = 0;
+            const p1 = document.getElementById('regPlan1')?.checked;
+            const p2 = document.getElementById('regPlan2')?.checked;
+            const p3 = document.getElementById('regPlan3')?.checked;
+            const p4 = document.getElementById('regPlan4')?.checked;
+
+            if (p1) { total += PLAN_DETAILS.plan1.price; count++; }
+            if (p2) { total += PLAN_DETAILS.plan2.price; count++; }
+            if (p3) { total += PLAN_DETAILS.plan3.price; count++; }
+            if (p4) { total += PLAN_DETAILS.plan4.price; count++; }
+
+            const totalBadge = document.getElementById('regTotalAmountBadge');
+            const summaryText = document.getElementById('regPlansSummaryText');
+            const btnWhatsApp = document.getElementById('regBtnWhatsApp');
+
+            if (totalBadge) {
+                totalBadge.innerText = '₡' + total.toLocaleString('es-CR') + ' / mes';
+            }
+            if (summaryText) {
+                summaryText.innerText = count === 0 
+                    ? '⚠️ Por favor seleccione al menos 1 plan'
+                    : `${count} ${count === 1 ? 'plan seleccionado' : 'planes seleccionados'}`;
+            }
+
+            if (btnWhatsApp) {
+                if (count === 0) {
+                    btnWhatsApp.classList.add('opacity-50', 'pointer-events-none');
+                } else {
+                    btnWhatsApp.classList.remove('opacity-50', 'pointer-events-none');
+                }
+            }
+        };
+
+        window.confirmarRegistroPlanesWhatsApp = function() {
+            const nameInput = document.getElementById('regClientName');
+            const emailInput = document.getElementById('regClientEmail');
+            const nameError = document.getElementById('regNameError');
+            const emailError = document.getElementById('regEmailError');
+
+            const clientName = nameInput ? nameInput.value.trim() : '';
+            const clientEmail = emailInput ? emailInput.value.trim() : '';
+
+            let hasError = false;
+            if (!clientName) {
+                if (nameError) nameError.classList.remove('hidden');
+                if (nameInput) nameInput.focus();
+                hasError = true;
+            } else if (nameError) {
+                nameError.classList.add('hidden');
+            }
+
+            if (!clientEmail || !clientEmail.includes('@') || !clientEmail.includes('.')) {
+                if (emailError) emailError.classList.remove('hidden');
+                if (!hasError && emailInput) emailInput.focus();
+                hasError = true;
+            } else if (emailError) {
+                emailError.classList.add('hidden');
+            }
+
+            const p1 = document.getElementById('regPlan1')?.checked;
+            const p2 = document.getElementById('regPlan2')?.checked;
+            const p3 = document.getElementById('regPlan3')?.checked;
+            const p4 = document.getElementById('regPlan4')?.checked;
+
+            const selectedList = [];
+            let total = 0;
+            if (p1) { selectedList.push(PLAN_DETAILS.plan1); total += PLAN_DETAILS.plan1.price; }
+            if (p2) { selectedList.push(PLAN_DETAILS.plan2); total += PLAN_DETAILS.plan2.price; }
+            if (p3) { selectedList.push(PLAN_DETAILS.plan3); total += PLAN_DETAILS.plan3.price; }
+            if (p4) { selectedList.push(PLAN_DETAILS.plan4); total += PLAN_DETAILS.plan4.price; }
+
+            if (selectedList.length === 0) {
+                window.customAlert('Por favor seleccione al menos un plan con el checkbox.', 'Seleccione un Plan', '⚠️');
+                return;
+            }
+
+            if (hasError) return;
+
+            let waMsg = `🛒 *SOLICITUD DE REGISTRO Y PLANES - MERCADOFÁCIL*\n`;
+            waMsg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+            waMsg += `👤 *Cliente:* ${clientName}\n`;
+            waMsg += `📧 *Gmail para Acceso:* ${clientEmail}\n`;
+            waMsg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+            waMsg += `📦 *Planes Solicitados:*\n`;
+            selectedList.forEach(pl => {
+                waMsg += `  ✅ *${pl.name}* (₡${pl.price.toLocaleString('es-CR')}/mes)\n`;
+            });
+            waMsg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+            waMsg += `💰 *TOTAL A CANCELAR: ₡${total.toLocaleString('es-CR')}/mes*\n`;
+            waMsg += `💳 *SINPE Móvil:* Listo para transferir o comprobante adjunto al 62278771.\n\n`;
+            waMsg += `¡Hola! Deseo registrarme y activar estos planes en MercadoFácil para mi correo ${clientEmail}. Quedo atento a la confirmación de mi cuenta.`;
+
+            const waUrl = `https://api.whatsapp.com/send?phone=50662278771&text=${encodeURIComponent(waMsg)}`;
+            window.cerrarModalRegistroPlanes();
+            window.open(waUrl, '_blank');
         };
 
         // Login con Google OAuth2
@@ -2461,20 +2603,8 @@
                     localStorage.removeItem('pocketbase_auth');
                     verificarEstadoSesion();
 
-                    // Mostrar pop-up de bloqueo indicando que no está en la colección
-                    window.showCustomModal({
-                        title: '🔒 Usuario No Registrado',
-                        message: `La cuenta de Google <strong>${userEmail || ''}</strong> no se encuentra en la colección de usuarios autorizados de MercadoFácil.<br><br>El sistema <strong>no permite el acceso ni la creación de cuentas no autorizadas</strong> en la base de datos.<br><br>Para comparar precios entre todos los supermercados, debe solicitar y cancelar el <strong>Plan Mercados (₡10,000/mes)</strong> por SINPE Móvil al <strong>62278771</strong> para que el administrador le active su cuenta.`,
-                        icon: '🔒',
-                        headerBg: 'bg-red-600',
-                        confirmText: 'Solicitar Plan Mercados (₡10,000)',
-                        confirmBg: 'bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark',
-                        cancelText: 'Entendido'
-                    }).then(res => {
-                        if (res) {
-                            window.abrirModalSolicitarPlan('Mercados', 10000, 'Comparador Multi-Supermercados');
-                        }
-                    });
+                    // Abrir pop-up interactivo con los 4 planes y checks para animar al usuario a registrarse
+                    window.abrirModalRegistroPlanes(userEmail, 'plan1');
                     return;
                 }
 
@@ -2526,19 +2656,8 @@
                                           errStr.includes('validation');
 
                 if (isCreationBlocked) {
-                    window.showCustomModal({
-                        title: '🔒 Usuario No Registrado',
-                        message: `Su cuenta de Google no se encuentra registrada en la colección de usuarios autorizados de MercadoFácil.<br><br>El sistema <strong>no permite el acceso ni la creación de cuentas no autorizadas</strong> en la base de datos.<br><br>Para comparar precios entre todos los supermercados, debe solicitar y cancelar el <strong>Plan Mercados (₡10,000/mes)</strong> por SINPE Móvil al <strong>62278771</strong>. Una vez confirmado su pago, el administrador habilitará su cuenta en el sistema.`,
-                        icon: '🔒',
-                        headerBg: 'bg-red-600',
-                        confirmText: 'Solicitar Plan Mercados (₡10,000)',
-                        confirmBg: 'bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark',
-                        cancelText: 'Cerrar'
-                    }).then(res => {
-                        if (res) {
-                            window.abrirModalSolicitarPlan('Mercados', 10000, 'Comparador Multi-Supermercados');
-                        }
-                    });
+                    // Abrir pop-up interactivo con los 4 planes y checks
+                    window.abrirModalRegistroPlanes('', 'plan1');
                 } else {
                     window.customAlert('No se pudo completar la autenticación con Google: ' + (error.message || error), 'Error de Autenticación', '⚠️');
                 }
@@ -2577,14 +2696,20 @@
                     }
                     verificarEstadoSesion();
                 } catch (e) {
-                    // El usuario fue eliminado de PocketBase (404/401)
-                    console.warn("Sesión invalidada por PocketBase (usuario eliminado o token inválido):", e);
-                    pb.authStore.clear();
-                    localStorage.removeItem('pocketbase_auth');
-                    verificarEstadoSesion();
-                    if (superFilter && superFilter.value === 'Todos') {
-                        superFilter.value = 'Walmart';
-                        applyFilters();
+                    // Si la petición fue abortada o cancelada por el SDK o navegador, NO cerrar la sesión
+                    if (e && (e.isAbort || e.status === 0 || String(e).includes('autocancelled'))) {
+                        return;
+                    }
+                    // Solo si el servidor explícitamente respondió 401 o 404 (token expirado o usuario borrado)
+                    if (e && (e.status === 401 || e.status === 404)) {
+                        console.warn("Sesión invalidada por PocketBase (usuario eliminado o token inválido):", e);
+                        pb.authStore.clear();
+                        localStorage.removeItem('pocketbase_auth');
+                        verificarEstadoSesion();
+                        if (superFilter && superFilter.value === 'Todos') {
+                            superFilter.value = 'Walmart';
+                            applyFilters();
+                        }
                     }
                 }
             }
@@ -2818,36 +2943,55 @@
                         setTimeout(() => feedback.classList.add('hidden'), 5000);
                     }
                 } else {
-                    // NO existe: CREAR EL ROW EN LA COLECCIÓN USERS DE POCKETBASE
-                    // admin: false (usuarios normales), solo los planes quedan activos
+                    // NO existe en la búsqueda previa: intentar crear el usuario
                     const randomPass = 'Mercado_' + Math.random().toString(36).substring(2, 10) + '!' + Date.now();
-                    const newRecord = await pb.collection('users').create({
-                        email: email,
-                        password: randomPass,
-                        passwordConfirm: randomPass,
-                        emailVisibility: true,
-                        verified: true,
-                        admin: false,
-                        plan1: plan1Val,
-                        plan2: plan2Val,
-                        plan3: plan3Val,
-                        plan4: plan4Val,
-                        name: email.split('@')[0]
-                    });
-                    console.log("Nuevo usuario creado en PocketBase con planes:", newRecord);
-                    input.value = '';
-                    if (feedback) {
-                        feedback.className = 'text-xs font-black mt-2 text-green-700 block leading-relaxed';
-                        feedback.innerText = `✅ Row creado en PocketBase para ${email} con sus planes activos (admin: false). Ahora el cliente puede ingresar con "Entrar con Google" y el sistema actualizará su nombre y avatar.`;
-                        setTimeout(() => feedback.classList.add('hidden'), 6000);
+                    try {
+                        const newRecord = await pb.collection('users').create({
+                            email: email,
+                            password: randomPass,
+                            passwordConfirm: randomPass,
+                            emailVisibility: true,
+                            admin: false,
+                            plan1: plan1Val,
+                            plan2: plan2Val,
+                            plan3: plan3Val,
+                            plan4: plan4Val,
+                            name: email.split('@')[0]
+                        });
+                        console.log("Nuevo usuario creado en PocketBase con planes:", newRecord);
+                        input.value = '';
+                        if (feedback) {
+                            feedback.className = 'text-xs font-black mt-2 text-green-700 block leading-relaxed';
+                            feedback.innerText = `✅ Usuario creado exitosamente en PocketBase para ${email} con sus planes activos. Ahora el cliente puede ingresar con "Entrar con Google".`;
+                            setTimeout(() => feedback.classList.add('hidden'), 6000);
+                        }
+                    } catch (createErr) {
+                        // Si falló porque el correo ya existe en PocketBase pero la regla List/Search ocultaba el registro al admin
+                        const isUniqueErr = createErr.data?.data?.email?.code === 'validation_not_unique' ||
+                                            String(createErr.message || '').includes('unique');
+                        if (isUniqueErr) {
+                            if (feedback) {
+                                feedback.className = 'text-xs font-black mt-2 text-amber-900 bg-amber-50 p-3 border border-amber-300 block leading-relaxed';
+                                feedback.innerHTML = `⚠️ El correo <strong>${email}</strong> ya existe en la base de datos de PocketBase.<br><br>Para poder ver todas las cuentas y editarlas desde este panel, configure en PocketBase (<em>Edit collection 'users' &gt; API Rules</em>):<br><code class="block bg-white p-1.5 my-1.5 border border-amber-400 font-mono text-[11px] font-bold">List/Search rule: @request.auth.admin = true || id = @request.auth.id</code>Actualmente PocketBase solo le permite consultar su propia cuenta.`;
+                            }
+                            return;
+                        }
+                        throw createErr;
                     }
                 }
                 await window.renderAdminList();
             } catch (err) {
                 console.error("Error al crear/actualizar usuario en PocketBase:", err);
+                let errDetails = err.message || err;
+                if (err.data && err.data.data) {
+                    const fields = Object.entries(err.data.data)
+                        .map(([f, d]) => `${f}: ${d.message || d.code}`)
+                        .join(', ');
+                    if (fields) errDetails += ` (${fields})`;
+                }
                 if (feedback) {
                     feedback.className = 'text-xs font-black mt-2 text-red-600 block leading-relaxed';
-                    feedback.innerHTML = `⚠️ Error en PocketBase: ${err.message || err}<br><small>Verifique en la consola de PocketBase que las reglas API de 'users' permitan crear o editar registros.</small>`;
+                    feedback.innerHTML = `⚠️ Error en PocketBase: ${errDetails}<br><small>Verifique en la consola de PocketBase que las reglas API de 'users' permitan crear o editar registros al administrador (@request.auth.admin = true).</small>`;
                 }
             }
         };
@@ -3075,6 +3219,158 @@
         </div>
     </div>
 
+
+    <!-- ==============================================
+         MODAL USUARIO NO REGISTRADO / SELECCIÓN DE PLANES CON CHECKS
+         ============================================== -->
+    <div id="modalRegistroPlanesOverlay" class="fixed inset-0 z-[99999] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 opacity-0 pointer-events-none transition-opacity duration-200">
+        <div id="modalRegistroPlanesCard" class="bg-white border-4 border-vibrant-dark shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] max-w-xl w-full overflow-hidden transform scale-95 transition-all duration-200 flex flex-col max-h-[92vh]">
+            
+            <!-- Barra Superior Animada -->
+            <div class="p-4 bg-gradient-to-r from-amber-400 via-yellow-400 to-lime-400 text-vibrant-dark flex items-center justify-between border-b-4 border-vibrant-dark flex-shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <span class="text-3xl animate-bounce">🚀</span>
+                    <div>
+                        <h3 class="font-black text-base sm:text-lg uppercase tracking-wider text-vibrant-dark">¡Activa tu Cuenta en MercadoFácil!</h3>
+                        <p class="text-[11px] font-bold text-gray-800">Elige tu plan para desbloquear comparativas en tiempo real</p>
+                    </div>
+                </div>
+                <button onclick="window.cerrarModalRegistroPlanes()" class="text-vibrant-dark hover:text-red-700 font-black text-2xl leading-none px-2 py-1 transition-colors cursor-pointer" title="Cerrar">✕</button>
+            </div>
+
+            <!-- Cuerpo Scrolleable -->
+            <div class="p-4 sm:p-6 bg-white space-y-4 overflow-y-auto flex-grow">
+                
+                <!-- Mensaje Motivacional -->
+                <div class="bg-amber-50 border-2 border-amber-300 p-3.5 flex items-start gap-3">
+                    <span class="text-2xl flex-shrink-0">💡</span>
+                    <div class="text-xs text-amber-950 font-medium leading-relaxed">
+                        <span id="regUserEmailNotice" class="font-bold text-vibrant-dark">Tu cuenta aún no está registrada con un plan activo.</span>
+                        <p class="mt-0.5">Selecciona con los <strong>checks (✓)</strong> los planes que deseas contratar. Puedes elegir uno o varios para comparar precios, detectar ofertas y ahorrar en tus compras o negocio:</p>
+                    </div>
+                </div>
+
+                <!-- Los 4 Planes con Checks Interactivos -->
+                <div>
+                    <label class="block text-xs font-black text-vibrant-dark uppercase tracking-wider mb-2 flex items-center justify-between">
+                        <span>Escoge tu(s) Plan(es):</span>
+                        <span class="text-[10px] text-gray-500 font-bold lowercase">(marca los que necesites)</span>
+                    </label>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5" id="regPlansContainer">
+                        
+                        <!-- Check Plan 1: Mercados -->
+                        <label class="reg-plan-card relative flex items-start gap-3 p-3 border-2 border-vibrant-dark cursor-pointer transition-all bg-green-50 hover:bg-green-100 select-none" data-plan="plan1">
+                            <input type="checkbox" id="regPlan1" checked onchange="window.actualizarTotalPlanesRegistro()" class="w-5 h-5 mt-0.5 accent-green-600 rounded cursor-pointer flex-shrink-0">
+                            <div class="min-w-0 flex-grow">
+                                <div class="flex items-center justify-between gap-1">
+                                    <span class="font-black text-xs text-vibrant-dark uppercase">🛒 Plan Mercados</span>
+                                    <span class="bg-green-600 text-white text-[10px] font-black px-1.5 py-0.2">₡10,000</span>
+                                </div>
+                                <p class="text-[11px] font-bold text-green-900 mt-0.5">Multi-Supermercados</p>
+                                <p class="text-[10px] text-gray-600 font-medium leading-tight mt-1">Walmart, MásxMenos, Maxi Palí, Palí y Auto Mercado a la vez.</p>
+                            </div>
+                        </label>
+
+                        <!-- Check Plan 2: Tiendas -->
+                        <label class="reg-plan-card relative flex items-start gap-3 p-3 border-2 border-vibrant-dark cursor-pointer transition-all bg-orange-50 hover:bg-orange-100 select-none" data-plan="plan2">
+                            <input type="checkbox" id="regPlan2" onchange="window.actualizarTotalPlanesRegistro()" class="w-5 h-5 mt-0.5 accent-orange-600 rounded cursor-pointer flex-shrink-0">
+                            <div class="min-w-0 flex-grow">
+                                <div class="flex items-center justify-between gap-1">
+                                    <span class="font-black text-xs text-vibrant-dark uppercase">🏪 Plan Tiendas</span>
+                                    <span class="bg-orange-600 text-white text-[10px] font-black px-1.5 py-0.2">₡10,000</span>
+                                </div>
+                                <p class="text-[11px] font-bold text-orange-900 mt-0.5">Abarrotes & Mini-súpers</p>
+                                <p class="text-[10px] text-gray-600 font-medium leading-tight mt-1">Canasta básica, abarrotes y comparativas semanales frente a cadenas.</p>
+                            </div>
+                        </label>
+
+                        <!-- Check Plan 3: Farmacias -->
+                        <label class="reg-plan-card relative flex items-start gap-3 p-3 border-2 border-vibrant-dark cursor-pointer transition-all bg-emerald-50 hover:bg-emerald-100 select-none" data-plan="plan3">
+                            <input type="checkbox" id="regPlan3" onchange="window.actualizarTotalPlanesRegistro()" class="w-5 h-5 mt-0.5 accent-emerald-600 rounded cursor-pointer flex-shrink-0">
+                            <div class="min-w-0 flex-grow">
+                                <div class="flex items-center justify-between gap-1">
+                                    <span class="font-black text-xs text-vibrant-dark uppercase">💊 Plan Farmacias</span>
+                                    <span class="bg-emerald-600 text-white text-[10px] font-black px-1.5 py-0.2">₡15,000</span>
+                                </div>
+                                <p class="text-[11px] font-bold text-emerald-900 mt-0.5">Salud & Medicamentos</p>
+                                <p class="text-[10px] text-gray-600 font-medium leading-tight mt-1">Fischel, Sucre, La Bomba, alertas de inventario y cambios diarios.</p>
+                            </div>
+                        </label>
+
+                        <!-- Check Plan 4: Comercios -->
+                        <label class="reg-plan-card relative flex items-start gap-3 p-3 border-2 border-vibrant-dark cursor-pointer transition-all bg-blue-50 hover:bg-blue-100 select-none" data-plan="plan4">
+                            <input type="checkbox" id="regPlan4" onchange="window.actualizarTotalPlanesRegistro()" class="w-5 h-5 mt-0.5 accent-blue-600 rounded cursor-pointer flex-shrink-0">
+                            <div class="min-w-0 flex-grow">
+                                <div class="flex items-center justify-between gap-1">
+                                    <span class="font-black text-xs text-vibrant-dark uppercase">🏬 Plan Comercios</span>
+                                    <span class="bg-blue-600 text-white text-[10px] font-black px-1.5 py-0.2">₡20,000</span>
+                                </div>
+                                <p class="text-[11px] font-bold text-blue-900 mt-0.5">Retail, Hogar & Tecnología</p>
+                                <p class="text-[10px] text-gray-600 font-medium leading-tight mt-1">Gollo, Monge, Siman, historial de rebajas y promociones.</p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Resumen del Total Calculado -->
+                    <div class="mt-3 bg-gray-50 border-2 border-vibrant-dark p-3 flex items-center justify-between shadow-xs">
+                        <div>
+                            <span class="text-[11px] font-bold text-gray-600 uppercase tracking-wider block">Total por los planes seleccionados:</span>
+                            <span id="regPlansSummaryText" class="text-xs font-black text-vibrant-dark">1 plan seleccionado</span>
+                        </div>
+                        <div class="text-right">
+                            <span id="regTotalAmountBadge" class="bg-vibrant-dark text-vibrant-green text-base sm:text-lg font-black px-3 py-1 shadow-stitch">₡10,000 / mes</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta Pago SINPE Móvil -->
+                <div class="bg-[#FEF9C3] border-2 border-vibrant-dark p-3 shadow-xs">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">📱</span>
+                            <div>
+                                <span class="text-xs font-black uppercase text-vibrant-dark tracking-wider">Pago por SINPE Móvil:</span>
+                                <span class="block font-black text-base text-vibrant-blue tracking-widest leading-none mt-0.5">62278771</span>
+                            </div>
+                        </div>
+                        <span class="text-[10px] bg-white text-gray-700 font-bold px-2 py-1 border border-vibrant-dark">Activación Inmediata</span>
+                    </div>
+                    <p class="text-[11px] text-gray-700 font-medium mt-1.5 leading-snug">
+                        Realice la transferencia por <strong>SINPE Móvil al 62278771</strong> y al pulsar el botón verde abajo se abrirá WhatsApp para enviarnos el comprobante. El administrador le habilitará su cuenta de inmediato.
+                    </p>
+                </div>
+
+                <!-- Formulario de Contacto -->
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-black text-vibrant-dark uppercase tracking-wider mb-1">Nombre Completo *</label>
+                        <input id="regClientName" type="text" placeholder="Ej: Carlos Ramírez Morales" class="w-full bg-white text-vibrant-dark font-bold p-2.5 border-2 border-vibrant-dark text-xs focus:outline-none focus:bg-amber-50">
+                        <p id="regNameError" class="text-xs text-red-600 font-black mt-1 hidden">⚠️ Ingrese su nombre para personalizar su cuenta.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-vibrant-dark uppercase tracking-wider mb-1">Correo de Gmail para Acceso *</label>
+                        <input id="regClientEmail" type="email" placeholder="su.correo@gmail.com" class="w-full bg-white text-vibrant-dark font-bold p-2.5 border-2 border-vibrant-dark text-xs focus:outline-none focus:bg-amber-50">
+                        <p class="text-[11px] text-gray-500 font-semibold mt-1">🔑 Con este Gmail iniciará sesión con el botón de Google una vez activo su plan.</p>
+                        <p id="regEmailError" class="text-xs text-red-600 font-black mt-1 hidden">⚠️ Ingrese un correo de Gmail válido.</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Botones de Acción (Footer Fijo) -->
+            <div class="p-4 bg-gray-50 border-t-2 border-vibrant-dark flex items-center justify-between gap-3 flex-shrink-0">
+                <button onclick="window.cerrarModalRegistroPlanes()" class="bg-white hover:bg-gray-100 text-vibrant-dark font-black px-4 py-2.5 text-xs uppercase tracking-wider border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 cursor-pointer">
+                    Cerrar
+                </button>
+                <button id="regBtnWhatsApp" onclick="window.confirmarRegistroPlanesWhatsApp()" class="bg-[#25D366] hover:bg-[#20bd5a] text-white font-black px-5 py-2.5 text-xs uppercase tracking-wider border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 flex items-center gap-2 cursor-pointer">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                    <span>Solicitar y Enviar a WhatsApp</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- ==============================================
          PANEL ADMINISTRADOR EXCLUSIVO
