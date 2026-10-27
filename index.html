@@ -249,6 +249,7 @@
                             <span class="w-2 h-2 rounded-full bg-vibrant-green animate-pulse"></span>
                             <span id="userEmailLabel" class="max-w-[130px] truncate text-[11px]">usuario@gmail.com</span>
                         </div>
+                        <span id="userExpireBadge" class="hidden text-[10px] font-black px-2 py-0.5 border-2 border-vibrant-dark cursor-pointer shadow-stitch transition-transform active:scale-95" title="Estado de suscripción. Clic para renovar"></span>
                         <button id="btnAdminPanel" onclick="window.abrirPanelAdmin()" class="hidden bg-amber-300 hover:bg-amber-400 text-vibrant-dark font-black px-2.5 py-1 text-xs border-2 border-vibrant-dark shadow-stitch uppercase cursor-pointer" title="Panel Exclusivo de Administrador">
                             👑 Admin
                         </button>
@@ -2374,11 +2375,64 @@
             pb.autoCancellation(false);
         }
 
-        // Helper para comprobar si un modelo tiene algún plan activo o es admin
-        // Se verifica directamente contra la base de datos PocketBase (admin: true)
+        // Helper para calcular el estado de vigencia (1 mes) de un usuario según el campo 'expire' de PocketBase
+        window.calcularEstadoVigencia = function(userRecord) {
+            if (!userRecord) return { vigente: false, vencido: true, proximoAVencer: false, diasRestantes: 0, expireFormatted: 'N/A' };
+            
+            // Los administradores no caducan
+            if (userRecord.admin === true || userRecord.admin === 'true' || userRecord.admin === 1) {
+                return { esAdmin: true, vigente: true, vencido: false, proximoAVencer: false, diasRestantes: 9999, expireFormatted: 'Permanente (Admin)' };
+            }
+
+            let expireDate = null;
+            if (userRecord.expire) {
+                expireDate = new Date(userRecord.expire);
+            } else if (userRecord.created) {
+                // Fallback de retrocompatibilidad: 1 mes después de su fecha de creación si aún no tenía expire
+                expireDate = new Date(userRecord.created);
+                expireDate.setMonth(expireDate.getMonth() + 1);
+            }
+
+            if (!expireDate || isNaN(expireDate.getTime())) {
+                return { tieneExpire: false, vigente: false, vencido: true, proximoAVencer: false, diasRestantes: 0, expireFormatted: 'Sin fecha' };
+            }
+
+            const now = new Date();
+            const diffMs = expireDate.getTime() - now.getTime();
+            const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+            const formatted = expireDate.toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+            const vencido = diffMs <= 0 || diffDays <= 0;
+            const proximoAVencer = !vencido && diffDays <= 5;
+            const vigente = !vencido;
+
+            return {
+                tieneExpire: Boolean(userRecord.expire),
+                expireDate: expireDate,
+                expireFormatted: formatted,
+                diasRestantes: diffDays,
+                vencido: vencido,
+                proximoAVencer: proximoAVencer,
+                vigente: vigente
+            };
+        };
+
+        // Comprueba si el usuario está vencido
+        window.isUserExpired = function(userRecord) {
+            if (!userRecord) return true;
+            if (userRecord.admin === true || userRecord.admin === 'true' || userRecord.admin === 1) return false;
+            const estado = window.calcularEstadoVigencia(userRecord);
+            return estado.vencido;
+        };
+
+        // Helper para comprobar si un modelo tiene algún plan activo, está vigente y no ha expirado (o es admin)
         window.userHasAnyPlanOrAdmin = function(model) {
             if (!model) return false;
             if (model.admin === true || model.admin === 'true' || model.admin === 1) return true;
+            
+            // Si el plan ya venció, no tiene acceso
+            if (window.isUserExpired(model)) return false;
+
             return Boolean(
                 model.plan1 === true || model.plan1 === 'true' || model.plan1 === 1 ||
                 model.plan2 === true || model.plan2 === 'true' || model.plan2 === 1 ||
@@ -2388,14 +2442,18 @@
         };
 
         // Verifica si el usuario actual tiene acceso a comparar todos los supermercados
-        // Se permite si es admin O si tiene activo el plan1 (Plan Mercados) en PocketBase
+        // Se permite si es admin O si tiene activo el plan1 (Plan Mercados) en PocketBase Y no ha vencido
         window.hasAccessToAllSupermarkets = function() {
             if (!pb || !pb.authStore || !pb.authStore.isValid) return false;
             const model = pb.authStore.model;
             if (!model) return false;
 
-            // Admin o Plan 1 (Plan Mercados) activo en PocketBase
+            // Admin no caduca
             if (model.admin === true || model.admin === 'true' || model.admin === 1) return true;
+            
+            // Si venció el plan, se bloquea la comparativa
+            if (window.isUserExpired(model)) return false;
+
             if (model.plan1 === true || model.plan1 === 'true' || model.plan1 === 1) return true;
 
             return false;
@@ -2411,7 +2469,13 @@
             plan4: { name: 'Plan 4: Comercios', price: 20000, desc: 'Retail, Hogar & Tecnología (Gollo, Monge, Siman)' }
         };
 
-        window.abrirModalRegistroPlanes = function(userEmail = '', preSelectedPlan = 'plan1') {
+        window._regModalModo = 'nuevo';
+        window._regModalFechaVencimiento = '';
+
+        window.abrirModalRegistroPlanes = function(userEmail = '', preSelectedPlan = 'plan1', opciones = {}) {
+            window._regModalModo = opciones.modo || 'nuevo';
+            window._regModalFechaVencimiento = opciones.fechaVencimiento || '';
+
             const overlay = document.getElementById('modalRegistroPlanesOverlay');
             const card = document.getElementById('modalRegistroPlanesCard');
             const emailInput = document.getElementById('regClientEmail');
@@ -2419,6 +2483,13 @@
             const emailNotice = document.getElementById('regUserEmailNotice');
             const nameError = document.getElementById('regNameError');
             const emailError = document.getElementById('regEmailError');
+
+            const titleElem = document.getElementById('regModalTitle');
+            const subtitleElem = document.getElementById('regModalSubtitle');
+            const iconElem = document.getElementById('regModalIcon');
+            const bannerVencido = document.getElementById('regModalBannerVencido');
+            const bannerVencidoTexto = document.getElementById('regModalBannerVencidoTexto');
+            const bannerMotivacional = document.getElementById('regModalBannerMotivacional');
 
             if (nameError) nameError.classList.add('hidden');
             if (emailError) emailError.classList.add('hidden');
@@ -2435,11 +2506,41 @@
 
             const emailToUse = userEmail || (pb && pb.authStore && pb.authStore.model ? pb.authStore.model.email : '');
             if (emailInput) emailInput.value = emailToUse;
-            if (emailNotice) {
-                if (emailToUse) {
-                    emailNotice.innerHTML = `La cuenta de Google (<strong>${emailToUse}</strong>) aún no cuenta con un plan activo.`;
-                } else {
-                    emailNotice.innerText = 'Su cuenta aún no se encuentra registrada con un plan activo.';
+
+            const isVencido = (window._regModalModo === 'vencido');
+            const isRenovar = (window._regModalModo === 'renovar');
+
+            if (isVencido) {
+                if (titleElem) titleElem.innerText = '¡Renueva tu Suscripción a MercadoFácil!';
+                if (subtitleElem) subtitleElem.innerText = 'Tu suscripción ha finalizado. Renueva para continuar comparando';
+                if (iconElem) iconElem.innerText = '🔄';
+                if (bannerVencido) {
+                    bannerVencido.classList.remove('hidden');
+                    if (bannerVencidoTexto) {
+                        bannerVencidoTexto.innerText = `Tu periodo de 1 mes finalizó el ${window._regModalFechaVencimiento || 'recientemente'}. Selecciona los planes a renovar y envía tu comprobante de SINPE Móvil al 62278771 para reactivar tu cuenta de inmediato.`;
+                    }
+                }
+                if (bannerMotivacional) bannerMotivacional.classList.add('hidden');
+                if (emailNotice) emailNotice.innerHTML = `Cuenta de Google: <strong>${emailToUse}</strong> (Suscripción Vencida).`;
+            } else if (isRenovar) {
+                if (titleElem) titleElem.innerText = 'Renovación Anticipada de Planes';
+                if (subtitleElem) subtitleElem.innerText = 'Extiende tu plan por 1 mes adicional';
+                if (iconElem) iconElem.innerText = '⏳';
+                if (bannerVencido) bannerVencido.classList.add('hidden');
+                if (bannerMotivacional) bannerMotivacional.classList.remove('hidden');
+                if (emailNotice) emailNotice.innerHTML = `Renovando planes para <strong>${emailToUse}</strong>.`;
+            } else {
+                if (titleElem) titleElem.innerText = '¡Activa tu Cuenta en MercadoFácil!';
+                if (subtitleElem) subtitleElem.innerText = 'Elige tu plan para desbloquear comparativas en tiempo real';
+                if (iconElem) iconElem.innerText = '🚀';
+                if (bannerVencido) bannerVencido.classList.add('hidden');
+                if (bannerMotivacional) bannerMotivacional.classList.remove('hidden');
+                if (emailNotice) {
+                    if (emailToUse) {
+                        emailNotice.innerHTML = `La cuenta de Google (<strong>${emailToUse}</strong>) aún no cuenta con un plan activo.`;
+                    } else {
+                        emailNotice.innerText = 'Su cuenta aún no se encuentra registrada con un plan activo.';
+                    }
                 }
             }
 
@@ -2547,19 +2648,24 @@
 
             if (hasError) return;
 
-            let waMsg = `🛒 *SOLICITUD DE REGISTRO Y PLANES - MERCADOFÁCIL*\n`;
+            const isRenovacion = (window._regModalModo === 'vencido' || window._regModalModo === 'renovar');
+            let waMsg = isRenovacion
+                ? `🔄 *RENOVACIÓN DE SUSCRIPCIÓN - MERCADOFÁCIL*\n`
+                : `🛒 *SOLICITUD DE REGISTRO Y PLANES - MERCADOFÁCIL*\n`;
             waMsg += `━━━━━━━━━━━━━━━━━━━━━\n`;
             waMsg += `👤 *Cliente:* ${clientName}\n`;
-            waMsg += `📧 *Gmail para Acceso:* ${clientEmail}\n`;
+            waMsg += `📧 *Gmail:* ${clientEmail}\n`;
             waMsg += `━━━━━━━━━━━━━━━━━━━━━\n`;
-            waMsg += `📦 *Planes Solicitados:*\n`;
+            waMsg += isRenovacion ? `📦 *Planes a Renovar (1 mes adicional):*\n` : `📦 *Planes Solicitados (1 mes):*\n`;
             selectedList.forEach(pl => {
                 waMsg += `  ✅ *${pl.name}* (₡${pl.price.toLocaleString('es-CR')}/mes)\n`;
             });
             waMsg += `━━━━━━━━━━━━━━━━━━━━━\n`;
-            waMsg += `💰 *TOTAL A CANCELAR: ₡${total.toLocaleString('es-CR')}/mes*\n`;
-            waMsg += `💳 *SINPE Móvil:* Listo para transferir o comprobante adjunto al 62278771.\n\n`;
-            waMsg += `¡Hola! Deseo registrarme y activar estos planes en MercadoFácil para mi correo ${clientEmail}. Quedo atento a la confirmación de mi cuenta.`;
+            waMsg += `💰 *TOTAL A TRANSFERIR: ₡${total.toLocaleString('es-CR')}*\n`;
+            waMsg += `💳 *SINPE Móvil:* Transferencia realizada o comprobante adjunto al 62278771.\n\n`;
+            waMsg += isRenovacion
+                ? `¡Hola! Deseo renovar mi suscripción en MercadoFácil por 1 mes para mi correo ${clientEmail}. Adjunto mi comprobante de pago por SINPE Móvil.`
+                : `¡Hola! Deseo registrarme y activar estos planes en MercadoFácil para mi correo ${clientEmail}. Quedo atento a la confirmación de mi cuenta.`;
 
             const waUrl = `https://api.whatsapp.com/send?phone=50662278771&text=${encodeURIComponent(waMsg)}`;
             window.cerrarModalRegistroPlanes();
@@ -2581,31 +2687,58 @@
                 const userRecord = authData.record || pb.authStore.model;
                 const userEmail = (userRecord && userRecord.email) ? userRecord.email.toLowerCase().trim() : '';
                 const isSuperAdmin = Boolean(userRecord && (userRecord.admin === true || userRecord.admin === 'true' || userRecord.admin === 1));
-                const isAuthorized = window.userHasAnyPlanOrAdmin(userRecord);
-
-                // Si NO es admin y NO tiene ningún plan activo (o si fue un row auto-creado sin autorización previa)
-                if (!isSuperAdmin && (!isAuthorized || authData.isNew)) {
-                    console.warn("Intento de login sin plan activo en PocketBase:", userEmail);
+                
+                // Si NO es admin, verificar planes y vigencia
+                if (!isSuperAdmin) {
+                    const hasPlans = Boolean(userRecord && (userRecord.plan1 || userRecord.plan2 || userRecord.plan3 || userRecord.plan4));
                     
-                    // Si PocketBase creó un row al hacer OAuth2 pero el usuario no estaba previamente autorizado,
-                    // eliminarlo inmediatamente de la base de datos para no dejar registros no autorizados
-                    if (authData.isNew && userRecord && userRecord.id) {
-                        try {
-                            await pb.collection('users').delete(userRecord.id);
-                            console.log("Registro no autorizado auto-creado por OAuth2 eliminado de PocketBase:", userEmail);
-                        } catch(delErr) {
-                            console.warn("No se pudo eliminar row no autorizado (configure Delete rule en PB):", delErr);
+                    // 1. Si no tiene ningún plan o es un row auto-creado por OAuth2
+                    if (!hasPlans || authData.isNew) {
+                        console.warn("Intento de login sin plan activo en PocketBase:", userEmail);
+                        if (authData.isNew && userRecord && userRecord.id) {
+                            try {
+                                await pb.collection('users').delete(userRecord.id);
+                                console.log("Registro no autorizado auto-creado por OAuth2 eliminado de PocketBase:", userEmail);
+                            } catch(delErr) {
+                                console.warn("No se pudo eliminar row no autorizado (configure Delete rule en PB):", delErr);
+                            }
                         }
+                        pb.authStore.clear();
+                        localStorage.removeItem('pocketbase_auth');
+                        verificarEstadoSesion();
+                        window.abrirModalRegistroPlanes(userEmail, 'plan1');
+                        return;
                     }
 
-                    // Limpiar la sesión inmediatamente
-                    pb.authStore.clear();
-                    localStorage.removeItem('pocketbase_auth');
-                    verificarEstadoSesion();
+                    // 2. Si sí tiene planes, verificar si YA SE LE VENCIÓ
+                    const vigencia = window.calcularEstadoVigencia(userRecord);
+                    if (vigencia.vencido) {
+                        console.warn("Usuario con plan vencido en PocketBase:", userEmail, "venció:", vigencia.expireFormatted);
+                        pb.authStore.clear();
+                        localStorage.removeItem('pocketbase_auth');
+                        verificarEstadoSesion();
 
-                    // Abrir pop-up interactivo con los 4 planes y checks para animar al usuario a registrarse
-                    window.abrirModalRegistroPlanes(userEmail, 'plan1');
-                    return;
+                        // Mostrar pop-up de planes en modo vencido para que renueve
+                        window.customAlert(`⚠️ Tu suscripción a MercadoFácil <strong>venció el ${vigencia.expireFormatted}</strong>.<br><br>Para continuar disfrutando de la comparativa, por favor renueva tu plan por SINPE Móvil al 62278771.`, 'Suscripción Vencida', '⚠️');
+                        window.abrirModalRegistroPlanes(userEmail, 'plan1', {
+                            modo: 'vencido',
+                            fechaVencimiento: vigencia.expireFormatted
+                        });
+                        return;
+                    }
+
+                    // 3. Si le quedan pocos días (<= 5 días), avisar que está próximo a vencer pero permitir el acceso
+                    if (vigencia.proximoAVencer) {
+                        setTimeout(() => {
+                            window.customAlert(
+                                `⚠️ ¡Hola <strong>${userRecord.name || userEmail}</strong>!<br><br>` +
+                                `Tu suscripción a MercadoFácil <strong>vencerá en ${vigencia.diasRestantes} ${vigencia.diasRestantes === 1 ? 'día' : 'días'}</strong> (el <strong>${vigencia.expireFormatted}</strong>).<br><br>` +
+                                `Puedes renovar tu plan con anticipación por SINPE Móvil al 62278771 para no perder acceso a la comparativa de supermercados.`,
+                                'Suscripción Próxima a Vencer',
+                                '⏳'
+                            );
+                        }, 700);
+                    }
                 }
 
                 // Si el usuario sí está autorizado:
@@ -2685,13 +2818,22 @@
                 try {
                     const authData = await pb.collection('users').authRefresh();
                     const model = authData && authData.record ? authData.record : pb.authStore.model;
+                    const isSuperAdmin = Boolean(model && (model.admin === true || model.admin === 'true' || model.admin === 1));
                     const hasAccess = window.userHasAnyPlanOrAdmin(model);
                     
-                    if (!hasAccess) {
-                        console.warn("Usuario sin planes activos en PocketBase. Cerrando sesión...");
+                    if (!hasAccess && !isSuperAdmin) {
+                        console.warn("Usuario sin planes activos o plan vencido en PocketBase. Cerrando sesión...");
+                        const vigencia = window.calcularEstadoVigencia(model);
                         pb.authStore.clear();
                         localStorage.removeItem('pocketbase_auth');
                         verificarEstadoSesion();
+
+                        if (vigencia.vencido) {
+                            window.abrirModalRegistroPlanes(model.email || '', 'plan1', {
+                                modo: 'vencido',
+                                fechaVencimiento: vigencia.expireFormatted
+                            });
+                        }
                         return;
                     }
                     verificarEstadoSesion();
@@ -2740,6 +2882,30 @@
                 if (userProfileBar) userProfileBar.classList.remove('hidden');
                 if (userEmailLabel) userEmailLabel.innerText = usuario.name || usuario.email || 'Usuario';
                 
+                // Indicador de vigencia en la barra de usuario
+                const userExpireBadge = document.getElementById('userExpireBadge');
+                if (userExpireBadge) {
+                    if (isSuperAdmin) {
+                        userExpireBadge.classList.add('hidden');
+                    } else {
+                        const vigencia = window.calcularEstadoVigencia(usuario);
+                        userExpireBadge.classList.remove('hidden');
+                        if (vigencia.vencido) {
+                            userExpireBadge.className = 'text-[10px] font-black px-2 py-0.5 border-2 border-vibrant-dark bg-red-600 text-white cursor-pointer shadow-stitch';
+                            userExpireBadge.innerText = `⚠️ Vencido (${vigencia.expireFormatted})`;
+                            userExpireBadge.onclick = () => window.abrirModalRegistroPlanes(email, 'plan1', { modo: 'vencido', fechaVencimiento: vigencia.expireFormatted });
+                        } else if (vigencia.proximoAVencer) {
+                            userExpireBadge.className = 'text-[10px] font-black px-2 py-0.5 border-2 border-vibrant-dark bg-amber-400 text-vibrant-dark animate-pulse cursor-pointer shadow-stitch';
+                            userExpireBadge.innerText = `⏳ Vence en ${vigencia.diasRestantes}d · Renovar`;
+                            userExpireBadge.onclick = () => window.abrirModalRegistroPlanes(email, 'plan1', { modo: 'renovar', fechaVencimiento: vigencia.expireFormatted });
+                        } else {
+                            userExpireBadge.className = 'text-[10px] font-bold px-2 py-0.5 border border-gray-400 bg-gray-100 text-gray-800 cursor-pointer hover:bg-gray-200';
+                            userExpireBadge.innerText = `📅 Vence: ${vigencia.expireFormatted}`;
+                            userExpireBadge.onclick = () => window.abrirModalRegistroPlanes(email, 'plan1', { modo: 'renovar', fechaVencimiento: vigencia.expireFormatted });
+                        }
+                    }
+                }
+
                 // El botón Admin SOLO se muestra para usuarios con admin === true en la base de datos PocketBase
                 if (btnAdminPanel) {
                     if (isSuperAdmin) {
@@ -2753,6 +2919,8 @@
                 if (btnLogin) btnLogin.classList.remove('hidden');
                 if (userProfileBar) userProfileBar.classList.add('hidden');
                 if (btnAdminPanel) btnAdminPanel.classList.add('hidden');
+                const userExpireBadge = document.getElementById('userExpireBadge');
+                if (userExpireBadge) userExpireBadge.classList.add('hidden');
             }
 
             if (typeof populateFilterDropdowns === 'function' && window.allData && window.allData.length > 0) {
@@ -2819,6 +2987,13 @@
                 subtitle.innerText = `${pb.authStore.model.email || pb.authStore.model.name || 'Admin'} · MercadoFácil`;
             }
             
+            const searchInput = document.getElementById('adminSearchInput');
+            if (searchInput) searchInput.value = '';
+            const planSelect = document.getElementById('adminPlanFilterSelect');
+            if (planSelect) planSelect.value = 'todos';
+            const clearBtn = document.getElementById('adminClearSearchBtn');
+            if (clearBtn) clearBtn.classList.add('hidden');
+
             if (overlay && card) {
                 overlay.classList.remove('opacity-0', 'pointer-events-none');
                 overlay.classList.add('opacity-100');
@@ -2849,7 +3024,11 @@
                 const planNames = { plan1: 'Plan Mercados', plan2: 'Tiendas', plan3: 'Farmacias', plan4: 'Comercios' };
                 const pName = planNames[planField] || planField;
                 window.customAlert(`El plan <strong>${pName}</strong> para <strong>${userEmail}</strong> fue actualizado a: <strong>${newStatus ? 'Activo (True)' : 'Inactivo (False)'}</strong> en PocketBase.`, 'Base de Datos PocketBase', '✅');
-                await window.renderAdminList();
+                
+                // Actualizar estado en memoria para respuesta instantánea
+                const targetUser = adminAllUsersList.find(u => u.id === userId);
+                if (targetUser) targetUser[planField] = newStatus;
+                window.filtrarUsuariosAdmin();
             } catch (err) {
                 console.error("Error al actualizar plan en PocketBase:", err);
                 window.customAlert(`No se pudo actualizar el registro en PocketBase: <strong>${err.message || err}</strong><br><br>Verifique en la consola de PocketBase que la regla <strong>Update rule</strong> de la colección 'users' permita la actualización a administradores (@request.auth.admin = true), o modifíquelo directamente en la tabla de PocketBase.`, 'Regla de Permisos PocketBase', '⚠️');
@@ -2875,7 +3054,8 @@
                 try {
                     await pb.collection('users').delete(userId);
                     window.customAlert(`El usuario <strong>${userEmail}</strong> ha sido eliminado de la base de datos PocketBase.`, 'Usuario Eliminado', '✅');
-                    await window.renderAdminList();
+                    adminAllUsersList = adminAllUsersList.filter(u => u.id !== userId);
+                    window.filtrarUsuariosAdmin();
                 } catch(err) {
                     window.customAlert(`Error al eliminar usuario en PocketBase: ${err.message || err}`, 'Error', '⚠️');
                 }
@@ -2928,22 +3108,39 @@
                     existingUser = null;
                 }
 
+                // Calcular fecha de vencimiento a 1 mes exacto desde hoy
+                const expireDate = new Date();
+                expireDate.setMonth(expireDate.getMonth() + 1);
+                const expireISO = expireDate.toISOString();
+
                 if (existingUser) {
-                    // Ya existe: actualizar sus planes en PocketBase (manteniendo admin = false para usuarios normales)
+                    // Ya existe: actualizar sus planes y renovar/extender vigencia por 1 mes
+                    let newExpire = new Date();
+                    if (existingUser.expire) {
+                        const curExp = new Date(existingUser.expire);
+                        if (!isNaN(curExp.getTime()) && curExp.getTime() > Date.now()) {
+                            newExpire = curExp;
+                        }
+                    }
+                    newExpire.setMonth(newExpire.getMonth() + 1);
+                    const newExpireISO = newExpire.toISOString();
+
                     await pb.collection('users').update(existingUser.id, {
                         plan1: plan1Val,
                         plan2: plan2Val,
                         plan3: plan3Val,
-                        plan4: plan4Val
+                        plan4: plan4Val,
+                        expire: newExpireISO
                     });
                     input.value = '';
+                    const expFormatted = newExpire.toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit', year: 'numeric' });
                     if (feedback) {
                         feedback.className = 'text-xs font-black mt-2 text-green-700 block';
-                        feedback.innerText = `✅ Planes actualizados en PocketBase para ${email} (Plan1: ${plan1Val}, Plan2: ${plan2Val}, Plan3: ${plan3Val}, Plan4: ${plan4Val})`;
+                        feedback.innerText = `✅ Planes actualizados y vigencia de 1 mes extendida hasta ${expFormatted} para ${email}.`;
                         setTimeout(() => feedback.classList.add('hidden'), 5000);
                     }
                 } else {
-                    // NO existe en la búsqueda previa: intentar crear el usuario
+                    // NO existe en la búsqueda previa: intentar crear el usuario con expire = 1 mes
                     const randomPass = 'Mercado_' + Math.random().toString(36).substring(2, 10) + '!' + Date.now();
                     try {
                         const newRecord = await pb.collection('users').create({
@@ -2956,13 +3153,15 @@
                             plan2: plan2Val,
                             plan3: plan3Val,
                             plan4: plan4Val,
+                            expire: expireISO,
                             name: email.split('@')[0]
                         });
-                        console.log("Nuevo usuario creado en PocketBase con planes:", newRecord);
+                        console.log("Nuevo usuario creado en PocketBase con planes y vigencia de 1 mes:", newRecord);
                         input.value = '';
+                        const expFormatted = expireDate.toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit', year: 'numeric' });
                         if (feedback) {
                             feedback.className = 'text-xs font-black mt-2 text-green-700 block leading-relaxed';
-                            feedback.innerText = `✅ Usuario creado exitosamente en PocketBase para ${email} con sus planes activos. Ahora el cliente puede ingresar con "Entrar con Google".`;
+                            feedback.innerText = `✅ Usuario creado exitosamente para ${email} con vigencia de 1 mes (vence: ${expFormatted}). Ahora el cliente puede ingresar con "Entrar con Google".`;
                             setTimeout(() => feedback.classList.add('hidden'), 6000);
                         }
                     } catch (createErr) {
@@ -2996,95 +3195,249 @@
             }
         };
 
+        // ==============================================
+        // GESTIÓN DE USUARIOS EN EL PANEL ADMIN: LISTA, BÚSQUEDA, FILTRO DE PLANES Y PAGINACIÓN
+        // ==============================================
+        let adminAllUsersList = [];
+        let adminFilteredUsersList = [];
+        let adminCurrentPage = 1;
+        const ADMIN_PAGE_SIZE = 5; // 5 cuentas por página
+
         // Renderizar lista consultando directamente la colección users de PocketBase
-        // Muestra el estado de admin y los 4 planes (plan1, plan2, plan3, plan4) con botones interactivos
         window.renderAdminList = async function() {
             const listContainer = document.getElementById('adminUsersList');
             const countBadge = document.getElementById('adminCountBadge');
             if (!listContainer) return;
 
-            listContainer.innerHTML = '<div class="p-4 text-center text-xs font-bold text-gray-500">⏳ Consultando colección users en PocketBase...</div>';
+            listContainer.innerHTML = '<div class="p-6 text-center text-xs font-bold text-gray-500">⏳ Consultando colección users en PocketBase...</div>';
 
             try {
                 const records = await pb.collection('users').getFullList({
                     sort: '-created'
                 });
 
-                if (countBadge) {
-                    countBadge.innerText = `${records.length} ${records.length === 1 ? 'cuenta' : 'cuentas'}`;
-                }
-
-                listContainer.innerHTML = '';
-                const currentUserId = pb && pb.authStore && pb.authStore.model ? pb.authStore.model.id : null;
-                records.forEach(user => {
-                    const email = (user.email || user.username || '').toLowerCase();
-                    const isAdmin = Boolean(user.admin === true || user.admin === 'true' || user.admin === 1);
-                    const isSelf = Boolean(currentUserId && user.id === currentUserId);
-                    const p1 = Boolean(user.plan1 === true || user.plan1 === 'true' || user.plan1 === 1);
-                    const p2 = Boolean(user.plan2 === true || user.plan2 === 'true' || user.plan2 === 1);
-                    const p3 = Boolean(user.plan3 === true || user.plan3 === 'true' || user.plan3 === 1);
-                    const p4 = Boolean(user.plan4 === true || user.plan4 === 'true' || user.plan4 === 1);
-
-                    const row = document.createElement('div');
-                    row.className = 'p-3 flex flex-col md:flex-row md:items-center justify-between hover:bg-gray-50 text-xs font-bold border-b border-gray-100 last:border-b-0 gap-2.5';
-                    row.innerHTML = `
-                        <div class="flex items-start gap-2.5 min-w-0">
-                            <span class="text-base flex-shrink-0 mt-0.5">${isAdmin ? '👑' : '👤'}</span>
-                            <div class="min-w-0">
-                                <div class="text-vibrant-dark truncate ${isAdmin ? 'font-black' : ''}">${user.name ? `${user.name} (${email})` : email}</div>
-                                <div class="mt-1 flex items-center gap-1.5 flex-wrap">
-                                    ${isAdmin ? '<span class="bg-amber-200 text-vibrant-dark text-[10px] font-black px-1.5 py-0.2 border border-vibrant-dark">ADMINISTRADOR</span>' : '<span class="bg-gray-200 text-gray-700 text-[10px] font-bold px-1.5 py-0.2">CLIENTE (admin: false)</span>'}
-                                    
-                                    <!-- Badges clickeables de los 4 planes -->
-                                    <button onclick="window.adminCambiarPlanPocketBase('${user.id}', 'plan1', ${!p1}, '${email}')" class="text-[10px] font-black px-1.5 py-0.5 border cursor-pointer transition-all ${p1 ? 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200' : 'bg-gray-100 text-gray-400 border-gray-200 line-through opacity-75 hover:opacity-100'}" title="Clic para alternar Plan 1 Mercados">
-                                        🛒 Plan 1: Mercados ${p1 ? '✓' : '✗'}
-                                    </button>
-                                    <button onclick="window.adminCambiarPlanPocketBase('${user.id}', 'plan2', ${!p2}, '${email}')" class="text-[10px] font-black px-1.5 py-0.5 border cursor-pointer transition-all ${p2 ? 'bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-200' : 'bg-gray-100 text-gray-400 border-gray-200 line-through opacity-75 hover:opacity-100'}" title="Clic para alternar Plan 2 Tiendas">
-                                        🏪 Plan 2: Tiendas ${p2 ? '✓' : '✗'}
-                                    </button>
-                                    <button onclick="window.adminCambiarPlanPocketBase('${user.id}', 'plan3', ${!p3}, '${email}')" class="text-[10px] font-black px-1.5 py-0.5 border cursor-pointer transition-all ${p3 ? 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200' : 'bg-gray-100 text-gray-400 border-gray-200 line-through opacity-75 hover:opacity-100'}" title="Clic para alternar Plan 3 Farmacias">
-                                        💊 Plan 3: Farmacias ${p3 ? '✓' : '✗'}
-                                    </button>
-                                    <button onclick="window.adminCambiarPlanPocketBase('${user.id}', 'plan4', ${!p4}, '${email}')" class="text-[10px] font-black px-1.5 py-0.5 border cursor-pointer transition-all ${p4 ? 'bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200' : 'bg-gray-100 text-gray-400 border-gray-200 line-through opacity-75 hover:opacity-100'}" title="Clic para alternar Plan 4 Comercios">
-                                        🏬 Plan 4: Comercios ${p4 ? '✓' : '✗'}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-1.5 flex-shrink-0 self-end md:self-center">
-                            ${isSelf
-                                ? '<span class="text-[10px] text-gray-400 font-bold px-2">Sesión Actual</span>' 
-                                : `<button onclick="window.adminEliminarUsuarioPocketBase('${user.id}', '${email}')" class="text-red-600 hover:text-red-800 font-black px-2 py-1 border border-red-300 bg-red-50 hover:bg-red-100 text-[10px] uppercase cursor-pointer" title="Eliminar registro completamente de PocketBase">Eliminar 🗑️</button>`}
-                        </div>
-                    `;
-                    listContainer.appendChild(row);
-                });
+                adminAllUsersList = records || [];
+                adminCurrentPage = 1;
+                window.filtrarUsuariosAdmin();
 
             } catch (err) {
                 console.warn("PocketBase getFullList:", err);
                 if (countBadge) countBadge.innerText = 'Colección PocketBase';
                 listContainer.innerHTML = `
-                    <div class="p-3 bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed">
-                        <p class="font-black mb-1.5 text-sm">ℹ️ Reglas de Seguridad PocketBase (API Rules):</p>
-                        <p class="mb-2">Para garantizar que Google OAuth <strong>NUNCA cree registros de personas no autorizadas</strong> en la base de datos, configure en su consola PocketBase (<em>Edit collection 'users' &gt; API Rules</em>):</p>
-                        
-                        <div class="space-y-1.5">
-                            <div>
-                                <span class="font-black text-amber-950">1. Create rule (Bloquea creación por OAuth2 a desconocidos):</span>
-                                <code class="block bg-white p-1 border border-amber-300 font-mono text-[11px] my-0.5 font-bold">@request.auth.admin = true || @request.context != 'oauth2'</code>
-                            </div>
-                            <div>
-                                <span class="font-black text-amber-950">2. Delete rule (Permite borrar y auto-purgar cuentas no autorizadas):</span>
-                                <code class="block bg-white p-1 border border-amber-300 font-mono text-[11px] my-0.5 font-bold">@request.auth.admin = true || id = @request.auth.id</code>
-                            </div>
-                            <div>
-                                <span class="font-black text-amber-950">3. List/Search rule (Permite al Admin ver la lista completa):</span>
-                                <code class="block bg-white p-1 border border-amber-300 font-mono text-[11px] my-0.5 font-bold">@request.auth.admin = true || id = @request.auth.id</code>
-                            </div>
-                        </div>
+                    <div class="p-4 bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed space-y-2">
+                        <p class="font-black text-sm text-amber-950">ℹ️ Configuración para Ver Todos los Usuarios en el Panel:</p>
+                        <p>Para que como Administrador pueda listar, paginar y buscar a todos los usuarios, configure en su consola de PocketBase (<em>Edit collection 'users' &gt; API Rules</em>):</p>
+                        <code class="block bg-white p-2 border border-amber-400 font-mono text-[11px] font-bold">List/Search rule: @request.auth.admin = true || id = @request.auth.id</code>
+                        <p class="text-gray-700 text-[11px]">Actualmente PocketBase solo le devuelve su propio registro si la regla tiene <code>id = @request.auth.id</code>.</p>
                     </div>
                 `;
             }
+        };
+
+        // Renovar o extender vigencia por 1 mes directamente desde el Panel Admin
+        window.adminRenovarMesPocketBase = async function(userId, currentExpire, userEmail) {
+            try {
+                let baseDate = new Date();
+                if (currentExpire) {
+                    const exp = new Date(currentExpire);
+                    if (!isNaN(exp.getTime()) && exp.getTime() > Date.now()) {
+                        baseDate = exp;
+                    }
+                }
+                baseDate.setMonth(baseDate.getMonth() + 1);
+                const newExpireISO = baseDate.toISOString();
+
+                await pb.collection('users').update(userId, {
+                    expire: newExpireISO
+                });
+
+                const targetUser = adminAllUsersList.find(u => u.id === userId);
+                if (targetUser) targetUser.expire = newExpireISO;
+                window.filtrarUsuariosAdmin();
+
+                const formattedDate = baseDate.toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                window.customAlert(`Suscripción de 1 mes renovada exitosamente para <strong>${userEmail}</strong>.<br><br>Nueva fecha de vencimiento: <strong>${formattedDate}</strong>`, 'Suscripción Renovada', '🎉');
+            } catch(err) {
+                console.error("Error al renovar usuario en PocketBase:", err);
+                window.customAlert(`No se pudo renovar en PocketBase: ${err.message || err}`, 'Error', '⚠️');
+            }
+        };
+
+        // Filtrado en vivo por texto de búsqueda (email o nombre) y por plan seleccionado
+        window.filtrarUsuariosAdmin = function() {
+            const searchInput = document.getElementById('adminSearchInput');
+            const planSelect = document.getElementById('adminPlanFilterSelect');
+            const clearBtn = document.getElementById('adminClearSearchBtn');
+
+            const query = (searchInput ? searchInput.value : '').toLowerCase().trim();
+            const planFilter = planSelect ? planSelect.value : 'todos';
+
+            if (clearBtn) {
+                if (query.length > 0) clearBtn.classList.remove('hidden');
+                else clearBtn.classList.add('hidden');
+            }
+
+            adminFilteredUsersList = adminAllUsersList.filter(user => {
+                const email = (user.email || '').toLowerCase();
+                const name = (user.name || '').toLowerCase();
+                const username = (user.username || '').toLowerCase();
+
+                // 1. Filtro de búsqueda por texto (correo o nombre)
+                const matchesSearch = !query || email.includes(query) || name.includes(query) || username.includes(query);
+                if (!matchesSearch) return false;
+
+                // 2. Filtro por plan
+                const isAdmin = Boolean(user.admin === true || user.admin === 'true' || user.admin === 1);
+                const p1 = Boolean(user.plan1 === true || user.plan1 === 'true' || user.plan1 === 1);
+                const p2 = Boolean(user.plan2 === true || user.plan2 === 'true' || user.plan2 === 1);
+                const p3 = Boolean(user.plan3 === true || user.plan3 === 'true' || user.plan3 === 1);
+                const p4 = Boolean(user.plan4 === true || user.plan4 === 'true' || user.plan4 === 1);
+
+                const vigencia = window.calcularEstadoVigencia(user);
+
+                if (planFilter === 'plan1') return p1;
+                if (planFilter === 'plan2') return p2;
+                if (planFilter === 'plan3') return p3;
+                if (planFilter === 'plan4') return p4;
+                if (planFilter === 'por_vencer') return !isAdmin && vigencia.proximoAVencer;
+                if (planFilter === 'vencidos') return !isAdmin && vigencia.vencido;
+                if (planFilter === 'admin') return isAdmin;
+                if (planFilter === 'sin_plan') return (!isAdmin && !p1 && !p2 && !p3 && !p4);
+
+                return true; // 'todos'
+            });
+
+            const totalPages = Math.ceil(adminFilteredUsersList.length / ADMIN_PAGE_SIZE) || 1;
+            if (adminCurrentPage > totalPages) adminCurrentPage = 1;
+
+            window.renderAdminPage();
+        };
+
+        window.limpiarBuscadorAdmin = function() {
+            const searchInput = document.getElementById('adminSearchInput');
+            if (searchInput) {
+                searchInput.value = '';
+                searchInput.focus();
+            }
+            window.filtrarUsuariosAdmin();
+        };
+
+        window.cambiarPaginaAdmin = function(delta) {
+            const totalPages = Math.ceil(adminFilteredUsersList.length / ADMIN_PAGE_SIZE) || 1;
+            const newPage = adminCurrentPage + delta;
+            if (newPage >= 1 && newPage <= totalPages) {
+                adminCurrentPage = newPage;
+                window.renderAdminPage();
+            }
+        };
+
+        // Renderizar la página actual de usuarios filtrados
+        window.renderAdminPage = function() {
+            const listContainer = document.getElementById('adminUsersList');
+            const countBadge = document.getElementById('adminCountBadge');
+            const paginationInfo = document.getElementById('adminPaginationInfo');
+            const currentPageBadge = document.getElementById('adminCurrentPageBadge');
+            const prevBtn = document.getElementById('adminPrevPageBtn');
+            const nextBtn = document.getElementById('adminNextPageBtn');
+            if (!listContainer) return;
+
+            const totalItems = adminFilteredUsersList.length;
+            const totalPages = Math.ceil(totalItems / ADMIN_PAGE_SIZE) || 1;
+
+            if (countBadge) {
+                const totalAll = adminAllUsersList.length;
+                if (totalItems === totalAll) {
+                    countBadge.innerText = `${totalAll} ${totalAll === 1 ? 'cuenta' : 'cuentas'}`;
+                } else {
+                    countBadge.innerText = `${totalItems} de ${totalAll} cuentas`;
+                }
+            }
+
+            if (paginationInfo) {
+                const startIdx = totalItems === 0 ? 0 : (adminCurrentPage - 1) * ADMIN_PAGE_SIZE + 1;
+                const endIdx = Math.min(adminCurrentPage * ADMIN_PAGE_SIZE, totalItems);
+                paginationInfo.innerText = totalItems === 0 
+                    ? '0 cuentas encontradas' 
+                    : `Mostrando ${startIdx}-${endIdx} de ${totalItems} (Pág. ${adminCurrentPage} de ${totalPages})`;
+            }
+
+            if (currentPageBadge) currentPageBadge.innerText = adminCurrentPage;
+            if (prevBtn) prevBtn.disabled = (adminCurrentPage <= 1);
+            if (nextBtn) nextBtn.disabled = (adminCurrentPage >= totalPages);
+
+            listContainer.innerHTML = '';
+
+            if (totalItems === 0) {
+                listContainer.innerHTML = `
+                    <div class="p-8 text-center text-xs font-bold text-gray-500">
+                        <span class="text-2xl block mb-2">🔍</span>
+                        No se encontraron usuarios que coincidan con la búsqueda o filtro aplicado.
+                    </div>
+                `;
+                return;
+            }
+
+            const startIndex = (adminCurrentPage - 1) * ADMIN_PAGE_SIZE;
+            const pageUsers = adminFilteredUsersList.slice(startIndex, startIndex + ADMIN_PAGE_SIZE);
+            const currentUserId = pb && pb.authStore && pb.authStore.model ? pb.authStore.model.id : null;
+
+            pageUsers.forEach(user => {
+                const email = (user.email || user.username || '').toLowerCase();
+                const isAdmin = Boolean(user.admin === true || user.admin === 'true' || user.admin === 1);
+                const isSelf = Boolean(currentUserId && user.id === currentUserId);
+                const p1 = Boolean(user.plan1 === true || user.plan1 === 'true' || user.plan1 === 1);
+                const p2 = Boolean(user.plan2 === true || user.plan2 === 'true' || user.plan2 === 1);
+                const p3 = Boolean(user.plan3 === true || user.plan3 === 'true' || user.plan3 === 1);
+                const p4 = Boolean(user.plan4 === true || user.plan4 === 'true' || user.plan4 === 1);
+
+                const row = document.createElement('div');
+                row.className = 'p-3 flex flex-col md:flex-row md:items-center justify-between hover:bg-gray-50 text-xs font-bold border-b border-gray-100 last:border-b-0 gap-2.5';
+                row.innerHTML = `
+                    <div class="flex items-start gap-2.5 min-w-0">
+                        <span class="text-base flex-shrink-0 mt-0.5">${isAdmin ? '👑' : '👤'}</span>
+                        <div class="min-w-0">
+                            <div class="text-vibrant-dark truncate ${isAdmin ? 'font-black' : ''} flex items-center gap-2 flex-wrap">
+                                ${user.name ? `<span class="text-gray-900">${user.name}</span> <span class="text-gray-500 font-mono text-[11px]">(${email})</span>` : `<span>${email}</span>`}
+                                ${(() => {
+                                    if (isAdmin) return '<span class="text-[10px] text-amber-800 font-bold bg-amber-100 px-1.5 py-0.2 border border-amber-300">♾️ Permanente</span>';
+                                    const vig = window.calcularEstadoVigencia(user);
+                                    if (vig.vencido) {
+                                        return `<span class="text-[10px] text-red-700 font-black bg-red-100 px-1.5 py-0.2 border border-red-300">⚠️ Vencido (${vig.expireFormatted})</span>`;
+                                    } else if (vig.proximoAVencer) {
+                                        return `<span class="text-[10px] text-amber-900 font-black bg-amber-200 px-1.5 py-0.2 border border-amber-400">⏳ Vence en ${vig.diasRestantes}d (${vig.expireFormatted})</span>`;
+                                    } else {
+                                        return `<span class="text-[10px] text-gray-700 font-bold bg-gray-100 px-1.5 py-0.2 border border-gray-300">📅 Vence: ${vig.expireFormatted} (${vig.diasRestantes}d)</span>`;
+                                    }
+                                })()}
+                            </div>
+                            <div class="mt-1 flex items-center gap-1.5 flex-wrap">
+                                ${isAdmin ? '<span class="bg-amber-200 text-vibrant-dark text-[10px] font-black px-1.5 py-0.2 border border-vibrant-dark">ADMINISTRADOR</span>' : '<span class="bg-gray-200 text-gray-700 text-[10px] font-bold px-1.5 py-0.2">CLIENTE (admin: false)</span>'}
+                                
+                                <!-- Badges interactivos de los 4 planes -->
+                                <button onclick="window.adminCambiarPlanPocketBase('${user.id}', 'plan1', ${!p1}, '${email}')" class="text-[10px] font-black px-1.5 py-0.5 border cursor-pointer transition-all ${p1 ? 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200' : 'bg-gray-100 text-gray-400 border-gray-200 line-through opacity-75 hover:opacity-100'}" title="Clic para alternar Plan 1 Mercados">
+                                    🛒 Plan 1: Mercados ${p1 ? '✓' : '✗'}
+                                </button>
+                                <button onclick="window.adminCambiarPlanPocketBase('${user.id}', 'plan2', ${!p2}, '${email}')" class="text-[10px] font-black px-1.5 py-0.5 border cursor-pointer transition-all ${p2 ? 'bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-200' : 'bg-gray-100 text-gray-400 border-gray-200 line-through opacity-75 hover:opacity-100'}" title="Clic para alternar Plan 2 Tiendas">
+                                    🏪 Plan 2: Tiendas ${p2 ? '✓' : '✗'}
+                                </button>
+                                <button onclick="window.adminCambiarPlanPocketBase('${user.id}', 'plan3', ${!p3}, '${email}')" class="text-[10px] font-black px-1.5 py-0.5 border cursor-pointer transition-all ${p3 ? 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200' : 'bg-gray-100 text-gray-400 border-gray-200 line-through opacity-75 hover:opacity-100'}" title="Clic para alternar Plan 3 Farmacias">
+                                    💊 Plan 3: Farmacias ${p3 ? '✓' : '✗'}
+                                </button>
+                                <button onclick="window.adminCambiarPlanPocketBase('${user.id}', 'plan4', ${!p4}, '${email}')" class="text-[10px] font-black px-1.5 py-0.5 border cursor-pointer transition-all ${p4 ? 'bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200' : 'bg-gray-100 text-gray-400 border-gray-200 line-through opacity-75 hover:opacity-100'}" title="Clic para alternar Plan 4 Comercios">
+                                    🏬 Plan 4: Comercios ${p4 ? '✓' : '✗'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5 flex-shrink-0 self-end md:self-center flex-wrap">
+                        ${!isAdmin ? `<button onclick="window.adminRenovarMesPocketBase('${user.id}', '${user.expire || ''}', '${email}')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-black px-2 py-1 text-[10px] uppercase cursor-pointer transition-colors" title="Extender o renovar vigencia por 1 mes adicional">+1 Mes 🔄</button>` : ''}
+                        ${isSelf
+                            ? '<span class="text-[10px] text-gray-400 font-bold px-2">Sesión Actual</span>' 
+                            : `<button onclick="window.adminEliminarUsuarioPocketBase('${user.id}', '${email}')" class="text-red-600 hover:text-red-800 font-black px-2 py-1 border border-red-300 bg-red-50 hover:bg-red-100 text-[10px] uppercase cursor-pointer" title="Eliminar registro completamente de PocketBase">Eliminar 🗑️</button>`}
+                    </div>
+                `;
+                listContainer.appendChild(row);
+            });
         };
 
         // Escuchar cambios de sesión de PocketBase en tiempo real
@@ -3227,12 +3580,12 @@
         <div id="modalRegistroPlanesCard" class="bg-white border-4 border-vibrant-dark shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] max-w-xl w-full overflow-hidden transform scale-95 transition-all duration-200 flex flex-col max-h-[92vh]">
             
             <!-- Barra Superior Animada -->
-            <div class="p-4 bg-gradient-to-r from-amber-400 via-yellow-400 to-lime-400 text-vibrant-dark flex items-center justify-between border-b-4 border-vibrant-dark flex-shrink-0">
+            <div id="regModalHeader" class="p-4 bg-gradient-to-r from-amber-400 via-yellow-400 to-lime-400 text-vibrant-dark flex items-center justify-between border-b-4 border-vibrant-dark flex-shrink-0 transition-colors">
                 <div class="flex items-center gap-2.5">
-                    <span class="text-3xl animate-bounce">🚀</span>
+                    <span id="regModalIcon" class="text-3xl animate-bounce">🚀</span>
                     <div>
-                        <h3 class="font-black text-base sm:text-lg uppercase tracking-wider text-vibrant-dark">¡Activa tu Cuenta en MercadoFácil!</h3>
-                        <p class="text-[11px] font-bold text-gray-800">Elige tu plan para desbloquear comparativas en tiempo real</p>
+                        <h3 id="regModalTitle" class="font-black text-base sm:text-lg uppercase tracking-wider text-vibrant-dark">¡Activa tu Cuenta en MercadoFácil!</h3>
+                        <p id="regModalSubtitle" class="text-[11px] font-bold text-gray-800">Elige tu plan para desbloquear comparativas en tiempo real</p>
                     </div>
                 </div>
                 <button onclick="window.cerrarModalRegistroPlanes()" class="text-vibrant-dark hover:text-red-700 font-black text-2xl leading-none px-2 py-1 transition-colors cursor-pointer" title="Cerrar">✕</button>
@@ -3241,8 +3594,19 @@
             <!-- Cuerpo Scrolleable -->
             <div class="p-4 sm:p-6 bg-white space-y-4 overflow-y-auto flex-grow">
                 
+                <!-- Banner de Alerta de Suscripción Vencida (dinámico) -->
+                <div id="regModalBannerVencido" class="hidden bg-red-500 text-white border-2 border-vibrant-dark p-3 shadow-xs">
+                    <div class="flex items-start gap-2.5">
+                        <span class="text-xl">⚠️</span>
+                        <div class="text-xs font-bold leading-relaxed">
+                            <span class="font-black block uppercase text-sm tracking-wider">Tu suscripción ha vencido</span>
+                            <span id="regModalBannerVencidoTexto">Su periodo de 1 mes ha finalizado. Seleccione los planes que desea renovar y envíe su comprobante de SINPE Móvil al 62278771 para reactivar su cuenta de inmediato.</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Mensaje Motivacional -->
-                <div class="bg-amber-50 border-2 border-amber-300 p-3.5 flex items-start gap-3">
+                <div id="regModalBannerMotivacional" class="bg-amber-50 border-2 border-amber-300 p-3.5 flex items-start gap-3">
                     <span class="text-2xl flex-shrink-0">💡</span>
                     <div class="text-xs text-amber-950 font-medium leading-relaxed">
                         <span id="regUserEmailNotice" class="font-bold text-vibrant-dark">Tu cuenta aún no está registrada con un plan activo.</span>
@@ -3429,14 +3793,59 @@
                     <p id="adminFeedback" class="text-xs font-black mt-2 hidden"></p>
                 </div>
 
-                <!-- Lista de Usuarios Autorizados -->
-                <div>
-                    <div class="flex items-center justify-between mb-2">
-                        <h4 class="text-xs font-black uppercase text-vibrant-dark tracking-wider">Cuentas con Acceso Activo</h4>
-                        <span id="adminCountBadge" class="bg-vibrant-dark text-white text-[11px] font-black px-2 py-0.5">1 cuenta</span>
+                <!-- Lista de Usuarios Autorizados con Buscador, Filtro de Planes y Paginación -->
+                <div class="space-y-2.5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <h4 class="text-xs font-black uppercase text-vibrant-dark tracking-wider">Cuentas con Acceso Activo</h4>
+                            <span id="adminCountBadge" class="bg-vibrant-dark text-white text-[11px] font-black px-2 py-0.5">0 cuentas</span>
+                        </div>
+                        <button onclick="window.renderAdminList()" class="self-end sm:self-auto text-[10px] font-black text-vibrant-blue hover:text-blue-800 flex items-center gap-1 cursor-pointer transition-colors" title="Actualizar lista desde PocketBase">
+                            🔄 Actualizar Lista
+                        </button>
                     </div>
-                    <div id="adminUsersList" class="border-2 border-vibrant-dark divide-y-2 divide-gray-200 max-h-52 overflow-y-auto bg-white">
+
+                    <!-- Barra de Búsqueda y Filtro de Planes -->
+                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 bg-gray-100 p-2 border-2 border-vibrant-dark shadow-xs">
+                        <!-- Buscador por correo o nombre -->
+                        <div class="sm:col-span-7 relative">
+                            <input id="adminSearchInput" type="text" oninput="window.filtrarUsuariosAdmin()" placeholder="🔍 Buscar por correo o nombre..." class="w-full bg-white text-vibrant-dark font-bold px-2.5 py-1.5 border-2 border-vibrant-dark text-xs focus:outline-none focus:bg-amber-50 pr-7">
+                            <button id="adminClearSearchBtn" onclick="window.limpiarBuscadorAdmin()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-600 text-xs font-black cursor-pointer" title="Limpiar búsqueda">✕</button>
+                        </div>
+                        
+                        <!-- Selector de Filtro por Plan -->
+                        <div class="sm:col-span-5">
+                            <select id="adminPlanFilterSelect" onchange="window.filtrarUsuariosAdmin()" class="w-full bg-white text-vibrant-dark font-black px-2 py-1.5 border-2 border-vibrant-dark text-xs focus:outline-none cursor-pointer">
+                                <option value="todos">📋 Todos los Planes</option>
+                                <option value="plan1">🛒 Plan 1: Mercados</option>
+                                <option value="plan2">🏪 Plan 2: Tiendas</option>
+                                <option value="plan3">💊 Plan 3: Farmacias</option>
+                                <option value="plan4">🏬 Plan 4: Comercios</option>
+                                <option value="por_vencer">⏳ Próximos a Vencer (<= 5 días)</option>
+                                <option value="vencidos">⚠️ Suscripciones Vencidas</option>
+                                <option value="admin">👑 Solo Administradores</option>
+                                <option value="sin_plan">⏳ Sin planes activos</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Contenedor de la Lista -->
+                    <div id="adminUsersList" class="border-2 border-vibrant-dark divide-y-2 divide-gray-200 min-h-[160px] max-h-72 overflow-y-auto bg-white">
                         <!-- Generado dinámicamente -->
+                    </div>
+
+                    <!-- Barra de Paginación -->
+                    <div id="adminPaginationBar" class="bg-gray-50 border-2 border-vibrant-dark p-2 flex items-center justify-between text-xs font-bold gap-2">
+                        <span id="adminPaginationInfo" class="text-[11px] text-gray-700 font-bold">Página 1 de 1</span>
+                        <div class="flex items-center gap-1.5">
+                            <button id="adminPrevPageBtn" onclick="window.cambiarPaginaAdmin(-1)" class="bg-white hover:bg-gray-100 text-vibrant-dark font-black px-2.5 py-1 text-[11px] uppercase border-2 border-vibrant-dark shadow-xs disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+                                ◀ Ant
+                            </button>
+                            <span id="adminCurrentPageBadge" class="bg-vibrant-dark text-white text-[11px] font-black px-2.5 py-1">1</span>
+                            <button id="adminNextPageBtn" onclick="window.cambiarPaginaAdmin(1)" class="bg-white hover:bg-gray-100 text-vibrant-dark font-black px-2.5 py-1 text-[11px] uppercase border-2 border-vibrant-dark shadow-xs disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+                                Sig ▶
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
