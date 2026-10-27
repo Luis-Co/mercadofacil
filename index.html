@@ -101,7 +101,7 @@
         /* --- Estilos para Mi Canasta de Compras & Anime.js Layout --- */
         .layout-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
             gap: 12px;
             align-content: start;
             align-items: stretch;
@@ -110,7 +110,7 @@
         .basket-card {
             width: 100%;
             height: 100%;
-            min-height: 145px;
+            min-height: 165px;
             box-sizing: border-box;
             background-color: #FFFFFF;
             border: 2px solid #0F172A;
@@ -2057,19 +2057,35 @@
                             </div>
                         </div>
 
-                        <div class="mt-auto pt-2 border-t border-gray-200">
-                            <div class="flex items-center justify-between gap-2">
+                        <div class="mt-auto pt-2 border-t border-gray-200 space-y-2">
+                            <!-- 1. Precio Real del Artículo (Precio Unitario) -->
+                            <div class="flex items-center justify-between text-xs bg-gray-50 px-2.5 py-1.5 border border-gray-300">
+                                <span class="text-gray-600 font-bold uppercase text-[10px] tracking-wider">Precio real:</span>
+                                <span class="font-black text-vibrant-dark text-xs sm:text-sm">
+                                    ${formatCRC(it.precio)} <span class="text-[10px] text-gray-500 font-semibold font-normal">c/u</span>
+                                </span>
+                            </div>
+
+                            <!-- 2. Cantidad y Precio Acumulado Total -->
+                            <div class="flex items-center justify-between gap-2 pt-1 border-t border-dashed border-gray-200">
                                 <!-- Control de Cantidad (+ / -) -->
-                                <div class="flex items-center border-2 border-vibrant-dark bg-white shadow-xs">
-                                    <button onclick="window.cambiarCantidadCanasta(${it.id}, -1)" class="w-6 h-6 flex items-center justify-center font-black text-xs hover:bg-red-50 text-vibrant-dark border-r border-gray-200 cursor-pointer transition-colors" title="Restar una unidad">－</button>
-                                    <span class="font-black text-xs px-2 min-w-[24px] text-center text-vibrant-dark select-none">${qty}</span>
-                                    <button onclick="window.cambiarCantidadCanasta(${it.id}, 1)" class="w-6 h-6 flex items-center justify-center font-black text-xs hover:bg-green-50 text-vibrant-dark border-l border-gray-200 cursor-pointer transition-colors" title="Sumar una unidad">＋</button>
+                                <div>
+                                    <span class="block text-[9px] font-black uppercase text-gray-500 mb-0.5">Cantidad:</span>
+                                    <div class="flex items-center border-2 border-vibrant-dark bg-white shadow-xs">
+                                        <button onclick="window.cambiarCantidadCanasta(${it.id}, -1)" class="w-6 h-6 flex items-center justify-center font-black text-xs hover:bg-red-50 text-vibrant-dark border-r border-gray-200 cursor-pointer transition-colors" title="Restar una unidad">－</button>
+                                        <span class="font-black text-xs px-2 min-w-[22px] text-center text-vibrant-dark select-none">${qty}</span>
+                                        <button onclick="window.cambiarCantidadCanasta(${it.id}, 1)" class="w-6 h-6 flex items-center justify-center font-black text-xs hover:bg-green-50 text-vibrant-dark border-l border-gray-200 cursor-pointer transition-colors" title="Sumar una unidad">＋</button>
+                                    </div>
                                 </div>
 
-                                <!-- Precio / Subtotal -->
+                                <!-- Precio Acumulado (Total por esa cantidad) -->
                                 <div class="text-right">
-                                    <span class="text-base font-black text-vibrant-blue block leading-tight">${formatCRC(subtotal)}</span>
-                                    ${qty > 1 ? `<span class="text-[10px] text-gray-400 font-bold block leading-none">(${formatCRC(it.precio)} c/u)</span>` : ''}
+                                    <span class="block text-[9px] font-black uppercase text-gray-500 mb-0.5">
+                                        ${qty > 1 ? `Acumulado (x${qty}):` : 'Acumulado:'}
+                                    </span>
+                                    <span class="text-base sm:text-lg font-black ${qty > 1 ? 'text-vibrant-blue' : 'text-vibrant-dark'} block leading-none">
+                                        ${formatCRC(subtotal)}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -2245,7 +2261,7 @@
                 );
                 return;
             }
-            const total = items.reduce((sum, item) => sum + (Number(item.precio) || 0), 0);
+            const total = items.reduce((sum, item) => sum + ((Number(item.precio) || 0) * (Number(item.cantidad) || 1)), 0);
             const canvas = generarCanvasCotizacion(items, total, formato);
 
             const mime = formato === 'jpeg' ? 'image/jpeg' : 'image/png';
@@ -2279,7 +2295,7 @@
                 );
                 return;
             }
-            const total = items.reduce((sum, item) => sum + (Number(item.precio) || 0), 0);
+            const total = items.reduce((sum, item) => sum + ((Number(item.precio) || 0) * (Number(item.cantidad) || 1)), 0);
             const canvas = generarCanvasCotizacion(items, total, 'png');
 
             // Texto formateado para WhatsApp
@@ -2291,11 +2307,14 @@
             items.forEach((it, idx) => {
                 const qty = Number(it.cantidad) || 1;
                 const sub = (Number(it.precio) || 0) * qty;
-                waText += `${idx + 1}. *${it.item}* ${qty > 1 ? `(x${qty})` : ''}\n`;
-                waText += `   🏪 ${it.super} · ₡${Number(sub).toLocaleString('es-CR')}${qty > 1 ? ` (₡${Number(it.precio).toLocaleString('es-CR')} c/u)` : ''} (Cot: ${it.fecha})\n`;
+                waText += `${idx + 1}. *${it.item}*\n`;
+                waText += `   🏪 ${it.super} · Precio real: ₡${Number(it.precio).toLocaleString('es-CR')} c/u\n`;
+                if (qty > 1) {
+                    waText += `   📦 Cantidad: ${qty} unidades → Total acumulado: *₡${Number(sub).toLocaleString('es-CR')}*\n`;
+                }
             });
             waText += `━━━━━━━━━━━━━━━━━━━━━\n`;
-            waText += `💰 *TOTAL ESTIMADO: ₡${Number(total).toLocaleString('es-CR')}*\n`;
+            waText += `💰 *TOTAL GENERAL ESTIMADO: ₡${Number(total).toLocaleString('es-CR')}*\n`;
             waText += `📦 *Total:* ${totalUnits} ${totalUnits === 1 ? 'artículo' : 'artículos'}${items.length !== totalUnits ? ` (${items.length} productos)` : ''}\n\n`;
             waText += `✨ Comparado en: https://mercadofacil.webticocr.com`;
 
