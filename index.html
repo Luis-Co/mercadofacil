@@ -332,7 +332,7 @@
                         <div>
                             <label class="block text-xs font-bold text-white uppercase tracking-widest mb-2">1. Supermercado</label>
                             <select id="superFilter" class="w-full bg-white text-vibrant-dark font-semibold py-3 px-4 shadow-sm">
-                                <option value="Todos">TODOS LOS SUPERMERCADOS 🔒 (REQUIERE PLAN MERCADOS)</option>
+                                <option value="Todos">TODOS LOS SUPERMERCADOS (EN VIVO)</option>
                                 <option value="Walmart" selected>WALMART</option>
                                 <option value="MásxMenos">MÁSXMENOS</option>
                                 <option value="Maxi Palí">MAXI PALÍ</option>
@@ -1156,13 +1156,17 @@
 
         const applyFilters = () => {
             let selectedSuper = superFilter ? superFilter.value : 'Walmart';
+            const selectedCategory = categoryFilter ? categoryFilter.value : 'Todas';
+            const selectedItem = itemFilter ? itemFilter.value : 'Todos';
             const hasPlan = Boolean(window.hasAccessToAllSupermarkets && window.hasAccessToAllSupermarkets());
-            if (selectedSuper === 'Todos' && !hasPlan) {
+
+            // Bloqueo de Plan Mercados: solo restringe cuando se intenta consultar el catálogo general completo
+            // ('Todos los productos' en 'Todos los supermercados'). Al filtrar por un producto específico,
+            // siempre se permite comparar precios entre todos los supermercados.
+            if (selectedItem === 'Todos' && selectedSuper === 'Todos' && !hasPlan) {
                 selectedSuper = 'Walmart';
                 if (superFilter) superFilter.value = 'Walmart';
             }
-            const selectedCategory = categoryFilter ? categoryFilter.value : 'Todas';
-            const selectedItem = itemFilter ? itemFilter.value : 'Todos';
 
             filteredData = allData.filter(d => {
                 const matchSuper = selectedSuper === 'Todos' || d.super === selectedSuper;
@@ -1344,7 +1348,7 @@
                 const supers = Array.from(new Set(allData.map(d => d.super))).filter(Boolean);
                 const todosLabel = hasPlan 
                     ? 'TODOS LOS SUPERMERCADOS 🔓 (PLAN MERCADOS ACTIVO)' 
-                    : 'TODOS LOS SUPERMERCADOS 🔒 (REQUIERE PLAN MERCADOS)';
+                    : 'TODOS LOS SUPERMERCADOS (EN VIVO)';
                 
                 superFilter.innerHTML = `<option value="Todos">${todosLabel}</option>`;
                 supers.forEach(sup => {
@@ -1354,16 +1358,19 @@
                     superFilter.appendChild(opt);
                 });
 
-                if (currentSuper === 'Todos') {
-                    if (hasPlan) {
+                if (hasPlan) {
+                    superFilter.value = (currentSuper && currentSuper !== 'Walmart') ? currentSuper : 'Todos';
+                } else {
+                    const isSpecificProduct = itemFilter && itemFilter.value !== 'Todos';
+                    if (isSpecificProduct) {
                         superFilter.value = 'Todos';
+                    } else if (currentSuper === 'Todos') {
+                        superFilter.value = supers.includes('Walmart') ? 'Walmart' : (supers[0] || 'Todos');
+                    } else if (supers.includes(currentSuper)) {
+                        superFilter.value = currentSuper;
                     } else {
                         superFilter.value = supers.includes('Walmart') ? 'Walmart' : (supers[0] || 'Todos');
                     }
-                } else if (supers.includes(currentSuper)) {
-                    superFilter.value = currentSuper;
-                } else {
-                    superFilter.value = supers.includes('Walmart') ? 'Walmart' : (supers[0] || 'Todos');
                 }
             }
 
@@ -1683,7 +1690,8 @@
         window.renderTable = renderTable;
         if (superFilter) {
             superFilter.addEventListener('change', () => {
-                if (superFilter.value === 'Todos' && !window.hasAccessToAllSupermarkets()) {
+                const isGeneralCatalog = !itemFilter || itemFilter.value === 'Todos';
+                if (superFilter.value === 'Todos' && isGeneralCatalog && !window.hasAccessToAllSupermarkets()) {
                     window.mostrarModalBloqueoTodos();
                     superFilter.value = 'Walmart';
                     applyFilters();
@@ -1698,7 +1706,23 @@
                 applyFilters();
             });
         }
-        if (itemFilter) itemFilter.addEventListener('change', applyFilters);
+        if (itemFilter) {
+            itemFilter.addEventListener('change', () => {
+                if (itemFilter.value !== 'Todos') {
+                    // Al seleccionar un producto específico, cambiar automáticamente el supermercado a 'Todos'
+                    // para permitir comparar los precios de este producto en todos los supermercados
+                    if (superFilter) {
+                        superFilter.value = 'Todos';
+                    }
+                } else {
+                    // Si regresa a 'Todos los productos' y no cuenta con Plan Mercados, regresar a Walmart
+                    if (!window.hasAccessToAllSupermarkets() && superFilter && superFilter.value === 'Todos') {
+                        superFilter.value = 'Walmart';
+                    }
+                }
+                applyFilters();
+            });
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             renderTable();
@@ -3166,7 +3190,7 @@
             if (!isLogged) {
                 window.showCustomModal({
                     title: '🔒 Acceso Plan Mercados Requerido',
-                    message: `Para comparar precios simultáneamente entre <strong>TODOS los supermercados de Costa Rica</strong> (Walmart, MásxMenos, Maxi Palí, Palí y Auto Mercado), debe iniciar sesión con su cuenta de Google y contar con el <strong>Plan Mercados (₡10,000/mes)</strong>.<br><br>Si aún no lo tiene contratado, solicítelo y pague por <strong>SINPE Móvil al 62278771</strong> para que el administrador le active su cuenta.`,
+                    message: `Para comparar precios simultáneamente entre <strong>TODOS los supermercados de Costa Rica</strong> (Walmart, MásxMenos, Maxi Palí, Palí y Auto Mercado) en el catálogo general completo, debe iniciar sesión con su cuenta de Google y contar con el <strong>Plan Mercados (₡10,000/mes)</strong>.<br><br>Si aún no lo tiene contratado, solicítelo y pague por <strong>SINPE Móvil al 62278771</strong> para que el administrador le active su cuenta.`,
                     icon: '🔒',
                     headerBg: 'bg-vibrant-blue',
                     confirmText: 'Entrar con Google',
@@ -3182,7 +3206,7 @@
             } else {
                 window.showCustomModal({
                     title: '🔒 Plan Mercados Requerido',
-                    message: `Hola <strong>${pb.authStore.model.name || userEmail}</strong>.<br><br>Su cuenta (<strong>${userEmail}</strong>) aún no tiene habilitado el <strong>Plan Mercados (plan1)</strong> para comparar precios entre todos los supermercados al mismo tiempo.<br><br>Puede cancelar por <strong>SINPE Móvil al 62278771</strong> y el administrador le activará el acceso en la base de datos de inmediato.`,
+                    message: `Hola <strong>${pb.authStore.model.name || userEmail}</strong>.<br><br>Su cuenta (<strong>${userEmail}</strong>) aún no tiene habilitado el <strong>Plan Mercados (plan1)</strong> para comparar precios en el catálogo general entre todos los supermercados al mismo tiempo.<br><br>Puede cancelar por <strong>SINPE Móvil al 62278771</strong> y el administrador le activará el acceso en la base de datos de inmediato.`,
                     icon: '🔒',
                     headerBg: 'bg-vibrant-orange',
                     confirmText: 'Pagar Plan Mercados (₡10,000)',
