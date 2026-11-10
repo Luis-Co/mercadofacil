@@ -293,9 +293,11 @@
                 </div>
                 <div class="sm:col-span-4">
                     <select id="adminTelemetryStatusFilter" onchange="window.renderAdminTelemetry()" class="w-full bg-white text-vibrant-dark font-black px-3 py-2 border-2 border-vibrant-dark text-xs cursor-pointer shadow-stitch">
-                        <option value="todos">👥 Todos (Logueados + Anónimos)</option>
-                        <option value="logged">🔐 Solo Logueados</option>
-                        <option value="guest">🕵️ Solo Anónimos</option>
+                        <option value="todos">👥 Todos (Clientes + Admin)</option>
+                        <option value="clientes_todos" selected>🎯 Solo Clientes (Excluir corea3000@gmail.com)</option>
+                        <option value="admin_only">👑 Solo Mis Métricas (corea3000@gmail.com)</option>
+                        <option value="clientes_logueados">🔐 Solo Clientes Logueados</option>
+                        <option value="anonimos">🕵️ Solo Visitantes Anónimos</option>
                     </select>
                 </div>
             </div>
@@ -604,6 +606,8 @@
                 started_at: r.started_at || r.created || '',
                 dwell_seconds: parseInt(r.dwell_seconds, 10) || 0,
                 is_logged: Boolean(r.is_logged === true || r.is_logged === 1 || r.is_logged === 'true'),
+                user_id: r.user_id || '',
+                user_email: r.user_email || '',
                 referrer: r.referrer || '',
                 location: r.location || '',
                 device_type: r.device_type || 'Escritorio',
@@ -628,6 +632,30 @@
                 grid_latency_ms: parseInt(r.grid_latency_ms, 10) || 0,
                 grid_latency_avg_ms: parseInt(r.grid_latency_avg_ms, 10) || 0
             };
+        }
+
+        // Identifica de forma precisa si una sesión pertenece al Administrador (corea3000@gmail.com)
+        function esSesionAdmin(s) {
+            if (!s) return false;
+            const em = (s.user_email || '').toLowerCase().trim();
+            if (em === 'corea3000@gmail.com') return true;
+            if (window.adminEmails && window.adminEmails.has(em)) return true;
+            if (s.user_id && window.adminUserIds && window.adminUserIds.has(s.user_id)) return true;
+            if (pb && pb.authStore && pb.authStore.model) {
+                if (s.user_id && s.user_id === pb.authStore.model.id) return true;
+                const myEm = (pb.authStore.model.email || '').toLowerCase().trim();
+                if (em && em === myEm) return true;
+            }
+            try {
+                const cur = JSON.parse(sessionStorage.getItem('mercadofacil_telemetry_state') || '{}');
+                if (cur && cur.session_id && cur.session_id === s.session_id) {
+                    const rawAuth = JSON.parse(localStorage.getItem('pocketbase_auth') || '{}');
+                    if (rawAuth && rawAuth.model && (rawAuth.model.admin === true || rawAuth.model.admin === 'true' || rawAuth.model.admin === 1)) {
+                        return true;
+                    }
+                }
+            } catch(e) {}
+            return false;
         }
 
         async function cargarSesionesTelemetria() {
@@ -666,14 +694,19 @@
         window.renderAdminTelemetry = function() {
             const tbody = document.getElementById('adminTelemetryTbody');
             const search = (document.getElementById('adminTelemetrySearch')?.value || '').toLowerCase().trim();
-            const filterStatus = document.getElementById('adminTelemetryStatusFilter')?.value || 'todos';
+            const filterStatus = document.getElementById('adminTelemetryStatusFilter')?.value || 'clientes_todos';
 
             let rows = allTelemetrySessions.filter(s => {
+                const isAdmin = esSesionAdmin(s);
+                if (filterStatus === 'clientes_todos' && isAdmin) return false;
+                if (filterStatus === 'admin_only' && !isAdmin) return false;
+                if (filterStatus === 'clientes_logueados' && (!s.is_logged || isAdmin)) return false;
+                if (filterStatus === 'anonimos' && (s.is_logged || isAdmin)) return false;
                 if (filterStatus === 'logged' && !s.is_logged) return false;
                 if (filterStatus === 'guest' && s.is_logged) return false;
                 if (!search) return true;
                 const blob = [
-                    s.session_id, s.location, s.referrer, s.os, s.browser, s.device_type,
+                    s.session_id, s.user_email, s.location, s.referrer, s.os, s.browser, s.device_type,
                     s.selected_super, s.selected_category, s.cart_last_product,
                     (s.search_terms || []).join(' '),
                     (s.filter_history || []).map(f => `${f.super} ${f.cat}`).join(' ')
@@ -685,8 +718,10 @@
             const n = rows.length;
             const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
             setTxt('telKpiSessions', n.toLocaleString('es-CR'));
-            const loggedCount = rows.filter(s => s.is_logged).length;
-            setTxt('telKpiSessionsSub', `${(n - loggedCount)} anónimas · ${loggedCount} logueadas`);
+            const adminCount = rows.filter(s => esSesionAdmin(s)).length;
+            const clientLoggedCount = rows.filter(s => s.is_logged && !esSesionAdmin(s)).length;
+            const anonCount = rows.filter(s => !s.is_logged).length;
+            setTxt('telKpiSessionsSub', `${anonCount} anónimas · ${clientLoggedCount} clientes · ${adminCount} admin`);
 
             const totalDwell = rows.reduce((acc, s) => acc + s.dwell_seconds, 0);
             setTxt('telKpiDwell', n ? fmtDwell(Math.round(totalDwell / n)) : '0m 00s');
@@ -724,17 +759,20 @@
                 const ctaTxt = (s.cta_clicks || []).slice(0, 2).map(c => typeof c === 'string' ? c : c.btn).join(', ');
                 const langTxt = (s.language || 'es').toUpperCase();
                 const filtersTitle = (s.filter_history || []).map(f => `${f.time || ''}: ${f.super || ''} / ${f.cat || ''}`).join('\n');
+                const isAdmin = esSesionAdmin(s);
 
                 return `
-                    <tr class="hover:bg-amber-50/50 transition-colors">
+                    <tr class="hover:bg-amber-50/50 transition-colors ${isAdmin ? 'bg-amber-50/30' : ''}">
                         <td class="py-2.5 px-3 border-r border-gray-200 whitespace-nowrap">
                             <div class="font-mono font-bold text-[11px]">${esc(fmtDate(s.started_at))}</div>
                             <div class="text-[9px] text-gray-400 font-mono" title="${esc(s.session_id)}">${esc(s.session_id.slice(0, 10))}…</div>
                         </td>
                         <td class="py-2.5 px-3 border-r border-gray-200 whitespace-nowrap">
-                            ${s.is_logged
-                                ? '<span class="bg-green-100 text-green-900 border border-green-500 px-1.5 py-0.5 text-[10px] font-black">🔐 LOGUEADO</span>'
-                                : '<span class="bg-orange-100 text-orange-900 border border-orange-400 px-1.5 py-0.5 text-[10px] font-black">🕵️ ANÓNIMO</span>'}
+                            ${isAdmin
+                                ? `<span class="bg-amber-300 text-vibrant-dark border-2 border-vibrant-dark px-2 py-0.5 text-[10px] font-black inline-flex items-center gap-1 shadow-xs">👑 ADMIN <span class="hidden sm:inline">(${esc(s.user_email || 'corea3000@gmail.com')})</span></span>`
+                                : s.is_logged
+                                    ? `<span class="bg-green-100 text-green-900 border border-green-500 px-1.5 py-0.5 text-[10px] font-black inline-flex items-center gap-1">🔐 CLIENTE <span class="text-[9px] text-gray-500">(${esc(s.user_email || 'Logueado')})</span></span>`
+                                    : '<span class="bg-orange-100 text-orange-900 border border-orange-400 px-1.5 py-0.5 text-[10px] font-black">🕵️ ANÓNIMO</span>'}
                         </td>
                         <td class="py-2.5 px-3 border-r border-gray-200 whitespace-nowrap font-black font-mono">
                             ${esc(fmtDwell(s.dwell_seconds))}
@@ -820,7 +858,20 @@
             try {
                 const users = await pb.collection('users').getFullList({ sort: '-created' });
                 allPocketBaseUsers = users || [];
+                window.adminUserIds = new Set(allPocketBaseUsers.filter(u => u.admin === true || u.admin === 'true' || u.admin === 1).map(u => u.id));
+                window.adminEmails = new Set(allPocketBaseUsers.filter(u => u.admin === true || u.admin === 'true' || u.admin === 1).map(u => (u.email || '').toLowerCase()));
+                window.adminEmails.add('corea3000@gmail.com');
+
+                // Enriquecer sesiones que tengan user_id con su email
+                allTelemetrySessions.forEach(s => {
+                    if (s.user_id && !s.user_email) {
+                        const found = allPocketBaseUsers.find(u => u.id === s.user_id);
+                        if (found && found.email) s.user_email = found.email;
+                    }
+                });
+
                 renderUsuariosPocketBase();
+                window.renderAdminTelemetry();
             } catch (err) {
                 tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-red-600 font-bold text-xs">Error al cargar usuarios de PocketBase: ${esc(err.message || err)}</td></tr>`;
             }

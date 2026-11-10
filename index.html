@@ -230,13 +230,11 @@
                                         const btn = document.getElementById('btnLoginGoogle');
                                         const bar = document.getElementById('userProfileBar');
                                         const lbl = document.getElementById('userEmailLabel');
-                                        const adminBtn = document.getElementById('btnAdminPanel');
                                         const navAdmin = document.getElementById('navMenuAdminLink');
                                         if (btn) btn.classList.add('hidden');
                                         if (bar) bar.classList.remove('hidden');
                                         if (lbl) lbl.innerText = parsed.model.email || parsed.model.name || 'Usuario';
                                         if (parsed.model.admin === true || parsed.model.admin === 'true' || parsed.model.admin === 1) {
-                                            if (adminBtn) adminBtn.classList.remove('hidden');
                                             if (navAdmin) navAdmin.classList.remove('hidden');
                                         }
                                     }
@@ -263,9 +261,6 @@
                             <span id="userEmailLabel" class="max-w-[130px] truncate text-[11px]">usuario@gmail.com</span>
                         </div>
                         <span id="userExpireBadge" class="hidden text-[10px] font-black px-2 py-0.5 border-2 border-vibrant-dark cursor-pointer shadow-stitch transition-transform active:scale-95" title="Estado de suscripción. Clic para renovar"></span>
-                        <a href="admin.html" id="btnAdminPanel" class="hidden bg-amber-300 hover:bg-amber-400 text-vibrant-dark font-black px-2.5 py-1 text-xs border-2 border-vibrant-dark shadow-stitch uppercase cursor-pointer" title="Ir a la Página Admin (Dashboard & Métricas)">
-                            📊 Panel
-                        </a>
                         <button onclick="window.cerrarSesion()" class="bg-white hover:bg-red-50 text-red-600 font-black px-2 py-1 text-xs border-2 border-vibrant-dark shadow-stitch uppercase cursor-pointer" title="Cerrar Sesión">
                             Salir
                         </button>
@@ -3422,7 +3417,6 @@
             const btnLogin = document.getElementById('btnLoginGoogle');
             const userProfileBar = document.getElementById('userProfileBar');
             const userEmailLabel = document.getElementById('userEmailLabel');
-            const btnAdminPanel = document.getElementById('btnAdminPanel');
             const navMenuAdminLink = document.getElementById('navMenuAdminLink');
 
             if (pb && pb.authStore && pb.authStore.isValid && pb.authStore.model) {
@@ -3434,7 +3428,6 @@
                 if (!isSuperAdmin && !isAuthorized) {
                     if (btnLogin) btnLogin.classList.remove('hidden');
                     if (userProfileBar) userProfileBar.classList.add('hidden');
-                    if (btnAdminPanel) btnAdminPanel.classList.add('hidden');
                     if (navMenuAdminLink) navMenuAdminLink.classList.add('hidden');
                     if (window.cerrarPaginaAdmin) window.cerrarPaginaAdmin();
                     return;
@@ -3469,11 +3462,7 @@
                     }
                 }
 
-                // El enlace 'Admin' en el menú principal y el botón de panel SOLO se muestran para usuarios con admin === true en la base de datos PocketBase (sin hardcodear el correo)
-                if (btnAdminPanel) {
-                    if (isSuperAdmin) btnAdminPanel.classList.remove('hidden');
-                    else btnAdminPanel.classList.add('hidden');
-                }
+                // El enlace 'Admin' en el menú principal SOLO se muestra para usuarios con admin === true en PocketBase
                 if (navMenuAdminLink) {
                     if (isSuperAdmin) navMenuAdminLink.classList.remove('hidden');
                     else navMenuAdminLink.classList.add('hidden');
@@ -3482,7 +3471,6 @@
                 console.log("Sin sesión activa en PocketBase.");
                 if (btnLogin) btnLogin.classList.remove('hidden');
                 if (userProfileBar) userProfileBar.classList.add('hidden');
-                if (btnAdminPanel) btnAdminPanel.classList.add('hidden');
                 if (navMenuAdminLink) navMenuAdminLink.classList.add('hidden');
                 const userExpireBadge = document.getElementById('userExpireBadge');
                 if (userExpireBadge) userExpireBadge.classList.add('hidden');
@@ -4086,6 +4074,7 @@
                     dwell_seconds: 0,
                     is_logged: false,
                     user_id: '',
+                    user_email: '',
                     referrer: clip(document.referrer || 'Directo', 255),
                     location: '',
                     filter_history: [], search_terms: [],
@@ -4111,6 +4100,7 @@
                 return {
                     session_id: state.session_id, started_at: state.started_at,
                     dwell_seconds: state.dwell_seconds, is_logged: !!state.is_logged, user_id: state.user_id,
+                    user_email: state.user_email || '',
                     referrer: state.referrer, location: state.location,
                     device_type: state.device_type, os: state.os, browser: state.browser, resolution: state.resolution,
                     filter_history: state.filter_history, search_terms: state.search_terms,
@@ -4278,9 +4268,10 @@
                 },
                 syncAuth() {
                     const model = pb && pb.authStore && pb.authStore.isValid ? pb.authStore.model : null;
-                    if (model && (!state.is_logged || state.user_id !== model.id)) {
+                    if (model && (!state.is_logged || state.user_id !== model.id || state.user_email !== (model.email || ''))) {
                         state.is_logged = true;       // se mantiene verdadero durante el resto de la visita
                         state.user_id = clip(model.id, 50);
+                        state.user_email = clip(model.email || '', 120);
                         touch();
                     }
                 },
