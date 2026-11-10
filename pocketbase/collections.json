@@ -3,75 +3,70 @@
     "name": "telemetry_sessions",
     "type": "base",
     "system": false,
-    "listRule": "@request.auth.admin = true",
-    "viewRule": "@request.auth.admin = true",
-    "createRule": "",
-    "updateRule": "@request.body.session_token = session_token",
-    "deleteRule": "@request.auth.admin = true",
     "fields": [
-      { "name": "session_id", "type": "text", "required": true, "min": 0, "max": 64 },
-      { "name": "session_token", "type": "text", "required": true, "min": 0, "max": 64 },
+      { "name": "session_id", "type": "text", "required": true, "max": 64 },
+      { "name": "session_token", "type": "text", "max": 64 },
       { "name": "started_at", "type": "date", "required": true },
-      { "name": "dwell_seconds", "type": "number", "onlyInt": true, "min": 0 },
+      { "name": "dwell_seconds", "type": "number", "min": 0 },
       { "name": "is_logged", "type": "bool" },
       { "name": "user_id", "type": "text", "max": 50 },
+      { "name": "user_email", "type": "text", "max": 120 },
       { "name": "referrer", "type": "text", "max": 255 },
       { "name": "location", "type": "text", "max": 100 },
       { "name": "device_type", "type": "text", "max": 20 },
       { "name": "os", "type": "text", "max": 50 },
       { "name": "browser", "type": "text", "max": 50 },
       { "name": "resolution", "type": "text", "max": 20 },
-      { "name": "filter_history", "type": "json", "maxSize": 200000 },
-      { "name": "search_terms", "type": "json", "maxSize": 200000 },
+      { "name": "filter_history", "type": "json" },
+      { "name": "search_terms", "type": "json" },
       { "name": "language", "type": "text", "max": 2 },
-      { "name": "language_history", "type": "json", "maxSize": 50000 },
-      { "name": "grid_page_size", "type": "number", "onlyInt": true, "min": 0 },
-      { "name": "grid_max_page", "type": "number", "onlyInt": true, "min": 0 },
-      { "name": "grid_page_changes", "type": "number", "onlyInt": true, "min": 0 },
+      { "name": "language_history", "type": "json" },
+      { "name": "grid_page_size", "type": "number" },
+      { "name": "grid_max_page", "type": "number" },
+      { "name": "grid_page_changes", "type": "number" },
       { "name": "selected_super", "type": "text", "max": 50 },
       { "name": "selected_category", "type": "text", "max": 100 },
-      { "name": "cart_last_product", "type": "text", "max": 50 },
-      { "name": "cart_add_count", "type": "number", "onlyInt": true, "min": 0 },
-      { "name": "cart_value", "type": "number", "min": 0, "max": 99999999.99 },
+      { "name": "cart_last_product", "type": "text", "max": 100 },
+      { "name": "cart_add_count", "type": "number" },
+      { "name": "cart_value", "type": "number" },
       { "name": "cart_limit_reached", "type": "bool" },
-      { "name": "cta_clicks", "type": "json", "maxSize": 200000 },
+      { "name": "cta_clicks", "type": "json" },
       { "name": "viewed_business", "type": "bool" },
       { "name": "renew_click_at", "type": "date" },
-      { "name": "grid_latency_ms", "type": "number", "onlyInt": true, "min": 0 },
-      { "name": "grid_latency_avg_ms", "type": "number", "onlyInt": true, "min": 0 },
-      { "name": "created", "type": "autodate", "onCreate": true, "onUpdate": false },
-      { "name": "updated", "type": "autodate", "onCreate": true, "onUpdate": true }
+      { "name": "grid_latency_ms", "type": "number" },
+      { "name": "grid_latency_avg_ms", "type": "number" }
     ],
     "indexes": [
-      "CREATE UNIQUE INDEX `idx_telemetry_sessions_session_id` ON `telemetry_sessions` (`session_id`)",
-      "CREATE INDEX `idx_telemetry_sessions_started_at` ON `telemetry_sessions` (`started_at`)"
-    ]
+      "CREATE UNIQUE INDEX `idx_tel_session_id` ON `telemetry_sessions` (`session_id`)"
+    ],
+    "listRule": "@request.auth.admin = true",
+    "viewRule": "@request.auth.admin = true",
+    "createRule": "",
+    "updateRule": "",
+    "deleteRule": "@request.auth.admin = true"
   },
   {
     "name": "visitor_logs",
     "type": "base",
     "system": false,
-    "listRule": "@request.auth.admin = true",
-    "viewRule": "@request.auth.admin = true",
-    "createRule": "",
-    "updateRule": "@request.auth.admin = true",
-    "deleteRule": "@request.auth.admin = true",
     "fields": [
       { "name": "session_id", "type": "text", "required": true, "max": 64 },
       { "name": "is_logged", "type": "bool" },
       { "name": "user_email", "type": "text" },
       { "name": "user_name", "type": "text" },
-      { "name": "event_type", "type": "text", "required": true, "max": 30 },
+      { "name": "event_type", "type": "text", "required": true, "max": 50 },
       { "name": "details", "type": "text" },
       { "name": "device_info", "type": "text" },
       { "name": "language", "type": "text", "max": 20 },
-      { "name": "referrer", "type": "text" },
-      { "name": "created", "type": "autodate", "onCreate": true, "onUpdate": false },
-      { "name": "updated", "type": "autodate", "onCreate": true, "onUpdate": true }
+      { "name": "referrer", "type": "text" }
     ],
     "indexes": [
-      "CREATE INDEX `idx_visitor_logs_session_id` ON `visitor_logs` (`session_id`)"
-    ]
+      "CREATE INDEX `idx_vis_session_id` ON `visitor_logs` (`session_id`)"
+    ],
+    "listRule": "@request.auth.admin = true",
+    "viewRule": "@request.auth.admin = true",
+    "createRule": "",
+    "updateRule": "@request.auth.admin = true",
+    "deleteRule": "@request.auth.admin = true"
   }
 ]
-

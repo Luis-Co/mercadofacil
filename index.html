@@ -191,19 +191,19 @@
     <!-- Navegación -->
     <nav class="bg-vibrant-blue stitch-border-b sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-2 font-black text-2xl text-white cursor-pointer tracking-tighter" onclick="window.cerrarPaginaAdmin && window.cerrarPaginaAdmin(); window.scrollTo(0,0)">
+            <div class="flex items-center gap-2 font-black text-2xl text-white cursor-pointer tracking-tighter" onclick="window.scrollTo(0,0)">
                 <img src="https://img.icons8.com/color/48/shopping-cart--v1.png" alt="Logo" class="w-8 h-8">
                 MERCADOFÁCIL
             </div>
             <div class="flex items-center gap-4 sm:gap-6 text-sm font-bold">
-                <a href="#dashboard" onclick="window.cerrarPaginaAdmin && window.cerrarPaginaAdmin()" class="text-white hover:text-vibrant-green transition-colors hidden md:block uppercase tracking-wide">Comparar Precios</a>
-                <a href="#premium" onclick="window.cerrarPaginaAdmin && window.cerrarPaginaAdmin()" class="text-white hover:text-vibrant-orange transition-colors hidden md:block uppercase tracking-wide">Para Empresas</a>
+                <a href="#dashboard" class="text-white hover:text-vibrant-green transition-colors hidden md:block uppercase tracking-wide">Comparar Precios</a>
+                <a href="#premium" class="text-white hover:text-vibrant-orange transition-colors hidden md:block uppercase tracking-wide">Para Empresas</a>
                 
                 <!-- Enlace Menú Principal: Página Admin (Solo visible cuando un usuario con admin: true se loguea) -->
-                <button id="navMenuAdminLink" onclick="window.abrirPaginaAdmin && window.abrirPaginaAdmin()" class="hidden bg-amber-300 hover:bg-amber-400 text-vibrant-dark font-black px-3 py-1.5 text-xs border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5">
+                <a href="admin.html" id="navMenuAdminLink" class="hidden bg-amber-300 hover:bg-amber-400 text-vibrant-dark font-black px-3 py-1.5 text-xs border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5">
                     <span>👑</span>
                     <span>Admin</span>
-                </button>
+                </a>
                 
                 <!-- Selector de Idiomas -->
                 <div class="relative">
@@ -263,9 +263,9 @@
                             <span id="userEmailLabel" class="max-w-[130px] truncate text-[11px]">usuario@gmail.com</span>
                         </div>
                         <span id="userExpireBadge" class="hidden text-[10px] font-black px-2 py-0.5 border-2 border-vibrant-dark cursor-pointer shadow-stitch transition-transform active:scale-95" title="Estado de suscripción. Clic para renovar"></span>
-                        <button id="btnAdminPanel" onclick="window.abrirPaginaAdmin()" class="hidden bg-amber-300 hover:bg-amber-400 text-vibrant-dark font-black px-2.5 py-1 text-xs border-2 border-vibrant-dark shadow-stitch uppercase cursor-pointer" title="Ir a la Página Admin (Dashboard & Métricas)">
+                        <a href="admin.html" id="btnAdminPanel" class="hidden bg-amber-300 hover:bg-amber-400 text-vibrant-dark font-black px-2.5 py-1 text-xs border-2 border-vibrant-dark shadow-stitch uppercase cursor-pointer" title="Ir a la Página Admin (Dashboard & Métricas)">
                             📊 Panel
-                        </button>
+                        </a>
                         <button onclick="window.cerrarSesion()" class="bg-white hover:bg-red-50 text-red-600 font-black px-2 py-1 text-xs border-2 border-vibrant-dark shadow-stitch uppercase cursor-pointer" title="Cerrar Sesión">
                             Salir
                         </button>
@@ -702,344 +702,7 @@
         </section>
         </div>
 
-        <!-- =========================================================
-             PÁGINA EXCLUSIVA 'ADMIN' - DASHBOARD, MÉTRICAS Y ANALÍTICA EN TIEMPO REAL
-             (Solo accesible cuando un usuario con admin: true en PocketBase inicia sesión)
-             ========================================================= -->
-        <section id="adminDashboardPage" class="hidden py-10 bg-vibrant-bg min-h-screen">
-            <div class="max-w-7xl mx-auto px-6 space-y-8">
-                
-                <!-- Cabecera Principal de la Página Admin -->
-                <div class="bg-white stitch-box shadow-stitch p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-4 border-vibrant-dark">
-                    <div class="flex items-start sm:items-center gap-4">
-                        <div class="w-14 h-14 bg-amber-400 border-2 border-vibrant-dark shadow-stitch flex items-center justify-center text-3xl flex-shrink-0">
-                            👑
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <span class="bg-vibrant-dark text-amber-300 text-[10px] font-black px-2.5 py-0.5 uppercase tracking-widest border border-vibrant-dark">ACCESO EXCLUSIVO ADMINISTRADOR</span>
-                                <span id="adminPageLiveStatus" class="inline-flex items-center gap-1 bg-green-100 text-green-800 text-[10px] font-black px-2 py-0.5 border border-green-400 uppercase">
-                                    <span class="w-2 h-2 rounded-full bg-green-600 animate-ping"></span> Telemetría en Vivo Activa
-                                </span>
-                            </div>
-                            <h1 class="text-2xl sm:text-3xl font-black text-vibrant-dark uppercase tracking-tight mt-1">
-                                Centro de Mando & Analítica — Admin
-                            </h1>
-                            <p id="adminPageIdentityLabel" class="text-xs font-bold text-gray-600 mt-0.5">
-                                Monitoreo de clientes logueados y visitantes sin loguear, métricas de conversión, scraping en vivo y base de datos.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="flex flex-wrap items-center gap-2.5 self-start lg:self-center">
-                        <button onclick="window.refrescarDashboardAdmin && window.refrescarDashboardAdmin()" class="bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black px-4 py-2 text-xs uppercase tracking-wider border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover flex items-center gap-1.5 cursor-pointer">
-                            <span>🔄</span> Actualizar Métricas
-                        </button>
-                        <button onclick="window.abrirPanelAdmin && window.abrirPanelAdmin()" class="bg-amber-300 hover:bg-amber-400 text-vibrant-dark font-black px-4 py-2 text-xs uppercase tracking-wider border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover flex items-center gap-1.5 cursor-pointer">
-                            <span>👥</span> Gestionar Cuentas & Planes
-                        </button>
-                        <button onclick="window.cerrarPaginaAdmin && window.cerrarPaginaAdmin()" class="bg-white hover:bg-gray-100 text-vibrant-dark font-black px-4 py-2 text-xs uppercase tracking-wider border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover flex items-center gap-1.5 cursor-pointer">
-                            <span>←</span> Volver al Comparador
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Tarjetas KPI Principales (6 Métricas Clave) -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-                    <!-- KPI 1: Total Eventos / Visitas -->
-                    <div class="bg-white stitch-box shadow-stitch p-4 border-l-8 border-l-vibrant-blue">
-                        <div class="flex items-center justify-between text-xs font-black text-gray-500 uppercase">
-                            <span>Visitas & Eventos</span>
-                            <span class="text-lg">📈</span>
-                        </div>
-                        <div id="kpiTotalVisits" class="text-2xl sm:text-3xl font-black text-vibrant-dark mt-2">0</div>
-                        <div id="kpiTotalSessionsSub" class="text-[11px] font-bold text-vibrant-blue mt-1">0 sesiones únicas</div>
-                    </div>
-
-                    <!-- KPI 2: Clientes Logueados -->
-                    <div class="bg-white stitch-box shadow-stitch p-4 border-l-8 border-l-vibrant-green">
-                        <div class="flex items-center justify-between text-xs font-black text-gray-500 uppercase">
-                            <span>Clientes Logueados</span>
-                            <span class="text-lg">🔐</span>
-                        </div>
-                        <div id="kpiLoggedVisitors" class="text-2xl sm:text-3xl font-black text-green-700 mt-2">0</div>
-                        <div id="kpiLoggedRatioSub" class="text-[11px] font-bold text-gray-600 mt-1">Con cuenta autenticada</div>
-                    </div>
-
-                    <!-- KPI 3: Visitantes Sin Loguear -->
-                    <div class="bg-white stitch-box shadow-stitch p-4 border-l-8 border-l-vibrant-orange">
-                        <div class="flex items-center justify-between text-xs font-black text-gray-500 uppercase">
-                            <span>Sin Loguear (Anónimos)</span>
-                            <span class="text-lg">🕵️</span>
-                        </div>
-                        <div id="kpiGuestVisitors" class="text-2xl sm:text-3xl font-black text-orange-600 mt-2">0</div>
-                        <div id="kpiGuestRatioSub" class="text-[11px] font-bold text-gray-600 mt-1">Tráfico público directo</div>
-                    </div>
-
-                    <!-- KPI 4: Cuentas Activas PocketBase -->
-                    <div class="bg-white stitch-box shadow-stitch p-4 border-l-8 border-l-purple-600">
-                        <div class="flex items-center justify-between text-xs font-black text-gray-500 uppercase">
-                            <span>Cuentas en BD</span>
-                            <span class="text-lg">🗄️</span>
-                        </div>
-                        <div id="kpiRegisteredUsers" class="text-2xl sm:text-3xl font-black text-vibrant-dark mt-2">0</div>
-                        <div id="kpiActivePlansSub" class="text-[11px] font-bold text-purple-700 mt-1">0 con planes vigentes</div>
-                    </div>
-
-                    <!-- KPI 5: Ingresos Mensuales Estimados (MRR) -->
-                    <div class="bg-[#FEF9C3] stitch-box shadow-stitch p-4 border-l-8 border-l-amber-500">
-                        <div class="flex items-center justify-between text-xs font-black text-gray-700 uppercase">
-                            <span>Ingresos Planes (MRR)</span>
-                            <span class="text-lg">💰</span>
-                        </div>
-                        <div id="kpiEstimatedMRR" class="text-2xl sm:text-3xl font-black text-vibrant-dark mt-2">₡0</div>
-                        <div id="kpiExpiringSoonSub" class="text-[11px] font-bold text-amber-900 mt-1">Suscripciones activas</div>
-                    </div>
-
-                    <!-- KPI 6: Productos en Vivo (6 Supermercados) -->
-                    <div class="bg-white stitch-box shadow-stitch p-4 border-l-8 border-l-emerald-500">
-                        <div class="flex items-center justify-between text-xs font-black text-gray-500 uppercase">
-                            <span>Precios en Vivo</span>
-                            <span class="text-lg">🛒</span>
-                        </div>
-                        <div id="kpiLiveProductsCount" class="text-2xl sm:text-3xl font-black text-vibrant-dark mt-2">0</div>
-                        <div class="text-[11px] font-bold text-emerald-700 mt-1">6 cadenas (incl. MegaSuper)</div>
-                    </div>
-                </div>
-
-                <!-- Gráficos y Estadísticas de Distribución (3 Columnas) -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    
-                    <!-- Columna 1: Proporción Logueados vs Sin Loguear & Dispositivos -->
-                    <div class="bg-white stitch-box shadow-stitch p-5 space-y-4">
-                        <div class="flex items-center justify-between border-b-2 border-vibrant-dark pb-2">
-                            <h3 class="font-black text-sm uppercase tracking-wider text-vibrant-dark flex items-center gap-2">
-                                <span>👥</span> Tráfico: Logueados vs Sin Loguear
-                            </h3>
-                            <span class="text-[10px] font-black bg-vibrant-blue text-white px-2 py-0.5 uppercase">Tiempo Real</span>
-                        </div>
-
-                        <!-- Barra Progreso Logueados vs Anónimos -->
-                        <div class="space-y-2">
-                            <div class="flex justify-between text-xs font-black">
-                                <span class="text-green-700">🔐 Logueados (<span id="statPctLogged">0%</span>)</span>
-                                <span class="text-orange-600">🕵️ Sin Loguear (<span id="statPctGuest">0%</span>)</span>
-                            </div>
-                            <div class="w-full h-5 bg-orange-200 border-2 border-vibrant-dark flex overflow-hidden">
-                                <div id="statBarLogged" class="bg-vibrant-green h-full transition-all duration-300" style="width: 50%"></div>
-                                <div id="statBarGuest" class="bg-vibrant-orange h-full transition-all duration-300" style="width: 50%"></div>
-                            </div>
-                        </div>
-
-                        <!-- Desglose por Dispositivo / Sistema Operativo -->
-                        <div class="pt-2 border-t border-gray-200">
-                            <h4 class="text-xs font-black uppercase text-gray-500 mb-2">Dispositivos y Navegadores Detectados</h4>
-                            <div id="adminDeviceBreakdown" class="space-y-2 text-xs font-bold">
-                                <!-- Dinámico -->
-                            </div>
-                        </div>
-
-                        <!-- Desglose por Tipo de Acción -->
-                        <div class="pt-2 border-t border-gray-200">
-                            <h4 class="text-xs font-black uppercase text-gray-500 mb-2">Acciones Registradas en el Sitio</h4>
-                            <div id="adminActionBreakdown" class="space-y-1.5 text-xs font-bold">
-                                <!-- Dinámico -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Columna 2: Competitividad de Supermercados (Incluyendo MegaSuper) -->
-                    <div class="bg-white stitch-box shadow-stitch p-5 space-y-4">
-                        <div class="flex items-center justify-between border-b-2 border-vibrant-dark pb-2">
-                            <h3 class="font-black text-sm uppercase tracking-wider text-vibrant-dark flex items-center gap-2">
-                                <span>🏪</span> Estadísticas por Supermercado
-                            </h3>
-                            <span class="text-[10px] font-black bg-vibrant-green text-vibrant-dark px-2 py-0.5 border border-vibrant-dark uppercase">En Vivo</span>
-                        </div>
-                        <p class="text-xs text-gray-600 font-medium">
-                            Costo promedio por producto y cantidad de precios más bajos ("⭐ Más Barato") en Walmart, MásxMenos, Maxi Palí, Palí, Auto Mercado y MegaSuper:
-                        </p>
-                        <div id="adminSupermarketStats" class="space-y-2.5 text-xs">
-                            <!-- Dinámico -->
-                        </div>
-                    </div>
-
-                    <!-- Columna 3: Distribución de Planes Comerciales & Suscripciones -->
-                    <div class="bg-white stitch-box shadow-stitch p-5 space-y-4">
-                        <div class="flex items-center justify-between border-b-2 border-vibrant-dark pb-2">
-                            <h3 class="font-black text-sm uppercase tracking-wider text-vibrant-dark flex items-center gap-2">
-                                <span>📊</span> Rendimiento de Planes (PocketBase)
-                            </h3>
-                            <span class="text-[10px] font-black bg-amber-300 text-vibrant-dark px-2 py-0.5 border border-vibrant-dark uppercase">Suscripciones</span>
-                        </div>
-                        <div id="adminPlansBreakdown" class="space-y-2.5 text-xs">
-                            <!-- Dinámico -->
-                        </div>
-                        <div class="bg-gray-50 border-2 border-vibrant-dark p-3 space-y-1.5">
-                            <div class="text-[11px] font-black uppercase text-vibrant-dark">Estado de Base de Datos de Telemetría</div>
-                            <div id="adminDbSyncStatus" class="text-xs font-semibold text-gray-700">
-                                Sincronizando registros con PocketBase (`visitor_logs`) y respaldo SQLite...
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- Bitácora Completa en Base de Datos: Clientes Logueados y Sin Loguear -->
-                <div class="bg-white stitch-box shadow-stitch overflow-hidden border-4 border-vibrant-dark">
-                    <div class="p-5 bg-vibrant-dark text-white flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-2 border-vibrant-dark">
-                        <div>
-                            <div class="inline-flex items-center gap-1.5 bg-vibrant-green text-vibrant-dark text-[10px] font-black px-2 py-0.5 uppercase tracking-wider mb-1">
-                                🗄️ Base de Datos de Clientes y Visitantes
-                            </div>
-                            <h2 class="text-xl font-black uppercase tracking-tight text-white">
-                                Registro de Clientes Logueados y Visitantes Sin Loguear
-                            </h2>
-                            <p class="text-xs text-gray-300 font-medium">
-                                Todos los accesos, búsquedas, filtros, cotizaciones de canasta y sesiones se guardan automáticamente en la base de datos.
-                            </p>
-                        </div>
-                        <div class="flex flex-wrap items-center gap-2">
-                            <button onclick="window.exportarClientesCSV && window.exportarClientesCSV()" class="bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black px-3.5 py-2 text-xs uppercase border-2 border-white shadow-xs cursor-pointer flex items-center gap-1.5">
-                                <span>📥</span> Exportar CSV
-                            </button>
-                            <button onclick="window.limpiarLogsVisitantes && window.limpiarLogsVisitantes()" class="bg-red-600 hover:bg-red-700 text-white font-black px-3.5 py-2 text-xs uppercase border-2 border-white shadow-xs cursor-pointer flex items-center gap-1.5">
-                                <span>🗑️</span> Limpiar Historial Local
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Controles de Filtro de la Bitácora -->
-                    <div class="p-4 bg-gray-100 border-b-2 border-vibrant-dark grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                        <div>
-                            <label class="block text-[10px] font-black uppercase text-gray-600 mb-1">Buscar Cliente / Sesión / Acción</label>
-                            <input id="adminVisitorSearch" type="text" oninput="window.renderAdminVisitorLogsTable && window.renderAdminVisitorLogsTable()" placeholder="🔍 Correo, nombre, producto, ID..." class="w-full bg-white text-vibrant-dark font-bold px-3 py-2 border-2 border-vibrant-dark text-xs">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-black uppercase text-gray-600 mb-1">Estado de Autenticación</label>
-                            <select id="adminVisitorStatusFilter" onchange="window.renderAdminVisitorLogsTable && window.renderAdminVisitorLogsTable()" class="w-full bg-white text-vibrant-dark font-black px-3 py-2 border-2 border-vibrant-dark text-xs cursor-pointer">
-                                <option value="todos">👥 TODOS (LOGUEADOS + SIN LOGUEAR)</option>
-                                <option value="logged">🔐 SOLO CLIENTES LOGUEADOS</option>
-                                <option value="guest">🕵️ SOLO VISITANTES SIN LOGUEAR</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-black uppercase text-gray-600 mb-1">Tipo de Evento</label>
-                            <select id="adminVisitorEventFilter" onchange="window.renderAdminVisitorLogsTable && window.renderAdminVisitorLogsTable()" class="w-full bg-white text-vibrant-dark font-black px-3 py-2 border-2 border-vibrant-dark text-xs cursor-pointer">
-                                <option value="todos">⚡ TODAS LAS ACCIONES</option>
-                                <option value="visita">🌐 Entrada / Visita al Sitio</option>
-                                <option value="filtro">🔍 Consulta / Filtro de Precios</option>
-                                <option value="canasta">🧺 Producto Agregado a Canasta</option>
-                                <option value="login">🔐 Inicio de Sesión / Intento</option>
-                                <option value="scraping">🔄 Ejecución de Scraping en Vivo</option>
-                                <option value="plan">💼 Consulta de Planes / WhatsApp</option>
-                            </select>
-                        </div>
-                        <div class="flex items-end">
-                            <div class="w-full bg-white border-2 border-vibrant-dark px-3 py-2 text-xs font-black text-vibrant-dark flex items-center justify-between">
-                                <span>Registros Mostrados:</span>
-                                <span id="adminVisitorCountBadge" class="bg-vibrant-blue text-white px-2 py-0.5 text-xs font-black">0</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tabla de Registros de Clientes / Visitantes -->
-                    <div class="overflow-x-auto max-h-[520px] overflow-y-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead class="sticky top-0 z-10">
-                                <tr class="bg-gray-200 border-b-2 border-vibrant-dark text-[11px] font-black text-vibrant-dark uppercase tracking-wider">
-                                    <th class="py-3 px-4 border-r border-gray-300">Fecha y Hora</th>
-                                    <th class="py-3 px-4 border-r border-gray-300">Estado</th>
-                                    <th class="py-3 px-4 border-r border-gray-300">Cliente / Visitante</th>
-                                    <th class="py-3 px-4 border-r border-gray-300">Acción / Evento</th>
-                                    <th class="py-3 px-4 border-r border-gray-300">Detalles (Súper / Producto / Canasta)</th>
-                                    <th class="py-3 px-4 border-r border-gray-300">Dispositivo & Red</th>
-                                    <th class="py-3 px-4 text-center">Origen BD</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adminVisitorLogsBody" class="divide-y divide-gray-200 text-xs font-semibold">
-                                <!-- Populated dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Telemetría por sesión (clientes logueados y sin loguear) -->
-                <div class="bg-white stitch-box shadow-stitch overflow-hidden border-4 border-vibrant-dark">
-                    <div class="p-5 bg-vibrant-dark text-white flex flex-col md:flex-row md:items-center justify-between gap-3">
-                        <div>
-                            <div class="inline-flex items-center gap-1.5 bg-vibrant-green text-vibrant-dark text-[10px] font-black px-2 py-0.5 uppercase tracking-wider mb-1">📡 Telemetría por Sesión</div>
-                            <h2 class="text-xl font-black uppercase tracking-tight">Métricas de cada visita (anónimos y logueados)</h2>
-                            <p id="adminTelemetrySource" class="text-xs text-gray-300 font-medium">Cargando…</p>
-                        </div>
-                        <button onclick="window.exportarSesionesCSV && window.exportarSesionesCSV()" class="bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black px-3.5 py-2 text-xs uppercase border-2 border-white cursor-pointer self-start md:self-auto">📥 Exportar sesiones CSV</button>
-                    </div>
-
-                    <div class="p-4 grid grid-cols-2 md:grid-cols-4 gap-3 bg-gray-50 border-b-2 border-vibrant-dark">
-                        <div class="bg-white border-2 border-vibrant-dark p-3"><div class="text-[10px] font-black uppercase text-gray-500">Sesiones</div><div id="telKpiSessions" class="text-2xl font-black">0</div></div>
-                        <div class="bg-white border-2 border-vibrant-dark p-3"><div class="text-[10px] font-black uppercase text-gray-500">Permanencia promedio</div><div id="telKpiDwell" class="text-2xl font-black">0m 00s</div></div>
-                        <div class="bg-white border-2 border-vibrant-dark p-3"><div class="text-[10px] font-black uppercase text-gray-500">Móvil + Tablet</div><div id="telKpiMobile" class="text-2xl font-black">0%</div></div>
-                        <div class="bg-white border-2 border-vibrant-dark p-3"><div class="text-[10px] font-black uppercase text-gray-500">Latencia grilla (prom.)</div><div id="telKpiLatency" class="text-2xl font-black">—</div></div>
-                        <div class="bg-white border-2 border-vibrant-dark p-3"><div class="text-[10px] font-black uppercase text-gray-500">Vieron "Para Empresas"</div><div id="telKpiBusiness" class="text-2xl font-black">0%</div></div>
-                        <div class="bg-white border-2 border-vibrant-dark p-3"><div class="text-[10px] font-black uppercase text-gray-500">Llegaron al límite de canasta</div><div id="telKpiCartLimit" class="text-2xl font-black">0</div></div>
-                        <div class="bg-white border-2 border-vibrant-dark p-3"><div class="text-[10px] font-black uppercase text-gray-500">Ubicación top</div><div id="telKpiTopLocation" class="text-sm font-black break-words">—</div></div>
-                        <div class="bg-white border-2 border-vibrant-dark p-3"><div class="text-[10px] font-black uppercase text-gray-500">Origen top</div><div id="telKpiTopReferrer" class="text-sm font-black break-all">—</div></div>
-                    </div>
-
-                    <div class="p-4 bg-gray-100 border-b-2 border-vibrant-dark grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <input id="adminTelemetrySearch" type="text" oninput="window.renderAdminTelemetry && window.renderAdminTelemetry()" placeholder="🔍 Ubicación, origen, SO, navegador, producto, búsqueda…" class="w-full bg-white text-vibrant-dark font-bold px-3 py-2 border-2 border-vibrant-dark text-xs">
-                        <select id="adminTelemetryStatusFilter" onchange="window.renderAdminTelemetry && window.renderAdminTelemetry()" class="w-full bg-white text-vibrant-dark font-black px-3 py-2 border-2 border-vibrant-dark text-xs cursor-pointer">
-                            <option value="todos">👥 Logueados + anónimos</option>
-                            <option value="logged">🔐 Solo logueados</option>
-                            <option value="guest">🕵️ Solo anónimos</option>
-                        </select>
-                    </div>
-
-                    <div class="overflow-x-auto max-h-[560px] overflow-y-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead class="sticky top-0 z-10">
-                                <tr class="bg-gray-200 border-b-2 border-vibrant-dark text-[11px] font-black text-vibrant-dark uppercase tracking-wider">
-                                    <th class="py-3 px-3 border-r border-gray-300">Inicio</th>
-                                    <th class="py-3 px-3 border-r border-gray-300">Tráfico</th>
-                                    <th class="py-3 px-3 border-r border-gray-300">Permanencia</th>
-                                    <th class="py-3 px-3 border-r border-gray-300">Ubicación / Origen</th>
-                                    <th class="py-3 px-3 border-r border-gray-300">Dispositivo</th>
-                                    <th class="py-3 px-3 border-r border-gray-300">Filtros</th>
-                                    <th class="py-3 px-3 border-r border-gray-300">Búsquedas</th>
-                                    <th class="py-3 px-3 border-r border-gray-300">Idioma</th>
-                                    <th class="py-3 px-3 border-r border-gray-300">Paginación</th>
-                                    <th class="py-3 px-3 border-r border-gray-300">Canasta</th>
-                                    <th class="py-3 px-3 border-r border-gray-300">CTA / Empresas</th>
-                                    <th class="py-3 px-3 border-r border-gray-300">Clic renovar</th>
-                                    <th class="py-3 px-3">Latencia</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adminTelemetryBody" class="divide-y divide-gray-200 font-semibold"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Sección embebida de Gestión de Usuarios de PocketBase dentro de la página Admin -->
-                <div class="bg-white stitch-box shadow-stitch p-6 border-4 border-vibrant-dark space-y-4">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-vibrant-dark pb-3">
-                        <div>
-                            <h3 class="text-lg font-black uppercase text-vibrant-dark flex items-center gap-2">
-                                <span>🔐</span> Directorio de Cuentas Registradas en PocketBase (`users`)
-                            </h3>
-                            <p class="text-xs text-gray-600 font-medium">
-                                Vista rápida de los clientes autorizados en PocketBase y el estado de vigencia de sus planes.
-                            </p>
-                        </div>
-                        <button onclick="window.abrirPanelAdmin && window.abrirPanelAdmin()" class="bg-amber-300 hover:bg-amber-400 text-vibrant-dark font-black px-4 py-2 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer self-start sm:self-auto">
-                            ➕ Crear / Editar Permisos de Clientes
-                        </button>
-                    </div>
-                    <div id="adminPageUsersQuickTable" class="overflow-x-auto">
-                        <!-- Se sincroniza automáticamente con adminAllUsersList -->
-                    </div>
-                </div>
-
-            </div>
-        </section>
+        <!-- Nota: El Panel de Administración completo reside en su página dedicada admin.html -->
     </main>
 
     <!-- Footer Neo-Brutalista Ordenado -->
@@ -4516,8 +4179,8 @@
                     flushedVersion = v;
                     save();
                 } catch (e) {
-                    // Colección no creada / reglas no aplicadas / sin red: se reintenta en 5 min sin molestar al usuario
-                    pbBlockedUntil = Date.now() + 5 * 60 * 1000;
+                    // Colección no creada / reglas no aplicadas / sin red: se reintenta en 30 seg
+                    pbBlockedUntil = Date.now() + 30 * 1000;
                 } finally {
                     inflight = false;
                     if (again) { again = false; flush(); }
@@ -4910,37 +4573,12 @@
             return list;
         }
 
-        // Abrir la página dedicada 'Admin' desde el menú principal (Solo para administrador autenticado en PocketBase)
-        window.abrirPaginaAdmin = async function() {
-            const isSuperAdmin = Boolean(pb && pb.authStore && pb.authStore.isValid && pb.authStore.model && (
-                pb.authStore.model.admin === true || pb.authStore.model.admin === 'true' || pb.authStore.model.admin === 1
-            ));
-            if (!isSuperAdmin) {
-                window.customAlert('Acceso restringido: Solo el administrador autenticado tiene permiso para visualizar la página Admin.', 'Acceso Denegado', '⛔');
-                return;
-            }
-
-            const publicContent = document.getElementById('publicAppContent');
-            const adminPage = document.getElementById('adminDashboardPage');
-            const identityLabel = document.getElementById('adminPageIdentityLabel');
-
-            if (publicContent) publicContent.classList.add('hidden');
-            if (adminPage) adminPage.classList.remove('hidden');
-
-            if (identityLabel && pb.authStore.model) {
-                identityLabel.innerHTML = `Sesión iniciada como Administrador: <strong class="text-vibrant-blue">${escHtml(pb.authStore.model.email || pb.authStore.model.name)}</strong> · Privilegio verificado dinámicamente desde PocketBase (sin correos hardcodeados).`;
-            }
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            await window.refrescarDashboardAdmin();
+        // Abrir la página dedicada 'Admin' desde el menú principal (Página separada admin.html)
+        window.abrirPaginaAdmin = function() {
+            window.location.href = 'admin.html';
         };
 
-        window.cerrarPaginaAdmin = function() {
-            const publicContent = document.getElementById('publicAppContent');
-            const adminPage = document.getElementById('adminDashboardPage');
-            if (adminPage) adminPage.classList.add('hidden');
-            if (publicContent) publicContent.classList.remove('hidden');
-        };
+        window.cerrarPaginaAdmin = function() {};
 
         window.refrescarDashboardAdmin = async function() {
             const isSuperAdmin = Boolean(pb && pb.authStore && pb.authStore.isValid && pb.authStore.model && (

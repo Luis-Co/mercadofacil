@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MercadoFácil Costa Rica — Panel de Administración y Telemetría</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'vibrant-yellow': '#FFD600',
+                        'vibrant-orange': '#FF6B35',
+                        'vibrant-green': '#00E676',
+                        'vibrant-blue': '#2962FF',
+                        'vibrant-purple': '#7C4DFF',
+                        'vibrant-dark': '#0B0C10',
+                        'vibrant-cream': '#FFFDF9',
+                        'vibrant-bg': '#F4F5F0',
+                    },
+                    boxShadow: {
+                        'stitch': '4px 4px 0px 0px #0B0C10',
+                        'stitch-lg': '6px 6px 0px 0px #0B0C10',
+                        'stitch-hover': '2px 2px 0px 0px #0B0C10',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- PocketBase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/pocketbase/dist/pocketbase.umd.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #F4F5F0;
+            color: #0B0C10;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .stitch-box {
+            border: 2px solid #0B0C10;
+        }
+        .stitch-box-4 {
+            border: 4px solid #0B0C10;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #E5E7EB;
+            border-left: 1px solid #0B0C10;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #0B0C10;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-vibrant-bg">
+
+    <!-- Top Notice Ticker -->
+    <div class="bg-vibrant-dark text-white border-b-2 border-vibrant-dark py-1.5 px-4 text-xs font-mono font-bold flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-vibrant-green animate-pulse"></span>
+            <span class="uppercase tracking-wider">Centro de Mando Administrativo · MercadoFácil CR</span>
+        </div>
+        <div class="text-[11px] text-gray-400 hidden sm:block">
+            PocketBase: <span class="text-vibrant-green">pb-mercadofacil.webticocr.com</span>
+        </div>
+    </div>
+
+    <!-- Header Principal Neo-Brutalista -->
+    <header class="bg-vibrant-dark text-white border-b-4 border-vibrant-dark sticky top-0 z-50 shadow-stitch">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+            
+            <!-- Logo y Badge Admin -->
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="flex items-center gap-2.5 font-black text-xl sm:text-2xl tracking-tighter hover:opacity-90 transition-opacity">
+                    <img src="https://img.icons8.com/color/48/shopping-cart--v1.png" alt="Logo" class="w-8 h-8">
+                    <span>MERCADOFÁCIL</span>
+                </a>
+                <span class="bg-amber-300 text-vibrant-dark text-[11px] font-black px-2.5 py-0.5 border-2 border-white uppercase tracking-wider shadow-stitch">
+                    👑 ADMIN
+                </span>
+            </div>
+
+            <!-- Navegación & Acciones -->
+            <div class="flex items-center gap-3 text-xs font-bold">
+                <a href="index.html" class="bg-white hover:bg-gray-100 text-vibrant-dark font-black px-3.5 py-2 border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover uppercase tracking-wider flex items-center gap-1.5 transition-all">
+                    <span>⬅</span>
+                    <span class="hidden sm:inline">Volver al Comparador</span>
+                    <span class="sm:hidden">Volver</span>
+                </a>
+
+                <div id="adminAuthControls" class="flex items-center gap-2">
+                    <div id="adminUserBadge" class="hidden items-center gap-2 bg-[#1E293B] border-2 border-gray-600 px-3 py-1.5">
+                        <span class="w-2 h-2 rounded-full bg-vibrant-green"></span>
+                        <span id="adminUserEmailLabel" class="text-white font-mono text-[11px] font-bold max-w-[140px] truncate">admin</span>
+                    </div>
+                    <button id="adminBtnLogout" onclick="window.cerrarSesionAdmin()" class="hidden bg-red-500 hover:bg-red-600 text-white font-black px-3 py-2 border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover uppercase tracking-wider transition-all cursor-pointer">
+                        Salir
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- PANTALLA 1: ACCESO DENEGADO / LOGIN ADMIN (Si no tiene admin: true) -->
+    <main id="adminLockScreen" class="hidden flex-1 flex items-center justify-center p-6">
+        <div class="max-w-md w-full bg-white stitch-box-4 shadow-stitch-lg p-8 text-center space-y-6">
+            <div class="w-20 h-20 mx-auto bg-amber-400 border-4 border-vibrant-dark shadow-stitch flex items-center justify-center text-4xl">
+                🔒
+            </div>
+            <div class="space-y-2">
+                <span class="bg-vibrant-dark text-amber-300 text-[10px] font-black px-3 py-1 uppercase tracking-widest border border-vibrant-dark">
+                    Área Exclusiva
+                </span>
+                <h1 class="text-2xl font-black uppercase tracking-tight text-vibrant-dark">
+                    Acceso de Administrador
+                </h1>
+                <p class="text-xs text-gray-600 font-bold leading-relaxed">
+                    Esta página requiere una cuenta autorizada con el permiso <code class="bg-gray-100 px-1 py-0.5 border border-gray-300 text-vibrant-dark">admin: true</code> en PocketBase.
+                </p>
+            </div>
+
+            <div class="p-4 bg-gray-50 border-2 border-vibrant-dark text-left space-y-2 text-xs">
+                <div class="font-black uppercase text-gray-700">Estado de sesión actual:</div>
+                <div id="adminLockSessionState" class="font-mono text-gray-500 font-bold">Verificando...</div>
+            </div>
+
+            <div class="space-y-3">
+                <button onclick="window.iniciarSesionGoogleAdmin()" class="w-full bg-white hover:bg-gray-100 text-vibrant-dark font-black py-3 px-4 border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover flex items-center justify-center gap-3 text-xs uppercase tracking-wider cursor-pointer transition-all active:translate-y-0.5">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                    </svg>
+                    <span>Identificarse con Google</span>
+                </button>
+
+                <a href="index.html" class="block w-full bg-gray-200 hover:bg-gray-300 text-vibrant-dark font-black py-2.5 px-4 border-2 border-vibrant-dark text-xs uppercase tracking-wider text-center">
+                    Regresar a la Tienda
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- PANTALLA 2: WORKSPACE COMPLETO DEL ADMINISTRADOR -->
+    <main id="adminMainContent" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
+
+        <!-- Banner de Encabezado -->
+        <div class="bg-white stitch-box-4 shadow-stitch p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div class="flex items-start sm:items-center gap-4">
+                <div class="w-16 h-16 bg-amber-400 border-4 border-vibrant-dark shadow-stitch flex items-center justify-center text-3xl flex-shrink-0">
+                    👑
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="bg-vibrant-dark text-amber-300 text-[10px] font-black px-2.5 py-0.5 uppercase tracking-widest border border-vibrant-dark">
+                            ADMINISTRACIÓN GENERAL
+                        </span>
+                        <span id="pbStatusIndicator" class="inline-flex items-center gap-1.5 bg-blue-100 text-blue-900 text-[10px] font-black px-2.5 py-0.5 border border-blue-400 uppercase">
+                            <span class="w-2 h-2 rounded-full bg-blue-600 animate-ping"></span> Conectando PocketBase...
+                        </span>
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-black text-vibrant-dark uppercase tracking-tight mt-1">
+                        Panel de Analítica y Telemetría
+                    </h1>
+                    <p class="text-xs font-bold text-gray-600 mt-0.5">
+                        Supervisión integral de las 23 métricas de sesión, clientes logueados/anónimos y administración de usuarios en PocketBase.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Botones de Acción Global -->
+            <div class="flex flex-wrap items-center gap-3">
+                <button onclick="window.recargarTodoAdmin()" class="bg-white hover:bg-gray-100 text-vibrant-dark font-black px-4 py-2.5 text-xs uppercase border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover cursor-pointer flex items-center gap-1.5">
+                    <span>🔄</span> Refrescar Datos
+                </button>
+                <button onclick="window.abrirModalProvisionPocketBase()" class="bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black px-4 py-2.5 text-xs uppercase border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover cursor-pointer flex items-center gap-1.5">
+                    <span>⚡</span> Provisionar PocketBase
+                </button>
+            </div>
+        </div>
+
+        <!-- Alerta Dinámica de Colección PocketBase (Si aún no existe telemetry_sessions) -->
+        <div id="pbCollectionAlert" class="hidden bg-amber-100 border-4 border-amber-600 shadow-stitch p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-start gap-3">
+                <span class="text-2xl">⚠️</span>
+                <div>
+                    <h3 class="text-sm font-black uppercase text-amber-900 tracking-tight">
+                        Colección 'telemetry_sessions' pendiente en PocketBase
+                    </h3>
+                    <p class="text-xs font-bold text-amber-800 mt-0.5">
+                        La colección aún no está creada en <code class="font-mono bg-white px-1 py-0.5 border border-amber-300">pb-mercadofacil.webticocr.com</code>. Los datos se están guardando localmente, pero para que sean persistentes en el servidor de PocketBase debés crear la colección con las 23 métricas.
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <button onclick="window.abrirModalProvisionPocketBase()" class="bg-amber-400 hover:bg-amber-500 text-vibrant-dark font-black px-4 py-2 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer">
+                    🚀 Crear en 1 Clic
+                </button>
+                <button onclick="window.descargarSchemaJSON()" class="bg-white hover:bg-gray-100 text-vibrant-dark font-black px-3 py-2 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer">
+                    📥 Descargar JSON
+                </button>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 1: TELEMETRÍA POR SESIÓN (23 MÉTRICAS) -->
+        <section class="bg-white stitch-box-4 shadow-stitch overflow-hidden">
+            
+            <!-- Barra Superior de Sección -->
+            <div class="p-5 bg-vibrant-dark text-white flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div>
+                    <div class="inline-flex items-center gap-1.5 bg-vibrant-green text-vibrant-dark text-[10px] font-black px-2 py-0.5 uppercase tracking-wider mb-1">
+                        📡 Telemetría en Tiempo Real (23 Métricas)
+                    </div>
+                    <h2 class="text-xl font-black uppercase tracking-tight">
+                        Historial de Visitas y Comportamiento de Clientes
+                    </h2>
+                    <p id="adminTelemetrySourceLabel" class="text-xs text-gray-300 font-medium">
+                        Cargando fuentes de datos...
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="window.exportarSesionesCSV()" class="bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black px-4 py-2 text-xs uppercase border-2 border-white shadow-stitch cursor-pointer">
+                        📥 Exportar Sesiones CSV
+                    </button>
+                </div>
+            </div>
+
+            <!-- 8 Tarjetas KPI -->
+            <div class="p-5 grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 border-b-2 border-vibrant-dark">
+                <div class="bg-white border-2 border-vibrant-dark p-3.5 shadow-stitch">
+                    <div class="text-[10px] font-black uppercase text-gray-500">Sesiones Totales</div>
+                    <div id="telKpiSessions" class="text-2xl font-black text-vibrant-dark mt-1">0</div>
+                    <div id="telKpiSessionsSub" class="text-[10px] text-gray-500 font-bold">0 anónimas · 0 logueadas</div>
+                </div>
+                <div class="bg-white border-2 border-vibrant-dark p-3.5 shadow-stitch">
+                    <div class="text-[10px] font-black uppercase text-gray-500">Permanencia Promedio</div>
+                    <div id="telKpiDwell" class="text-2xl font-black text-vibrant-blue mt-1">0m 00s</div>
+                    <div class="text-[10px] text-gray-500 font-bold">Foco activo en pestaña</div>
+                </div>
+                <div class="bg-white border-2 border-vibrant-dark p-3.5 shadow-stitch">
+                    <div class="text-[10px] font-black uppercase text-gray-500">Móvil + Tablet</div>
+                    <div id="telKpiMobile" class="text-2xl font-black text-vibrant-orange mt-1">0%</div>
+                    <div id="telKpiMobileSub" class="text-[10px] text-gray-500 font-bold">0 de 0 sesiones</div>
+                </div>
+                <div class="bg-white border-2 border-vibrant-dark p-3.5 shadow-stitch">
+                    <div class="text-[10px] font-black uppercase text-gray-500">Latencia Grilla (Prom.)</div>
+                    <div id="telKpiLatency" class="text-2xl font-black text-emerald-600 mt-1">—</div>
+                    <div class="text-[10px] text-gray-500 font-bold">Tiempo render tabla</div>
+                </div>
+                <div class="bg-white border-2 border-vibrant-dark p-3.5 shadow-stitch">
+                    <div class="text-[10px] font-black uppercase text-gray-500">Vieron "Para Empresas"</div>
+                    <div id="telKpiBusiness" class="text-2xl font-black text-purple-600 mt-1">0%</div>
+                    <div id="telKpiBusinessSub" class="text-[10px] text-gray-500 font-bold">0 visitas a planes</div>
+                </div>
+                <div class="bg-white border-2 border-vibrant-dark p-3.5 shadow-stitch">
+                    <div class="text-[10px] font-black uppercase text-gray-500">Llegaron al Límite Canasta</div>
+                    <div id="telKpiCartLimit" class="text-2xl font-black text-red-600 mt-1">0</div>
+                    <div class="text-[10px] text-gray-500 font-bold">Máximo 15 artículos</div>
+                </div>
+                <div class="bg-white border-2 border-vibrant-dark p-3.5 shadow-stitch">
+                    <div class="text-[10px] font-black uppercase text-gray-500">Ubicación Top</div>
+                    <div id="telKpiTopLocation" class="text-sm font-black text-vibrant-dark truncate mt-2">—</div>
+                    <div class="text-[10px] text-gray-500 font-bold">Derivada de IP</div>
+                </div>
+                <div class="bg-white border-2 border-vibrant-dark p-3.5 shadow-stitch">
+                    <div class="text-[10px] font-black uppercase text-gray-500">Origen Principal</div>
+                    <div id="telKpiTopReferrer" class="text-sm font-black text-vibrant-dark truncate mt-2">—</div>
+                    <div class="text-[10px] text-gray-500 font-bold">Referrer URL</div>
+                </div>
+            </div>
+
+            <!-- Filtros de la Tabla de Telemetría -->
+            <div class="p-4 bg-gray-100 border-b-2 border-vibrant-dark grid grid-cols-1 sm:grid-cols-12 gap-3">
+                <div class="sm:col-span-8">
+                    <input id="adminTelemetrySearch" type="text" oninput="window.renderAdminTelemetry()" placeholder="🔍 Buscar por ubicación, origen, SO, navegador, producto en canasta, búsqueda..." class="w-full bg-white text-vibrant-dark font-bold px-3 py-2 border-2 border-vibrant-dark text-xs shadow-stitch">
+                </div>
+                <div class="sm:col-span-4">
+                    <select id="adminTelemetryStatusFilter" onchange="window.renderAdminTelemetry()" class="w-full bg-white text-vibrant-dark font-black px-3 py-2 border-2 border-vibrant-dark text-xs cursor-pointer shadow-stitch">
+                        <option value="todos">👥 Todos (Logueados + Anónimos)</option>
+                        <option value="logged">🔐 Solo Logueados</option>
+                        <option value="guest">🕵️ Solo Anónimos</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Tabla de Telemetría (23 Columnas completas) -->
+            <div class="overflow-x-auto max-h-[580px] overflow-y-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead class="sticky top-0 z-10">
+                        <tr class="bg-gray-200 border-b-2 border-vibrant-dark text-[11px] font-black text-vibrant-dark uppercase tracking-wider">
+                            <th class="py-3 px-3 border-r border-gray-300">Inicio</th>
+                            <th class="py-3 px-3 border-r border-gray-300">Tipo Tráfico</th>
+                            <th class="py-3 px-3 border-r border-gray-300">Permanencia</th>
+                            <th class="py-3 px-3 border-r border-gray-300">Ubicación / Referrer</th>
+                            <th class="py-3 px-3 border-r border-gray-300">Dispositivo & SO</th>
+                            <th class="py-3 px-3 border-r border-gray-300">Filtros Aplicados</th>
+                            <th class="py-3 px-3 border-r border-gray-300">Búsquedas</th>
+                            <th class="py-3 px-3 border-r border-gray-300">Idioma</th>
+                            <th class="py-3 px-3 border-r border-gray-300">Paginación</th>
+                            <th class="py-3 px-3 border-r border-gray-300">Canasta (₡)</th>
+                            <th class="py-3 px-3 border-r border-gray-300">CTA / Empresas</th>
+                            <th class="py-3 px-3 border-r border-gray-300">Renovación</th>
+                            <th class="py-3 px-3">Latencia Grilla</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTelemetryTbody" class="divide-y divide-gray-200 bg-white text-xs">
+                        <tr>
+                            <td colspan="13" class="py-8 text-center text-gray-500 font-bold">Cargando registros de telemetría...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+        <!-- SECCIÓN 2: DIRECTORIO Y GESTIÓN DE USUARIOS POCKETBASE (`users`) -->
+        <section class="bg-white stitch-box-4 shadow-stitch overflow-hidden">
+            <div class="p-5 bg-vibrant-dark text-white flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div>
+                    <div class="inline-flex items-center gap-1.5 bg-amber-300 text-vibrant-dark text-[10px] font-black px-2 py-0.5 uppercase tracking-wider mb-1">
+                        🔐 Base de Datos PocketBase (`users`)
+                    </div>
+                    <h2 class="text-xl font-black uppercase tracking-tight">
+                        Gestión de Usuarios, Planes y Permisos
+                    </h2>
+                    <p class="text-xs text-gray-300 font-medium">
+                        Edición interactiva en vivo: cambios aplicados directamente a PocketBase.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="window.abrirModalNuevoUsuario()" class="bg-amber-300 hover:bg-amber-400 text-vibrant-dark font-black px-4 py-2 text-xs uppercase border-2 border-white shadow-stitch cursor-pointer">
+                        ➕ Registrar Nuevo Usuario
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabla de Usuarios PocketBase -->
+            <div class="overflow-x-auto max-h-[460px] overflow-y-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead class="sticky top-0 z-10">
+                        <tr class="bg-gray-200 border-b-2 border-vibrant-dark text-[11px] font-black text-vibrant-dark uppercase tracking-wider">
+                            <th class="py-3 px-4 border-r border-gray-300">Usuario / Correo</th>
+                            <th class="py-3 px-3 border-r border-gray-300">Rol Admin</th>
+                            <th class="py-3 px-3 border-r border-gray-300 text-center">Plan Mercados</th>
+                            <th class="py-3 px-3 border-r border-gray-300 text-center">Plan Tiendas</th>
+                            <th class="py-3 px-3 border-r border-gray-300 text-center">Plan Farmacias</th>
+                            <th class="py-3 px-3 border-r border-gray-300 text-center">Plan Comercios</th>
+                            <th class="py-3 px-3 border-r border-gray-300">Vigencia</th>
+                            <th class="py-3 px-3 text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminUsersTbody" class="divide-y divide-gray-200 bg-white text-xs">
+                        <tr>
+                            <td colspan="8" class="py-8 text-center text-gray-500 font-bold">Consultando colección 'users' en PocketBase...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL 1: PROVISIONAR COLECCIÓN POCKETBASE -->
+    <div id="modalProvisionPB" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white stitch-box-4 shadow-stitch-lg max-w-lg w-full p-6 space-y-5">
+            <div class="flex items-center justify-between border-b-2 border-vibrant-dark pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">⚡</span>
+                    <h3 class="text-lg font-black uppercase text-vibrant-dark">Provisionar Colección PocketBase</h3>
+                </div>
+                <button onclick="window.cerrarModalProvisionPB()" class="text-xl font-black hover:text-red-600 cursor-pointer">✕</button>
+            </div>
+
+            <p class="text-xs text-gray-600 font-bold leading-relaxed">
+                Este asistente conectará con tu servidor <strong class="text-vibrant-dark">https://pb-mercadofacil.webticocr.com</strong> como Superuser y creará automáticamente la colección <strong class="text-vibrant-blue">telemetry_sessions</strong> con las 23 métricas requeridas e índice único.
+            </p>
+
+            <div class="space-y-3 bg-gray-50 p-4 border-2 border-vibrant-dark">
+                <div>
+                    <label class="block text-[11px] font-black uppercase text-gray-700 mb-1">Identidad / Superuser Email:</label>
+                    <input id="pbProvEmail" type="email" value="corea3000@gmail.com" class="w-full bg-white text-vibrant-dark font-mono text-xs px-3 py-2 border-2 border-vibrant-dark" readonly>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-black uppercase text-gray-700 mb-1">Contraseña de Superuser en PocketBase:</label>
+                    <input id="pbProvPassword" type="password" placeholder="Tu contraseña de administración en pb-mercadofacil" class="w-full bg-white text-vibrant-dark font-mono text-xs px-3 py-2 border-2 border-vibrant-dark">
+                </div>
+                <div id="pbProvStatus" class="hidden text-xs font-mono font-bold p-2.5 border-2"></div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <button onclick="window.cerrarModalProvisionPB()" class="bg-gray-200 hover:bg-gray-300 text-vibrant-dark font-black px-4 py-2 text-xs uppercase border-2 border-vibrant-dark cursor-pointer">
+                    Cancelar
+                </button>
+                <button id="btnEjecutarProvision" onclick="window.ejecutarProvisionPocketBase()" class="bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black px-5 py-2 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer flex items-center gap-2">
+                    <span>🚀</span> Crear Colección Ahora
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: CREAR NUEVO USUARIO EN POCKETBASE -->
+    <div id="modalNuevoUsuario" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white stitch-box-4 shadow-stitch-lg max-w-md w-full p-6 space-y-4">
+            <div class="flex items-center justify-between border-b-2 border-vibrant-dark pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">➕</span>
+                    <h3 class="text-lg font-black uppercase text-vibrant-dark">Nuevo Usuario en PocketBase</h3>
+                </div>
+                <button onclick="window.cerrarModalNuevoUsuario()" class="text-xl font-black hover:text-red-600 cursor-pointer">✕</button>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-black uppercase text-gray-700 mb-1">Correo Electrónico:</label>
+                    <input id="newUsrEmail" type="email" placeholder="cliente@ejemplo.com" class="w-full bg-white font-mono px-3 py-2 border-2 border-vibrant-dark">
+                </div>
+                <div>
+                    <label class="block font-black uppercase text-gray-700 mb-1">Nombre Completo:</label>
+                    <input id="newUsrName" type="text" placeholder="Ej. Carlos Jiménez" class="w-full px-3 py-2 border-2 border-vibrant-dark">
+                </div>
+                <div>
+                    <label class="block font-black uppercase text-gray-700 mb-1">Planes a Activar:</label>
+                    <div class="grid grid-cols-2 gap-2 mt-1">
+                        <label class="flex items-center gap-2 font-bold"><input id="newUsrPlan1" type="checkbox" checked class="w-4 h-4"> Mercados</label>
+                        <label class="flex items-center gap-2 font-bold"><input id="newUsrPlan2" type="checkbox" class="w-4 h-4"> Tiendas</label>
+                        <label class="flex items-center gap-2 font-bold"><input id="newUsrPlan3" type="checkbox" class="w-4 h-4"> Farmacias</label>
+                        <label class="flex items-center gap-2 font-bold"><input id="newUsrPlan4" type="checkbox" class="w-4 h-4"> Comercios</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-3 border-t-2 border-gray-200">
+                <button onclick="window.cerrarModalNuevoUsuario()" class="bg-gray-200 text-vibrant-dark font-black px-4 py-2 text-xs uppercase border-2 border-vibrant-dark cursor-pointer">
+                    Cancelar
+                </button>
+                <button onclick="window.guardarNuevoUsuarioPocketBase()" class="bg-amber-300 hover:bg-amber-400 text-vibrant-dark font-black px-5 py-2 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer">
+                    Guardar Usuario
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Neo-Brutalista -->
+    <footer class="bg-vibrant-dark text-white border-t-4 border-vibrant-dark py-8 px-4 sm:px-6 mt-12">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono font-bold text-gray-400">
+            <div class="flex items-center gap-2">
+                <span>🛒 MERCADOFÁCIL COSTA RICA</span>
+                <span>·</span>
+                <span>100% Desarrollo Tico</span>
+            </div>
+            <div>
+                Desarrollado para <a href="https://webticocr.com" target="_blank" rel="noopener noreferrer" class="text-vibrant-green hover:underline">webticocr.com</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- LÓGICA JAVASCRIPT DEL PANEL DE ADMINISTRACIÓN -->
+    <script>
+        const PB_URL = 'https://pb-mercadofacil.webticocr.com';
+        const pb = (typeof PocketBase !== 'undefined') ? new PocketBase(PB_URL) : null;
+        
+        let allTelemetrySessions = [];
+        let allPocketBaseUsers = [];
+        let hasTelemetryCollection = false;
+
+        // Formateadores auxiliares
+        const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const formatCRC = (n) => '₡' + Number(n || 0).toLocaleString('es-CR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        const fmtDwell = (sec) => {
+            const s = Math.max(0, parseInt(sec, 10) || 0);
+            const m = Math.floor(s / 60);
+            const r = s % 60;
+            return `${m}m ${r.toString().padStart(2, '0')}s`;
+        };
+        const fmtDate = (d) => {
+            if (!d) return '—';
+            try {
+                const date = new Date(d);
+                return isNaN(date.getTime()) ? String(d) : date.toLocaleString('es-CR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            } catch (e) { return String(d); }
+        };
+
+        // 1. Verificación Inicial de Autenticación de Administrador
+        async function verificarAccesoAdmin() {
+            const lockScreen = document.getElementById('adminLockScreen');
+            const mainContent = document.getElementById('adminMainContent');
+            const userBadge = document.getElementById('adminUserBadge');
+            const btnLogout = document.getElementById('adminBtnLogout');
+            const userLabel = document.getElementById('adminUserEmailLabel');
+            const lockState = document.getElementById('adminLockSessionState');
+
+            let user = null;
+            if (pb && pb.authStore && pb.authStore.isValid) {
+                user = pb.authStore.model;
+            } else {
+                try {
+                    const raw = localStorage.getItem('pocketbase_auth');
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        if (parsed && parsed.token && parsed.model) {
+                            user = parsed.model;
+                            if (pb) pb.authStore.save(parsed.token, parsed.model);
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            const isSuperAdmin = Boolean(user && (user.admin === true || user.admin === 'true' || user.admin === 1));
+
+            if (!user) {
+                lockState.innerText = "No has iniciado sesión en PocketBase.";
+                lockScreen.classList.remove('hidden');
+                mainContent.classList.add('hidden');
+                userBadge.classList.add('hidden');
+                btnLogout.classList.add('hidden');
+                return;
+            }
+
+            if (!isSuperAdmin) {
+                lockState.innerHTML = `<span class="text-red-600 font-bold">Conectado como ${esc(user.email || 'usuario')}, pero NO tiene privilegios de administrador (admin: false).</span>`;
+                lockScreen.classList.remove('hidden');
+                mainContent.classList.add('hidden');
+                userBadge.classList.remove('hidden');
+                btnLogout.classList.remove('hidden');
+                if (userLabel) userLabel.innerText = user.email || 'Usuario';
+                return;
+            }
+
+            // Usuario AUTORIZADO como Admin
+            lockScreen.classList.add('hidden');
+            mainContent.classList.remove('hidden');
+            userBadge.classList.remove('hidden');
+            btnLogout.classList.remove('hidden');
+            if (userLabel) userLabel.innerText = user.email || 'Admin';
+
+            // Cargar datos
+            await comprobarColeccionPocketBase();
+            await cargarSesionesTelemetria();
+            await cargarUsuariosPocketBase();
+        }
+
+        // Login Google
+        window.iniciarSesionGoogleAdmin = async function() {
+            if (!pb) return;
+            try {
+                await pb.collection('users').authWithOAuth2({ provider: 'google' });
+                verificarAccesoAdmin();
+            } catch (err) {
+                alert("Error al identificarse con Google: " + (err.message || err));
+            }
+        };
+
+        // Logout
+        window.cerrarSesionAdmin = function() {
+            if (pb && pb.authStore) pb.authStore.clear();
+            localStorage.removeItem('pocketbase_auth');
+            window.location.href = 'index.html';
+        };
+
+        // 2. Comprobar existencia de 'telemetry_sessions' en PocketBase
+        async function comprobarColeccionPocketBase() {
+            const alertBox = document.getElementById('pbCollectionAlert');
+            const ind = document.getElementById('pbStatusIndicator');
+            const srcLabel = document.getElementById('adminTelemetrySourceLabel');
+
+            try {
+                await pb.collection('telemetry_sessions').getList(1, 1);
+                hasTelemetryCollection = true;
+                alertBox.classList.add('hidden');
+                ind.className = "inline-flex items-center gap-1.5 bg-green-100 text-green-900 text-[10px] font-black px-2.5 py-0.5 border border-green-500 uppercase";
+                ind.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-600"></span> Colección Activa en PocketBase`;
+                srcLabel.innerText = "Fuente: PocketBase (telemetry_sessions) — Persistencia en vivo activa.";
+            } catch (err) {
+                hasTelemetryCollection = false;
+                alertBox.classList.remove('hidden');
+                ind.className = "inline-flex items-center gap-1.5 bg-amber-100 text-amber-900 text-[10px] font-black px-2.5 py-0.5 border border-amber-500 uppercase";
+                ind.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-600"></span> Colección Pendiente en PocketBase`;
+                srcLabel.innerText = "Fuente: Espejo local SQLite / localStorage (Pendiente crear colección en PocketBase).";
+            }
+        }
+
+        // 3. Cargar Telemetría (PocketBase + LocalStorage Mirror)
+        function normalizarSesion(r) {
+            const arr = (v) => Array.isArray(v) ? v : (typeof v === 'string' && v ? (() => { try { return JSON.parse(v); } catch(e) { return []; } })() : []);
+            return {
+                session_id: r.session_id || r.id || '—',
+                started_at: r.started_at || r.created || '',
+                dwell_seconds: parseInt(r.dwell_seconds, 10) || 0,
+                is_logged: Boolean(r.is_logged === true || r.is_logged === 1 || r.is_logged === 'true'),
+                referrer: r.referrer || '',
+                location: r.location || '',
+                device_type: r.device_type || 'Escritorio',
+                os: r.os || '—',
+                browser: r.browser || '—',
+                resolution: r.resolution || '—',
+                filter_history: arr(r.filter_history),
+                search_terms: arr(r.search_terms),
+                language: r.language || 'es',
+                grid_page_size: parseInt(r.grid_page_size, 10) || 0,
+                grid_max_page: parseInt(r.grid_max_page, 10) || 1,
+                grid_page_changes: parseInt(r.grid_page_changes, 10) || 0,
+                selected_super: r.selected_super || '',
+                selected_category: r.selected_category || '',
+                cart_last_product: r.cart_last_product || '',
+                cart_add_count: parseInt(r.cart_add_count, 10) || 0,
+                cart_value: parseFloat(r.cart_value) || 0,
+                cart_limit_reached: Boolean(r.cart_limit_reached === true || r.cart_limit_reached === 1 || r.cart_limit_reached === 'true'),
+                cta_clicks: arr(r.cta_clicks),
+                viewed_business: Boolean(r.viewed_business === true || r.viewed_business === 1 || r.viewed_business === 'true'),
+                renew_click_at: r.renew_click_at || '',
+                grid_latency_ms: parseInt(r.grid_latency_ms, 10) || 0,
+                grid_latency_avg_ms: parseInt(r.grid_latency_avg_ms, 10) || 0
+            };
+        }
+
+        async function cargarSesionesTelemetria() {
+            const mapById = new Map();
+
+            // 1. Cargar desde PocketBase si existe la colección
+            if (hasTelemetryCollection) {
+                try {
+                    const res = await pb.collection('telemetry_sessions').getList(1, 500, { sort: '-started_at' });
+                    (res.items || []).forEach(r => mapById.set(r.session_id, normalizarSesion(r)));
+                } catch (e) {
+                    console.warn("No se pudo leer de PocketBase telemetry_sessions:", e);
+                }
+            }
+
+            // 2. Cargar desde localStorage mirror
+            try {
+                const mirrorRaw = localStorage.getItem('mercadofacil_telemetry_sessions');
+                if (mirrorRaw) {
+                    const parsed = JSON.parse(mirrorRaw);
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(r => {
+                            if (!mapById.has(r.session_id)) {
+                                mapById.set(r.session_id, normalizarSesion(r));
+                            }
+                        });
+                    }
+                }
+            } catch (e) {}
+
+            allTelemetrySessions = Array.from(mapById.values()).sort((a, b) => new Date(b.started_at || 0) - new Date(a.started_at || 0));
+            window.renderAdminTelemetry();
+        }
+
+        // 4. Renderizar Telemetría y KPIs
+        window.renderAdminTelemetry = function() {
+            const tbody = document.getElementById('adminTelemetryTbody');
+            const search = (document.getElementById('adminTelemetrySearch')?.value || '').toLowerCase().trim();
+            const filterStatus = document.getElementById('adminTelemetryStatusFilter')?.value || 'todos';
+
+            let rows = allTelemetrySessions.filter(s => {
+                if (filterStatus === 'logged' && !s.is_logged) return false;
+                if (filterStatus === 'guest' && s.is_logged) return false;
+                if (!search) return true;
+                const blob = [
+                    s.session_id, s.location, s.referrer, s.os, s.browser, s.device_type,
+                    s.selected_super, s.selected_category, s.cart_last_product,
+                    (s.search_terms || []).join(' '),
+                    (s.filter_history || []).map(f => `${f.super} ${f.cat}`).join(' ')
+                ].join(' ').toLowerCase();
+                return blob.includes(search);
+            });
+
+            // KPIs
+            const n = rows.length;
+            const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
+            setTxt('telKpiSessions', n.toLocaleString('es-CR'));
+            const loggedCount = rows.filter(s => s.is_logged).length;
+            setTxt('telKpiSessionsSub', `${(n - loggedCount)} anónimas · ${loggedCount} logueadas`);
+
+            const totalDwell = rows.reduce((acc, s) => acc + s.dwell_seconds, 0);
+            setTxt('telKpiDwell', n ? fmtDwell(Math.round(totalDwell / n)) : '0m 00s');
+
+            const mobileCount = rows.filter(s => s.device_type === 'Móvil' || s.device_type === 'Tablet').length;
+            setTxt('telKpiMobile', n ? `${Math.round((mobileCount / n) * 100)}%` : '0%');
+            setTxt('telKpiMobileSub', `${mobileCount} de ${n} sesiones`);
+
+            const validLat = rows.filter(s => s.grid_latency_avg_ms > 0);
+            const avgLat = validLat.length ? Math.round(validLat.reduce((a, b) => a + b.grid_latency_avg_ms, 0) / validLat.length) : null;
+            setTxt('telKpiLatency', avgLat ? `${avgLat} ms` : '—');
+
+            const bizCount = rows.filter(s => s.viewed_business).length;
+            setTxt('telKpiBusiness', n ? `${Math.round((bizCount / n) * 100)}%` : '0%');
+            setTxt('telKpiBusinessSub', `${bizCount} vieron planes`);
+
+            setTxt('telKpiCartLimit', rows.filter(s => s.cart_limit_reached).length.toLocaleString('es-CR'));
+
+            const topOf = (list) => {
+                const counts = {};
+                list.filter(Boolean).forEach(x => { counts[x] = (counts[x] || 0) + 1; });
+                const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+                return sorted.length ? `${sorted[0][0]} (${sorted[0][1]})` : '—';
+            };
+            setTxt('telKpiTopLocation', topOf(rows.map(s => s.location)));
+            setTxt('telKpiTopReferrer', topOf(rows.map(s => s.referrer)));
+
+            if (n === 0) {
+                tbody.innerHTML = `<tr><td colspan="13" class="py-12 text-center text-gray-500 font-bold text-xs">Sin sesiones registradas con estos filtros.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = rows.map(s => {
+                const searchTxt = (s.search_terms || []).slice(0, 3).map(t => typeof t === 'string' ? t : t.term).join(', ');
+                const ctaTxt = (s.cta_clicks || []).slice(0, 2).map(c => typeof c === 'string' ? c : c.btn).join(', ');
+                const langTxt = (s.language || 'es').toUpperCase();
+                const filtersTitle = (s.filter_history || []).map(f => `${f.time || ''}: ${f.super || ''} / ${f.cat || ''}`).join('\n');
+
+                return `
+                    <tr class="hover:bg-amber-50/50 transition-colors">
+                        <td class="py-2.5 px-3 border-r border-gray-200 whitespace-nowrap">
+                            <div class="font-mono font-bold text-[11px]">${esc(fmtDate(s.started_at))}</div>
+                            <div class="text-[9px] text-gray-400 font-mono" title="${esc(s.session_id)}">${esc(s.session_id.slice(0, 10))}…</div>
+                        </td>
+                        <td class="py-2.5 px-3 border-r border-gray-200 whitespace-nowrap">
+                            ${s.is_logged
+                                ? '<span class="bg-green-100 text-green-900 border border-green-500 px-1.5 py-0.5 text-[10px] font-black">🔐 LOGUEADO</span>'
+                                : '<span class="bg-orange-100 text-orange-900 border border-orange-400 px-1.5 py-0.5 text-[10px] font-black">🕵️ ANÓNIMO</span>'}
+                        </td>
+                        <td class="py-2.5 px-3 border-r border-gray-200 whitespace-nowrap font-black font-mono">
+                            ${esc(fmtDwell(s.dwell_seconds))}
+                        </td>
+                        <td class="py-2.5 px-3 border-r border-gray-200 text-[11px]">
+                            <div class="font-bold">${esc(s.location || '—')}</div>
+                            <div class="text-gray-500 break-all max-w-[160px] text-[10px]">${esc(s.referrer || 'Directo')}</div>
+                        </td>
+                        <td class="py-2.5 px-3 border-r border-gray-200 text-[11px] whitespace-nowrap">
+                            <div class="font-bold">${esc(s.device_type)} · ${esc(s.os)}</div>
+                            <div class="text-gray-500 text-[10px]">${esc(s.browser)} · ${esc(s.resolution)}</div>
+                        </td>
+                        <td class="py-2.5 px-3 border-r border-gray-200 text-[11px]" title="${esc(filtersTitle)}">
+                            <div class="font-bold">${esc(s.selected_super || 'Todos')}</div>
+                            <div class="text-gray-500">${esc(s.selected_category || 'Todas')}</div>
+                            <div class="text-vibrant-blue font-black text-[10px]">${s.filter_history.length} cambios</div>
+                        </td>
+                        <td class="py-2.5 px-3 border-r border-gray-200 text-[11px] max-w-[140px] break-words">
+                            ${esc(searchTxt || '—')}
+                        </td>
+                        <td class="py-2.5 px-3 border-r border-gray-200 text-[11px] whitespace-nowrap font-bold">
+                            ${esc(langTxt)}
+                        </td>
+                        <td class="py-2.5 px-3 border-r border-gray-200 text-[11px] whitespace-nowrap">
+                            ${s.grid_page_size || 15}/pág
+                            <div class="text-gray-500 text-[10px]">máx pág ${s.grid_max_page || 1}</div>
+                        </td>
+                        <td class="py-2.5 px-3 border-r border-gray-200 text-[11px]">
+                            <div class="font-black text-vibrant-dark">${esc(formatCRC(s.cart_value))}</div>
+                            <div class="text-gray-500 text-[10px] max-w-[130px] truncate">${esc(s.cart_last_product || '—')} (${s.cart_add_count} items)</div>
+                            ${s.cart_limit_reached ? '<span class="text-red-600 font-black text-[9px] uppercase">🚨 LÍMITE 15</span>' : ''}
+                        </td>
+                        <td class="py-2.5 px-3 border-r border-gray-200 text-[11px] max-w-[150px] break-words">
+                            <div>${esc(ctaTxt || '—')}</div>
+                            <div class="font-black text-[10px] ${s.viewed_business ? 'text-green-700' : 'text-gray-400'}">
+                                ${s.viewed_business ? '✔ Vio Para Empresas' : '✘ No vio planes'}
+                            </div>
+                        </td>
+                        <td class="py-2.5 px-3 border-r border-gray-200 text-[11px] whitespace-nowrap font-mono">
+                            ${s.renew_click_at ? esc(fmtDate(s.renew_click_at)) : '—'}
+                        </td>
+                        <td class="py-2.5 px-3 text-[11px] whitespace-nowrap font-mono">
+                            ${s.grid_latency_ms ? `${s.grid_latency_ms} ms<div class="text-gray-500 text-[10px]">prom ${s.grid_latency_avg_ms} ms</div>` : '—'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        };
+
+        // Exportar CSV de Sesiones
+        window.exportarSesionesCSV = function() {
+            if (!allTelemetrySessions.length) {
+                alert("No hay sesiones de telemetría disponibles para exportar.");
+                return;
+            }
+            const q = (v) => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
+            const headers = [
+                'session_id', 'started_at', 'dwell_seconds', 'is_logged', 'referrer', 'location',
+                'device_type', 'os', 'browser', 'resolution', 'filter_history', 'search_terms',
+                'language', 'grid_page_size', 'grid_max_page', 'grid_page_changes', 'selected_super',
+                'selected_category', 'cart_last_product', 'cart_add_count', 'cart_value',
+                'cart_limit_reached', 'cta_clicks', 'viewed_business', 'renew_click_at',
+                'grid_latency_ms', 'grid_latency_avg_ms'
+            ];
+            const jsonCols = ['filter_history', 'search_terms', 'cta_clicks'];
+            const lines = [headers.join(',')].concat(
+                allTelemetrySessions.map(s => headers.map(h => q(jsonCols.includes(h) ? JSON.stringify(s[h]) : s[h])).join(','))
+            );
+            const blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `MercadoFacil_Telemetria_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        // 5. Cargar y Administrar Usuarios de PocketBase (`users`)
+        async function cargarUsuariosPocketBase() {
+            const tbody = document.getElementById('adminUsersTbody');
+            try {
+                const users = await pb.collection('users').getFullList({ sort: '-created' });
+                allPocketBaseUsers = users || [];
+                renderUsuariosPocketBase();
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-red-600 font-bold text-xs">Error al cargar usuarios de PocketBase: ${esc(err.message || err)}</td></tr>`;
+            }
+        }
+
+        function renderUsuariosPocketBase() {
+            const tbody = document.getElementById('adminUsersTbody');
+            if (!allPocketBaseUsers.length) {
+                tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-gray-500 font-bold text-xs">No hay usuarios registrados en la colección 'users'.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = allPocketBaseUsers.map(u => {
+                const isSuper = Boolean(u.admin === true || u.admin === 'true' || u.admin === 1);
+                const p1 = Boolean(u.plan1);
+                const p2 = Boolean(u.plan2);
+                const p3 = Boolean(u.plan3);
+                const p4 = Boolean(u.plan4);
+
+                const pillBtn = (planKey, active) => `
+                    <button onclick="window.toggleUserPlan('${u.id}', '${planKey}', ${!active})" class="px-2 py-0.5 text-[10px] font-black border-2 border-vibrant-dark cursor-pointer transition-all ${active ? 'bg-vibrant-green text-vibrant-dark' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}">
+                        ${active ? 'ACTIVO' : 'INACTIVO'}
+                    </button>
+                `;
+
+                return `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="py-3 px-4 border-r border-gray-200">
+                            <div class="font-bold text-vibrant-dark text-xs">${esc(u.name || 'Sin nombre')}</div>
+                            <div class="font-mono text-gray-500 text-[11px]">${esc(u.email)}</div>
+                            <div class="text-[9px] text-gray-400 font-mono">ID: ${esc(u.id)}</div>
+                        </td>
+                        <td class="py-3 px-3 border-r border-gray-200">
+                            ${isSuper
+                                ? '<span class="bg-amber-300 text-vibrant-dark font-black px-2 py-0.5 text-[10px] border border-vibrant-dark">👑 ADMIN</span>'
+                                : '<span class="bg-gray-100 text-gray-600 font-bold px-2 py-0.5 text-[10px] border border-gray-300">CLIENTE</span>'}
+                        </td>
+                        <td class="py-3 px-3 border-r border-gray-200 text-center">${pillBtn('plan1', p1)}</td>
+                        <td class="py-3 px-3 border-r border-gray-200 text-center">${pillBtn('plan2', p2)}</td>
+                        <td class="py-3 px-3 border-r border-gray-200 text-center">${pillBtn('plan3', p3)}</td>
+                        <td class="py-3 px-3 border-r border-gray-200 text-center">${pillBtn('plan4', p4)}</td>
+                        <td class="py-3 px-3 border-r border-gray-200 whitespace-nowrap">
+                            <div class="font-mono text-[11px] font-bold">${u.expire ? esc(fmtDate(u.expire)) : '<span class="text-gray-400">Sin vencimiento</span>'}</div>
+                            <button onclick="window.extenderVigencia('${u.id}')" class="text-[10px] text-vibrant-blue font-black hover:underline cursor-pointer">+1 Mes</button>
+                        </td>
+                        <td class="py-3 px-3 text-right whitespace-nowrap">
+                            <button onclick="window.eliminarUsuarioPocketBase('${u.id}', '${esc(u.email)}')" class="bg-white hover:bg-red-100 text-red-600 font-black px-2.5 py-1 text-[11px] border-2 border-vibrant-dark shadow-stitch cursor-pointer">
+                                🗑️ Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        window.toggleUserPlan = async function(userId, planKey, newStatus) {
+            try {
+                const payload = {};
+                payload[planKey] = newStatus;
+                await pb.collection('users').update(userId, payload);
+                const u = allPocketBaseUsers.find(x => x.id === userId);
+                if (u) u[planKey] = newStatus;
+                renderUsuariosPocketBase();
+            } catch (err) {
+                alert("Error al actualizar plan en PocketBase: " + (err.message || err));
+            }
+        };
+
+        window.extenderVigencia = async function(userId) {
+            const u = allPocketBaseUsers.find(x => x.id === userId);
+            if (!u) return;
+            const base = (u.expire && new Date(u.expire) > new Date()) ? new Date(u.expire) : new Date();
+            base.setMonth(base.getMonth() + 1);
+            const iso = base.toISOString();
+            try {
+                await pb.collection('users').update(userId, { expire: iso });
+                u.expire = iso;
+                renderUsuariosPocketBase();
+            } catch (err) {
+                alert("Error al extender vigencia: " + (err.message || err));
+            }
+        };
+
+        window.eliminarUsuarioPocketBase = async function(userId, email) {
+            if (!confirm(`¿Estás seguro de eliminar permanentemente al usuario ${email} de PocketBase?`)) return;
+            try {
+                await pb.collection('users').delete(userId);
+                allPocketBaseUsers = allPocketBaseUsers.filter(x => x.id !== userId);
+                renderUsuariosPocketBase();
+            } catch (err) {
+                alert("Error al eliminar usuario: " + (err.message || err));
+            }
+        };
+
+        // 6. Asistente de Provisión Automática de Colecciones en PocketBase
+        window.abrirModalProvisionPocketBase = function() {
+            document.getElementById('modalProvisionPB').classList.remove('hidden');
+            const st = document.getElementById('pbProvStatus');
+            st.className = "hidden";
+            st.innerText = "";
+        };
+
+        window.cerrarModalProvisionPB = function() {
+            document.getElementById('modalProvisionPB').classList.add('hidden');
+        };
+
+        window.ejecutarProvisionPocketBase = async function() {
+            const email = document.getElementById('pbProvEmail').value.trim();
+            const pass = document.getElementById('pbProvPassword').value;
+            const statusEl = document.getElementById('pbProvStatus');
+            const btn = document.getElementById('btnEjecutarProvision');
+
+            if (!pass) {
+                alert("Por favor ingresa la contraseña de Superuser de PocketBase.");
+                return;
+            }
+
+            statusEl.className = "text-xs font-mono font-bold p-3 border-2 bg-blue-50 border-blue-400 text-blue-900 block";
+            statusEl.innerText = "1/3 Autenticando como Superuser en PocketBase...";
+            btn.disabled = true;
+
+            try {
+                // Autenticar superuser
+                let superToken = null;
+                const authRes = await fetch(`${PB_URL}/api/collections/_superusers/auth-with-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identity: email, password: pass })
+                });
+
+                if (authRes.ok) {
+                    const data = await authRes.json();
+                    superToken = data.token;
+                } else {
+                    // Fallback a API legacy de PB
+                    const legRes = await fetch(`${PB_URL}/api/admins/auth-with-password`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ identity: email, password: pass })
+                    });
+                    if (legRes.ok) {
+                        const dataLeg = await legRes.json();
+                        superToken = dataLeg.token;
+                    }
+                }
+
+                if (!superToken) {
+                    throw new Error("Credenciales de Superuser incorrectas para " + email);
+                }
+
+                statusEl.innerText = "2/3 Autenticado con éxito. Creando colección 'telemetry_sessions' con las 23 métricas...";
+
+                // Crear colección telemetry_sessions
+                const fieldsPayload = [
+                    { name: 'session_id', type: 'text', required: true, max: 64 },
+                    { name: 'session_token', type: 'text', max: 64 },
+                    { name: 'started_at', type: 'date', required: true },
+                    { name: 'dwell_seconds', type: 'number', min: 0 },
+                    { name: 'is_logged', type: 'bool' },
+                    { name: 'user_id', type: 'text', max: 50 },
+                    { name: 'user_email', type: 'text', max: 120 },
+                    { name: 'referrer', type: 'text', max: 255 },
+                    { name: 'location', type: 'text', max: 100 },
+                    { name: 'device_type', type: 'text', max: 20 },
+                    { name: 'os', type: 'text', max: 50 },
+                    { name: 'browser', type: 'text', max: 50 },
+                    { name: 'resolution', type: 'text', max: 20 },
+                    { name: 'filter_history', type: 'json' },
+                    { name: 'search_terms', type: 'json' },
+                    { name: 'language', type: 'text', max: 2 },
+                    { name: 'language_history', type: 'json' },
+                    { name: 'grid_page_size', type: 'number' },
+                    { name: 'grid_max_page', type: 'number' },
+                    { name: 'grid_page_changes', type: 'number' },
+                    { name: 'selected_super', type: 'text', max: 50 },
+                    { name: 'selected_category', type: 'text', max: 100 },
+                    { name: 'cart_last_product', type: 'text', max: 100 },
+                    { name: 'cart_add_count', type: 'number' },
+                    { name: 'cart_value', type: 'number' },
+                    { name: 'cart_limit_reached', type: 'bool' },
+                    { name: 'cta_clicks', type: 'json' },
+                    { name: 'viewed_business', type: 'bool' },
+                    { name: 'renew_click_at', type: 'date' },
+                    { name: 'grid_latency_ms', type: 'number' },
+                    { name: 'grid_latency_avg_ms', type: 'number' }
+                ];
+
+                const createColRes = await fetch(`${PB_URL}/api/collections`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': superToken
+                    },
+                    body: JSON.stringify({
+                        name: 'telemetry_sessions',
+                        type: 'base',
+                        fields: fieldsPayload,
+                        createRule: '', // Abierto para que tanto anónimos como registrados envíen telemetría
+                        listRule: '@request.auth.admin = true',
+                        viewRule: '@request.auth.admin = true',
+                        updateRule: '',
+                        deleteRule: '@request.auth.admin = true'
+                    })
+                });
+
+                if (createColRes.ok || createColRes.status === 400) {
+                    // Si ya existía o se creó bien
+                    statusEl.innerText = "3/3 Provisionando 'visitor_logs' para auditoría...";
+                    await fetch(`${PB_URL}/api/collections`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': superToken
+                        },
+                        body: JSON.stringify({
+                            name: 'visitor_logs',
+                            type: 'base',
+                            fields: [
+                                { name: 'session_id', type: 'text', required: true, max: 64 },
+                                { name: 'is_logged', type: 'bool' },
+                                { name: 'user_email', type: 'text' },
+                                { name: 'user_name', type: 'text' },
+                                { name: 'event_type', type: 'text', required: true, max: 50 },
+                                { name: 'details', type: 'text' },
+                                { name: 'device_info', type: 'text' },
+                                { name: 'language', type: 'text', max: 20 },
+                                { name: 'referrer', type: 'text' }
+                            ],
+                            createRule: '',
+                            listRule: '@request.auth.admin = true',
+                            viewRule: '@request.auth.admin = true',
+                            updateRule: '@request.auth.admin = true',
+                            deleteRule: '@request.auth.admin = true'
+                        })
+                    }).catch(() => {});
+                }
+
+                statusEl.className = "text-xs font-mono font-bold p-3 border-2 bg-green-50 border-green-500 text-green-900 block";
+                statusEl.innerText = "✅ ¡Colección 'telemetry_sessions' creada exitosamente en PocketBase! La persistencia en vivo está lista.";
+                setTimeout(() => {
+                    window.cerrarModalProvisionPB();
+                    comprobarColeccionPocketBase();
+                    cargarSesionesTelemetria();
+                }, 1500);
+
+            } catch (err) {
+                statusEl.className = "text-xs font-mono font-bold p-3 border-2 bg-red-50 border-red-500 text-red-900 block";
+                statusEl.innerText = "❌ Error: " + (err.message || err);
+            } finally {
+                btn.disabled = false;
+            }
+        };
+
+        // Descargar Schema JSON
+        window.descargarSchemaJSON = function() {
+            window.location.href = 'pocketbase/collections.json';
+        };
+
+        // Modales de Usuario
+        window.abrirModalNuevoUsuario = function() {
+            document.getElementById('modalNuevoUsuario').classList.remove('hidden');
+        };
+        window.cerrarModalNuevoUsuario = function() {
+            document.getElementById('modalNuevoUsuario').classList.add('hidden');
+        };
+        window.guardarNuevoUsuarioPocketBase = async function() {
+            const email = document.getElementById('newUsrEmail').value.trim();
+            const name = document.getElementById('newUsrName').value.trim();
+            const p1 = document.getElementById('newUsrPlan1').checked;
+            const p2 = document.getElementById('newUsrPlan2').checked;
+            const p3 = document.getElementById('newUsrPlan3').checked;
+            const p4 = document.getElementById('newUsrPlan4').checked;
+
+            if (!email) { alert("Ingresa un correo válido."); return; }
+
+            const randomPass = 'Mercado_' + Math.random().toString(36).substring(2, 10) + '!' + Date.now();
+            const expire = new Date();
+            expire.setMonth(expire.getMonth() + 1);
+
+            try {
+                await pb.collection('users').create({
+                    email: email,
+                    password: randomPass,
+                    passwordConfirm: randomPass,
+                    name: name || email.split('@')[0],
+                    emailVisibility: true,
+                    admin: false,
+                    plan1: p1,
+                    plan2: p2,
+                    plan3: p3,
+                    plan4: p4,
+                    expire: expire.toISOString()
+                });
+                alert(`Usuario ${email} registrado exitosamente con vigencia de 1 mes.`);
+                window.cerrarModalNuevoUsuario();
+                cargarUsuariosPocketBase();
+            } catch (err) {
+                alert("Error al registrar en PocketBase: " + (err.message || err));
+            }
+        };
+
+        // Recargar todo
+        window.recargarTodoAdmin = async function() {
+            await comprobarColeccionPocketBase();
+            await cargarSesionesTelemetria();
+            await cargarUsuariosPocketBase();
+        };
+
+        // Iniciar
+        document.addEventListener('DOMContentLoaded', () => {
+            verificarAccesoAdmin();
+        });
+    </script>
+</body>
+</html>
