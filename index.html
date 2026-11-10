@@ -433,6 +433,25 @@
                         </div>
                     </div>
 
+                    <!-- Banner de Aviso de Modo de Prueba Gratuita (Visible para usuarios sin plan activo) -->
+                    <div id="trialModeNoticeBanner" class="p-4 bg-amber-50 stitch-border-b flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div class="flex items-start gap-3">
+                            <span class="text-2xl flex-shrink-0">⭐</span>
+                            <div>
+                                <div class="font-black text-xs uppercase tracking-wider text-vibrant-dark flex items-center gap-2 flex-wrap">
+                                    <span>Modo de Prueba Gratuita</span>
+                                    <span class="bg-vibrant-dark text-amber-300 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider border border-vibrant-dark">1 Almacén a la vez · 6 Productos Muestra</span>
+                                </div>
+                                <p class="text-xs text-gray-700 font-semibold mt-1">
+                                    Estás probando gratis los precios de 6 productos esenciales (Arroz, Frijoles, Aceite, Leche, Café, Azúcar) en un almacén. Para desbloquear más de 80 artículos y comparar entre <strong>TODOS los supermercados en tiempo real</strong>, activá tu membresía desde ₡5,000/mes.
+                                </p>
+                            </div>
+                        </div>
+                        <button onclick="window.abrirModalRegistroPlanes('', 'plan1')" class="bg-vibrant-blue hover:bg-blue-700 text-white font-black px-4 py-2.5 text-xs uppercase tracking-wider shadow-stitch hover:shadow-stitch-hover border-2 border-vibrant-dark flex-shrink-0 cursor-pointer transition-all active:translate-y-0.5">
+                            🔓 Desbloquear Todos los Súper
+                        </button>
+                    </div>
+
                     <!-- Tabla -->
                     <div class="overflow-x-auto relative min-h-[360px]">
                         <!-- Overlay Animación Grilla (Anime.js Grid Stagger) -->
@@ -1128,6 +1147,17 @@
         window.allData = allData;
         let filteredData = [];
         let isLoadingProducts = true;
+
+        // Productos esenciales de muestra activados para el modo de prueba gratuita
+        // Los usuarios sin membresía activa solo pueden consultar estos 6 productos en un solo almacén a la vez.
+        window.FREE_TRIAL_ITEMS = [
+            'Arroz Tío Pelón 1.8kg',
+            'Frijoles Negros Don Pedro 800g',
+            'Aceite de Soya Capullo 1L',
+            'Leche Semidescremada Dos Pinos 1L',
+            'Café 1820 Clásico 250g',
+            'Azúcar Blanco Doña María 1kg'
+        ];
         
         // Mapeo dinámico del precio más bajo por producto para destacar las mejores ofertas
         const minPrices = {};
@@ -1174,20 +1204,51 @@
             window.__mfFilterStart = performance.now();
             let selectedSuper = superFilter ? superFilter.value : 'Walmart';
             const selectedCategory = categoryFilter ? categoryFilter.value : 'Todas';
-            const selectedItem = itemFilter ? itemFilter.value : 'Todos';
+            let selectedItem = itemFilter ? itemFilter.value : 'Todos';
             const hasPlan = Boolean(window.hasAccessToAllSupermarkets && window.hasAccessToAllSupermarkets());
 
-            // Bloqueo de Plan Mercados: solo restringe cuando se intenta consultar el catálogo general completo
-            // ('Todos los productos' en 'Todos los supermercados'). Al filtrar por un producto específico,
-            // siempre se permite comparar precios entre todos los supermercados.
-            if (selectedItem === 'Todos' && selectedSuper === 'Todos' && !hasPlan) {
+            // Actualizar visibilidad del banner de aviso de prueba
+            const trialBanner = document.getElementById('trialModeNoticeBanner');
+            if (trialBanner) {
+                if (hasPlan) {
+                    trialBanner.classList.add('hidden');
+                } else {
+                    trialBanner.classList.remove('hidden');
+                }
+            }
+
+            // Restricción para usuarios sin plan:
+            // 1) Solo pueden consultar un supermercado a la vez (nunca 'Todos')
+            if (!hasPlan && selectedSuper === 'Todos') {
                 selectedSuper = 'Walmart';
                 if (superFilter) superFilter.value = 'Walmart';
+            }
+
+            // 2) Solo tienen activados los productos de muestra gratuita
+            if (!hasPlan && selectedItem !== 'Todos' && !window.FREE_TRIAL_ITEMS.includes(selectedItem)) {
+                const blockedItem = selectedItem;
+                selectedItem = 'Todos';
+                if (itemFilter) itemFilter.value = 'Todos';
+                if (window.mostrarModalBloqueoProducto) {
+                    window.mostrarModalBloqueoProducto(blockedItem);
+                }
             }
 
             filteredData = allData.filter(d => {
                 const matchSuper = selectedSuper === 'Todos' || d.super === selectedSuper;
                 const matchCategory = selectedCategory === 'Todas' || d.categoria === selectedCategory;
+
+                if (!hasPlan) {
+                    // Modo gratuito: solo se muestran los 6 productos de muestra en el almacén seleccionado
+                    const isTrial = window.FREE_TRIAL_ITEMS.includes(d.item);
+                    if (!isTrial) return false;
+
+                    if (selectedItem !== 'Todos') {
+                        return matchSuper && matchCategory && d.item === selectedItem;
+                    }
+                    return matchSuper && matchCategory;
+                }
+
                 const matchItem = selectedItem === 'Todos' || d.item === selectedItem;
                 return matchSuper && matchCategory && matchItem;
             });
@@ -1273,6 +1334,11 @@
                     ? `<span class="inline-flex items-center gap-1 bg-vibrant-green text-vibrant-dark text-[11px] font-black px-2 py-0.5 border border-vibrant-dark uppercase tracking-wider shadow-stitch ml-2">⭐ ¡Más Barato!</span>` 
                     : '';
 
+                const isTrialItem = window.FREE_TRIAL_ITEMS && window.FREE_TRIAL_ITEMS.includes(row.item);
+                const trialBadge = (!hasPlan && isTrialItem)
+                    ? `<span class="inline-flex items-center gap-1 bg-amber-200 text-amber-950 text-[10px] font-black px-2 py-0.5 border border-vibrant-dark uppercase tracking-wider shadow-xs">⭐ Muestra Gratis</span>`
+                    : '';
+
                 const displayTitle = row.product_title || row.item;
 
                 const catBadge = row.categoria 
@@ -1285,6 +1351,7 @@
                     <td class="py-4 px-6 stitch-border-r border-b-2 border-vibrant-dark text-sm text-vibrant-dark font-semibold">
                         <div class="flex items-center flex-wrap gap-2 mb-1.5">
                             ${catBadge}
+                            ${trialBadge}
                             ${bestPriceBadge}
                         </div>
                         <div class="flex items-center flex-wrap gap-2">
@@ -1337,9 +1404,10 @@
             );
         };
 
-        // Actualiza el combo de productos según la categoría seleccionada
+        // Actualiza el combo de productos según la categoría seleccionada y estado del plan
         function updateItemDropdownForCategory() {
             if (!itemFilter) return;
+            const hasPlan = Boolean(window.hasAccessToAllSupermarkets && window.hasAccessToAllSupermarkets());
             const currentItem = itemFilter.value;
             const selectedCategory = categoryFilter ? categoryFilter.value : 'Todas';
             
@@ -1349,14 +1417,34 @@
             
             const items = Array.from(new Set(pool.map(d => d.item))).filter(Boolean).sort();
             
-            itemFilter.innerHTML = '<option value="Todos">TODOS LOS PRODUCTOS (EN VIVO)</option>';
-            items.forEach(it => {
-                const opt = document.createElement('option');
-                opt.value = it;
-                opt.innerText = it.toUpperCase();
-                itemFilter.appendChild(opt);
-            });
-            if (items.includes(currentItem)) itemFilter.value = currentItem;
+            if (hasPlan) {
+                itemFilter.innerHTML = '<option value="Todos">TODOS LOS PRODUCTOS (CATÁLOGO COMPLETO)</option>';
+                items.forEach(it => {
+                    const opt = document.createElement('option');
+                    opt.value = it;
+                    opt.innerText = it.toUpperCase();
+                    itemFilter.appendChild(opt);
+                });
+                if (items.includes(currentItem)) itemFilter.value = currentItem;
+            } else {
+                itemFilter.innerHTML = '<option value="Todos">⭐ PRODUCTOS DE MUESTRA GRATIS (6 DISPONIBLES)</option>';
+                items.forEach(it => {
+                    const opt = document.createElement('option');
+                    opt.value = it;
+                    const isTrial = window.FREE_TRIAL_ITEMS && window.FREE_TRIAL_ITEMS.includes(it);
+                    if (isTrial) {
+                        opt.innerText = `⭐ [MUESTRA GRATIS] ${it.toUpperCase()}`;
+                    } else {
+                        opt.innerText = `🔒 [REQUIERE PLAN] ${it.toUpperCase()}`;
+                    }
+                    itemFilter.appendChild(opt);
+                });
+                if (items.includes(currentItem) && window.FREE_TRIAL_ITEMS && window.FREE_TRIAL_ITEMS.includes(currentItem)) {
+                    itemFilter.value = currentItem;
+                } else {
+                    itemFilter.value = 'Todos';
+                }
+            }
         }
 
         // Poblar dinámicamente los menús desplegables desde el catálogo real
@@ -1367,7 +1455,7 @@
                 const supers = Array.from(new Set(allData.map(d => d.super))).filter(Boolean);
                 const todosLabel = hasPlan 
                     ? 'TODOS LOS SUPERMERCADOS 🔓 (PLAN MERCADOS ACTIVO)' 
-                    : 'TODOS LOS SUPERMERCADOS (EN VIVO)';
+                    : '🔒 TODOS LOS SUPERMERCADOS (SOLO CON MEMBRESÍA)';
                 
                 superFilter.innerHTML = `<option value="Todos">${todosLabel}</option>`;
                 supers.forEach(sup => {
@@ -1380,15 +1468,11 @@
                 if (hasPlan) {
                     superFilter.value = (currentSuper && currentSuper !== 'Walmart') ? currentSuper : 'Todos';
                 } else {
-                    const isSpecificProduct = itemFilter && itemFilter.value !== 'Todos';
-                    if (isSpecificProduct) {
-                        superFilter.value = 'Todos';
-                    } else if (currentSuper === 'Todos') {
-                        superFilter.value = supers.includes('Walmart') ? 'Walmart' : (supers[0] || 'Todos');
-                    } else if (supers.includes(currentSuper)) {
+                    // Modo gratuito: siempre restringido a 1 almacén a la vez
+                    if (currentSuper && currentSuper !== 'Todos' && supers.includes(currentSuper)) {
                         superFilter.value = currentSuper;
                     } else {
-                        superFilter.value = supers.includes('Walmart') ? 'Walmart' : (supers[0] || 'Todos');
+                        superFilter.value = supers.includes('Walmart') ? 'Walmart' : (supers[0] || 'Walmart');
                     }
                 }
             }
@@ -1922,8 +2006,8 @@
         window.renderTable = renderTable;
         if (superFilter) {
             superFilter.addEventListener('change', () => {
-                const isGeneralCatalog = !itemFilter || itemFilter.value === 'Todos';
-                if (superFilter.value === 'Todos' && isGeneralCatalog && !window.hasAccessToAllSupermarkets()) {
+                const hasPlan = Boolean(window.hasAccessToAllSupermarkets && window.hasAccessToAllSupermarkets());
+                if (superFilter.value === 'Todos' && !hasPlan) {
                     window.mostrarModalBloqueoTodos();
                     superFilter.value = 'Walmart';
                     applyFilters();
@@ -1940,16 +2024,25 @@
         }
         if (itemFilter) {
             itemFilter.addEventListener('change', () => {
-                if (itemFilter.value !== 'Todos') {
-                    // Al seleccionar un producto específico, cambiar automáticamente el supermercado a 'Todos'
-                    // para permitir comparar los precios de este producto en todos los supermercados
-                    if (superFilter) {
-                        superFilter.value = 'Todos';
+                const hasPlan = Boolean(window.hasAccessToAllSupermarkets && window.hasAccessToAllSupermarkets());
+                if (!hasPlan) {
+                    if (itemFilter.value !== 'Todos' && !window.FREE_TRIAL_ITEMS.includes(itemFilter.value)) {
+                        const lockedItem = itemFilter.value;
+                        itemFilter.value = 'Todos';
+                        if (window.mostrarModalBloqueoProducto) {
+                            window.mostrarModalBloqueoProducto(lockedItem);
+                        }
+                        applyFilters();
+                        return;
                     }
+                    // Para usuarios de prueba gratuita, la búsqueda del producto se realiza ÚNICAMENTE
+                    // dentro del almacén seleccionado (se mantiene superFilter en el almacén actual)
                 } else {
-                    // Si regresa a 'Todos los productos' y no cuenta con Plan Mercados, regresar a Walmart
-                    if (!window.hasAccessToAllSupermarkets() && superFilter && superFilter.value === 'Todos') {
-                        superFilter.value = 'Walmart';
+                    if (itemFilter.value !== 'Todos') {
+                        // Al contar con membresía activa, comparar este producto entre todos los supermercados
+                        if (superFilter) {
+                            superFilter.value = 'Todos';
+                        }
                     }
                 }
                 applyFilters();
@@ -3493,35 +3586,53 @@
 
             if (!isLogged) {
                 window.showCustomModal({
-                    title: '🔒 Acceso Plan Mercados Requerido',
-                    message: `Para comparar precios simultáneamente entre <strong>TODOS los supermercados de Costa Rica</strong> (Walmart, MásxMenos, Maxi Palí, Palí y Auto Mercado) en el catálogo general completo, debe iniciar sesión con su cuenta de Google y contar con el <strong>Plan Mercados (₡10,000/mes)</strong>.<br><br>Si aún no lo tiene contratado, solicítelo y pague por <strong>SINPE Móvil al 62278771</strong> para que el administrador le active su cuenta.`,
+                    title: '🔒 Membresía Requerida para Todos los Supermercados',
+                    message: `En el <strong>modo de prueba gratuita</strong> solo podés consultar productos en un solo supermercado a la vez.<br><br>Para comparar precios en tiempo real entre <strong>TODAS las cadenas de Costa Rica</strong> (Walmart, MásxMenos, Maxi Palí, Palí, Auto Mercado y MegaSuper), necesitás una membresía activa (planes desde <strong>₡5,000/mes</strong>).<br><br>Podés pagar por <strong>SINPE Móvil al 6227 8771</strong> para habilitar tu cuenta al instante.`,
                     icon: '🔒',
                     headerBg: 'bg-vibrant-blue',
-                    confirmText: 'Entrar con Google',
+                    confirmText: 'Ver Planes y Afiliarme',
                     confirmBg: 'bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark',
-                    cancelText: 'Ver Planes'
+                    cancelText: 'Continuar en 1 Súper'
                 }).then(result => {
                     if (result) {
-                        window.loginConGoogle();
-                    } else {
-                        window.abrirModalSolicitarPlan('Mercados', 10000, 'Comparador Multi-Supermercados');
+                        window.abrirModalRegistroPlanes('', 'plan1');
                     }
                 });
             } else {
                 window.showCustomModal({
-                    title: '🔒 Plan Mercados Requerido',
-                    message: `Hola <strong>${pb.authStore.model.name || userEmail}</strong>.<br><br>Su cuenta (<strong>${userEmail}</strong>) aún no tiene habilitado el <strong>Plan Mercados (plan1)</strong> para comparar precios en el catálogo general entre todos los supermercados al mismo tiempo.<br><br>Puede cancelar por <strong>SINPE Móvil al 62278771</strong> y el administrador le activará el acceso en la base de datos de inmediato.`,
+                    title: '🔒 Membresía Plan Mercados Requerida',
+                    message: `Hola <strong>${pb.authStore.model.name || userEmail}</strong>.<br><br>Tu cuenta (<strong>${userEmail}</strong>) aún no tiene habilitado el <strong>Plan Mercados</strong> para comparar precios simultáneamente entre todos los supermercados.<br><br>En el modo gratuito podés consultar almacén por almacén. Para desbloquear la comparativa entre todas las cadenas, activá tu membresía desde <strong>₡5,000/mes</strong> por <strong>SINPE Móvil al 6227 8771</strong>.`,
                     icon: '🔒',
                     headerBg: 'bg-vibrant-orange',
-                    confirmText: 'Pagar Plan Mercados (₡10,000)',
+                    confirmText: 'Activar Membresía',
                     confirmBg: 'bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark',
                     cancelText: 'Continuar Navegando'
                 }).then(result => {
                     if (result) {
-                        window.abrirModalSolicitarPlan('Mercados', 10000, 'Comparador Multi-Supermercados');
+                        window.abrirModalRegistroPlanes(userEmail, 'plan1');
                     }
                 });
             }
+        };
+
+        // Modal Bloqueo al intentar consultar un producto fuera del lote de prueba
+        window.mostrarModalBloqueoProducto = function(itemName) {
+            const isLogged = pb && pb.authStore && pb.authStore.isValid;
+            const userEmail = isLogged && pb.authStore.model ? pb.authStore.model.email : '';
+
+            window.showCustomModal({
+                title: '🔒 Producto Exclusivo con Membresía',
+                message: `El producto <strong>${itemName || 'seleccionado'}</strong> forma parte del catálogo completo de más de 80 artículos de MercadoFácil.<br><br>En el <strong>modo gratuito</strong> únicamente podés consultar <strong>productos esenciales de muestra</strong> (Arroz, Frijoles, Aceite, Leche, Café, Azúcar) en un almacén a la vez.<br><br>Activá tu membresía desde <strong>₡5,000/mes</strong> para desbloquear todo el catálogo y comparar todas las cadenas (Walmart, MásxMenos, Maxi Palí, Palí, Auto Mercado y MegaSuper) en vivo.<br><br>Pagá por <strong>SINPE Móvil al 6227 8771</strong>.`,
+                icon: '🛒',
+                headerBg: 'bg-vibrant-dark',
+                confirmText: isLogged ? 'Solicitar Membresía' : 'Ver Planes y Afiliarme',
+                confirmBg: 'bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark',
+                cancelText: 'Seguir con Muestra Gratis'
+            }).then(result => {
+                if (result) {
+                    window.abrirModalRegistroPlanes(userEmail, 'plan1');
+                }
+            });
         };
 
         // ==============================================
