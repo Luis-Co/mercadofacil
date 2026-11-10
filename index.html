@@ -1326,6 +1326,8 @@
             pageStartItem.innerText = startIndex + 1;
             pageEndItem.innerText = Math.min(endIndex, totalItems);
 
+            const hasPlan = Boolean(window.hasAccessToAllSupermarkets && window.hasAccessToAllSupermarkets());
+
             paginatedItems.forEach((row) => {
                 const tr = document.createElement('tr');
                 tr.className = 'table-row-hover transition-colors';
