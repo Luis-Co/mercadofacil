@@ -133,7 +133,7 @@
         <!-- Filtros Rápidos por Red Social -->
         <div class="flex items-center gap-2 overflow-x-auto pb-2">
             <button onclick="window.filtrarBanners('todos')" class="filter-btn active bg-vibrant-dark text-white font-black px-4 py-2 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer">
-                Todos (5)
+                Todos (6)
             </button>
             <button onclick="window.filtrarBanners('fb_cuadrado')" class="filter-btn bg-white hover:bg-gray-100 text-vibrant-dark font-black px-4 py-2 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer">
                 Facebook / WhatsApp Feed (1:1)
@@ -146,6 +146,9 @@
             </button>
             <button onclick="window.filtrarBanners('empresas')" class="filter-btn bg-white hover:bg-gray-100 text-vibrant-dark font-black px-4 py-2 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer">
                 Para Empresas & Comercios
+            </button>
+            <button onclick="window.filtrarBanners('nicho_custom')" class="filter-btn bg-white hover:bg-gray-100 text-vibrant-dark font-black px-4 py-2 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer">
+                🔧 Auto Repuestos & Tech
             </button>
         </div>
 
@@ -297,6 +300,35 @@
                 </div>
             </div>
 
+            <!-- BANNER 6: SOLUCIONES A MEDIDA - AUTO REPUESTOS & ELECTRÓNICA (1:1 / 1080x1080) -->
+            <div class="banner-card bg-white stitch-box-4 shadow-stitch flex flex-col justify-between" data-category="nicho_custom">
+                <div class="p-4 border-b-2 border-vibrant-dark bg-[#0F172A] text-white flex items-center justify-between">
+                    <div>
+                        <span class="bg-vibrant-yellow text-vibrant-dark text-[10px] font-black px-2 py-0.5 uppercase tracking-wider">A Medida · Scraper B2B</span>
+                        <h3 class="font-black text-sm uppercase text-white mt-1">6. Auto Repuestos & Tech</h3>
+                    </div>
+                    <span class="font-mono text-xs font-bold text-vibrant-green">1080 × 1080</span>
+                </div>
+
+                <div class="p-4 bg-gray-50 flex items-center justify-center">
+                    <canvas id="canvasBanner6" class="banner-preview-canvas shadow-stitch max-w-[340px]"></canvas>
+                </div>
+
+                <div class="p-4 space-y-3 border-t-2 border-vibrant-dark bg-white">
+                    <div class="flex items-center gap-2">
+                        <button onclick="window.descargarCanvas('canvasBanner6', 'MercadoFacil_AutoRepuestos_Tech_1080x1080.png')" class="flex-1 bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black py-2.5 px-3 text-xs uppercase border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover cursor-pointer flex items-center justify-center gap-1.5 transition-all">
+                            <span>📥</span> Descargar PNG
+                        </button>
+                        <button onclick="window.copiarTextoPromo('copy6')" class="bg-white hover:bg-gray-100 text-vibrant-dark font-black py-2.5 px-3 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer" title="Copiar texto para la publicación">
+                            📋 Texto
+                        </button>
+                    </div>
+                    <div class="p-2.5 bg-gray-50 border border-gray-300 text-[11px] font-medium text-gray-700 leading-tight">
+                        <strong class="text-vibrant-dark font-bold">Uso recomendado:</strong> Talleres mecánicos, repuesteras, tiendas de electrónica, distribuidores y comercios cotizadores.
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <!-- SECCIÓN: TEXTOS PUBLICITARIOS LISTOS PARA COPIAR -->
@@ -338,7 +370,7 @@ En MercadoFácil Costa Rica comparamos en tiempo real los precios entre:
 Armá tu canasta antes de salir de casa y ahorrate hasta ₡15,000 en tu compra semanal.
 
 ⭐ Probá productos de muestra gratis en MásxMenos y MegaSuper.
-🔓 Desbloqueá la comparación completa entre todos los súper con membresía desde ₡10,000/mes (SINPE Móvil 6227 8771).
+🔓 Desbloqueá la comparación completa entre todos los súper con Plan Mercados desde ₡5,000/mes (el más popular y económico de CR - SINPE Móvil 6227 8771).
 
 👉 Compará tus compras hoy en:
 https://mercadofacil.webticocr.com
@@ -365,7 +397,7 @@ Te muestra en vivo dónde está más barato cada producto entre Walmart, MásxMe
 
 A mí me ahorró más de ₡8,000 en la compra de la quincena 🔥
 
-Probá gratis productos de muestra en MásxMenos y MegaSuper o activá tu membresía desde ₡10,000/mes para comparar todas las cadenas:
+Probá gratis productos de muestra en MásxMenos y MegaSuper o activá el Plan Mercados (el más popular) desde ₡5,000/mes para comparar todas las cadenas:
 https://mercadofacil.webticocr.com
                         </p>
                     </div>
@@ -387,7 +419,7 @@ https://mercadofacil.webticocr.com
 ¿A cuánto está vendiendo tu competencia directa?
 Con MercadoFácil para Empresas monitoreás en tiempo real los precios de las grandes cadenas para proteger tus márgenes y ofrecer mejores ofertas a tus clientes.
 
-💼 Planes desde ₡10,000/mes.
+💼 Planes desde ₡5,000/mes (Plan Mercados).
 📲 Activación rápida por SINPE Móvil al: 6227-8771.
 
 Consultá los planes empresariales aquí:
@@ -413,12 +445,45 @@ https://mercadofacil.webticocr.com/#premium
 
 Comparamos en segundos los 6 supermercados principales del país para que cuidés el bolsillo de tu familia.
 
-👉 Probá la muestra gratis o contratá tu plan desde ₡10,000/mes en:
+👉 Probá la muestra gratis o contratá el Plan Mercados desde ₡5,000/mes en:
 https://mercadofacil.webticocr.com
                         </p>
                     </div>
                     <button onclick="window.copiarTextoPromo('copy5')" class="w-full bg-vibrant-orange hover:bg-orange-600 text-white font-black py-2 text-xs uppercase border border-vibrant-dark shadow-stitch cursor-pointer">
                         📋 Copiar Texto Fin de Semana
+                    </button>
+                </div>
+
+                <!-- Texto 5: Soluciones a Medida / Auto Repuestos & Tech -->
+                <div class="bg-gray-50 border-2 border-vibrant-dark p-4 space-y-3 flex flex-col justify-between md:col-span-2">
+                    <div>
+                        <div class="flex items-center justify-between border-b border-gray-300 pb-2 mb-2 font-black text-vibrant-dark">
+                            <span>🚗⚡ Texto 5: Inteligencia para Auto Repuestos, Electrónica y Nichos Específicos</span>
+                            <span class="text-purple-600 font-mono font-bold">Soluciones a Medida B2B</span>
+                        </div>
+                        <p id="copy6" class="font-mono text-gray-800 whitespace-pre-line leading-relaxed">
+🚗⚡ ¿BUSCÁS REPUESTOS DE VEHÍCULO O ELECTRÓNICA Y PIERDES HORAS COTIZANDO?
+
+La misma inteligencia en tiempo real de MercadoFácil Costa Rica la adaptamos a TU negocio o rubro comercial:
+
+🔧 AUTO REPUESTOS: Extracción y cotejo automático de repuestos nuevos y usados entre repuesteras y agencias de Costa Rica (Guacamaya, Gigante, La Guaca, agencias oficiales de marcas y tiendas online).
+💻 ELECTRÓNICA & TECNOLOGÍA: Monitoreo en vivo de precios y stock de computadoras, celulares, pantallas y componentes técnicos entre tiendas del país (Intelec, Extremetech, Gollo, Monge y mayoristas).
+
+🎯 Beneficios para tu empresa o taller:
+✅ Rastreo simultáneo en todas las páginas web de tu nicho.
+✅ Comparador automático de stock y precio en vivo en segundos.
+✅ Ahorro de cientos de miles de colones y días de cotización manual.
+✅ Historial de fluctuación de precios para negociar con proveedores.
+
+📲 ¿Querés implementar un buscador/comparador a medida para tu nicho?
+Escribinos por WhatsApp al: 6227 8771
+🌐 Más información en: https://mercadofacil.webticocr.com
+
+#CostaRica #AutoRepuestosCR #MecanicosCR #TecnologiaCR #ScraperCR #WebTicoCR #AhorroEmpresarial
+                        </p>
+                    </div>
+                    <button onclick="window.copiarTextoPromo('copy6')" class="w-full bg-slate-900 hover:bg-black text-vibrant-yellow font-black py-2.5 text-xs uppercase border border-vibrant-dark shadow-stitch cursor-pointer">
+                        📋 Copiar Texto Auto Repuestos & Tecnología
                     </button>
                 </div>
 
@@ -607,7 +672,7 @@ https://mercadofacil.webticocr.com
 
             ctx.fillStyle = '#FFFFFF';
             ctx.font = '900 24px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText('MUESTRAS GRATIS · PLANES DESDE ₡10,000:', 60, 990);
+            ctx.fillText('MUESTRAS GRATIS · PLAN MERCADOS ₡5,000:', 50, 990);
 
             ctx.fillStyle = '#FFD600';
             ctx.font = '900 32px "JetBrains Mono", monospace';
@@ -838,7 +903,7 @@ https://mercadofacil.webticocr.com
             ctx.font = '900 18px "Plus Jakarta Sans", sans-serif';
             ctx.fillText('MEMBRESÍA', 0, -18);
             ctx.font = '900 24px "JetBrains Mono", monospace';
-            ctx.fillText('DESDE ₡10,000', 0, 10);
+            ctx.fillText('DESDE ₡5,000', 0, 10);
             ctx.font = '800 13px "Plus Jakarta Sans", sans-serif';
             ctx.fillText('MUESTRAS GRATIS 2 SÚPERS', 0, 32);
             ctx.restore();
@@ -927,7 +992,7 @@ https://mercadofacil.webticocr.com
 
             ctx.fillStyle = '#0B0C10';
             ctx.font = '900 30px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText('PLANES DESDE ₡10,000 / MES', bx + 70, cardY + 50);
+            ctx.fillText('PLAN MERCADOS DESDE ₡5,000 / MES', bx + 70, cardY + 50);
 
             ctx.font = '700 22px "Plus Jakarta Sans", sans-serif';
             ctx.fillText('Activación rápida vía SINPE Móvil: 6227-8771', bx + 70, cardY + 95);
@@ -1022,13 +1087,188 @@ https://mercadofacil.webticocr.com
             ctx.fillStyle = '#0B0C10';
             ctx.font = '900 20px "Plus Jakarta Sans", sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('💡 MUESTRA GRATIS · PLANES DESDE ₡10,000/MES: mercadofacil.webticocr.com', w / 2, by + bh - 28);
+            ctx.fillText('💡 MUESTRA GRATIS · PLAN MERCADOS ₡5,000/MES: mercadofacil.webticocr.com', w / 2, by + bh - 28);
 
             // Footer
             ctx.textAlign = 'center';
             ctx.fillStyle = '#0B0C10';
             ctx.font = '900 36px "JetBrains Mono", monospace';
             ctx.fillText('🇨🇷 mercadofacil.webticocr.com 🇨🇷', w / 2, 950);
+        }
+
+        // ==========================================
+        // BANNER 6: SOLUCIONES A MEDIDA - AUTO REPUESTOS & TECNOLOGÍA (1080 x 1080)
+        // ==========================================
+        function drawBanner6() {
+            const canvas = document.getElementById('canvasBanner6');
+            if (!canvas) return;
+            const w = 1080, h = 1080;
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+
+            // Fondo oscuro tecnológico
+            ctx.fillStyle = '#0A0F1D';
+            ctx.fillRect(0, 0, w, h);
+
+            // Marco exterior neo-brutalista
+            ctx.lineWidth = 14;
+            ctx.strokeStyle = '#00E676';
+            ctx.strokeRect(10, 10, w - 20, h - 20);
+
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(20, 20, w - 40, h - 40);
+
+            // Tag superior
+            ctx.fillStyle = '#FFD600';
+            ctx.fillRect(50, 45, 980, 52);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(50, 45, 980, 52);
+
+            ctx.fillStyle = '#0B0C10';
+            ctx.font = '900 24px "Plus Jakarta Sans", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('⚡ TECNOLOGÍA DE MERCADOFÁCIL ADAPTADA A TU INDUSTRIA EN VIVO', w / 2, 80);
+
+            // Título Principal
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '900 50px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('¿BUSCÁS REPUESTOS O TECNOLOGÍA?', w / 2, 160);
+
+            ctx.fillStyle = '#00E676';
+            ctx.font = '900 32px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('COTIZÁ EN SEGUNDOS TODAS LAS TIENDAS DE COSTA RICA', w / 2, 205);
+
+            // CARD 1: AUTO REPUESTOS
+            const c1X = 60, c1Y = 240, cW = w - 120, cH = 230;
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(c1X + 10, c1Y + 10, cW, cH);
+            ctx.fillStyle = '#111827';
+            ctx.fillRect(c1X, c1Y, cW, cH);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#FF6B35';
+            ctx.strokeRect(c1X, c1Y, cW, cH);
+
+            // Encabezado Card 1
+            ctx.fillStyle = '#FF6B35';
+            ctx.fillRect(c1X, c1Y, cW, 50);
+            ctx.fillStyle = '#0B0C10';
+            ctx.font = '900 26px "Plus Jakarta Sans", sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('🚗 AUTO REPUESTOS Y TALLERES MECÁNICOS', c1X + 24, c1Y + 35);
+
+            // Contenido Card 1
+            ctx.fillStyle = '#F3F4F6';
+            ctx.font = '700 22px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('Extracción en vivo entre las principales repuesteras y agencias de CR:', c1X + 24, c1Y + 90);
+
+            // Badges Card 1
+            const badges1 = ['Guacamaya', 'Gigante', 'La Guaca', 'Agencias Oficiales', 'Tiendas Online'];
+            let bx1 = c1X + 24;
+            badges1.forEach(b => {
+                ctx.fillStyle = '#374151';
+                const bw = ctx.measureText(b).width + 24;
+                ctx.fillRect(bx1, c1Y + 115, bw, 38);
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#9CA3AF';
+                ctx.strokeRect(bx1, c1Y + 115, bw, 38);
+
+                ctx.fillStyle = '#FFD600';
+                ctx.font = '800 18px "JetBrains Mono", monospace';
+                ctx.fillText(b, bx1 + 12, c1Y + 141);
+                bx1 += bw + 12;
+            });
+
+            ctx.fillStyle = '#9CA3AF';
+            ctx.font = '600 20px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('✔️ Compará por código de parte, año y modelo sin hacer llamadas eternas.', c1X + 24, c1Y + 195);
+
+            // CARD 2: ELECTRÓNICA & TECNOLOGÍA
+            const c2Y = 495;
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(c1X + 10, c2Y + 10, cW, cH);
+            ctx.fillStyle = '#111827';
+            ctx.fillRect(c1X, c2Y, cW, cH);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#2962FF';
+            ctx.strokeRect(c1X, c2Y, cW, cH);
+
+            // Encabezado Card 2
+            ctx.fillStyle = '#2962FF';
+            ctx.fillRect(c1X, c2Y, cW, 50);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '900 26px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('💻 ELECTRÓNICA, COMPUTACIÓN Y TECH', c1X + 24, c2Y + 35);
+
+            // Contenido Card 2
+            ctx.fillStyle = '#F3F4F6';
+            ctx.font = '700 22px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('Monitoreo simultáneo de stock y precios de hardware en Costa Rica:', c1X + 24, c2Y + 90);
+
+            // Badges Card 2
+            const badges2 = ['Intelec', 'Extremetech', 'Gollo', 'Monge', 'Mayoristas CR'];
+            let bx2 = c1X + 24;
+            badges2.forEach(b => {
+                ctx.fillStyle = '#374151';
+                const bw = ctx.measureText(b).width + 24;
+                ctx.fillRect(bx2, c2Y + 115, bw, 38);
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#9CA3AF';
+                ctx.strokeRect(bx2, c2Y + 115, bw, 38);
+
+                ctx.fillStyle = '#38BDF8';
+                ctx.font = '800 18px "JetBrains Mono", monospace';
+                ctx.fillText(b, bx2 + 12, c2Y + 141);
+                bx2 += bw + 12;
+            });
+
+            ctx.fillStyle = '#9CA3AF';
+            ctx.font = '600 20px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('✔️ Laptops, componentes, celulares y pantallas al precio más bajo real.', c1X + 24, c2Y + 195);
+
+            // BANNER CALLOUT AHORRO
+            const barY = 750;
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(c1X + 8, barY + 8, cW, 85);
+            ctx.fillStyle = '#00E676';
+            ctx.fillRect(c1X, barY, cW, 85);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(c1X, barY, cW, 85);
+
+            ctx.fillStyle = '#0B0C10';
+            ctx.textAlign = 'center';
+            ctx.font = '900 30px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('💰 AHORRÁ CIENTOS DE MILES DE COLONES Y DÍAS DE TRABAJO', w / 2, barY + 42);
+            ctx.font = '800 22px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('El sistema extrae y compara datos directo de los sitios oficiales de tu rubro.', w / 2, barY + 70);
+
+            // FOOTER / CONTACTO
+            const footY = 860;
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(c1X + 8, footY + 8, cW, 140);
+            ctx.fillStyle = '#FFD600';
+            ctx.fillRect(c1X, footY, cW, 140);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(c1X, footY, cW, 140);
+
+            ctx.fillStyle = '#0B0C10';
+            ctx.font = '900 32px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('📲 ¿QUERÉS UN COMPARADOR PARA TU NEGOCIO? COTIZÁ AQUÍ:', w / 2, footY + 45);
+
+            ctx.font = '900 42px "JetBrains Mono", monospace';
+            ctx.fillText('WhatsApp: 6227 8771', w / 2, footY + 92);
+
+            ctx.font = '700 20px "JetBrains Mono", monospace';
+            ctx.fillText('mercadofacil.webticocr.com  ·  WebTico Costa Rica', w / 2, footY + 124);
+
+            // Micro Copyright
+            ctx.fillStyle = '#6B7280';
+            ctx.font = '600 16px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('MercadoFácil CR · Scraping Inteligente y Análisis Automatizado de Mercados', w / 2, 1040);
         }
 
         // Descarga individual de canvas en PNG
@@ -1050,7 +1290,8 @@ https://mercadofacil.webticocr.com
                 { id: 'canvasBanner2', name: 'MercadoFacil_Estado_WhatsApp_Stories_1080x1920.png' },
                 { id: 'canvasBanner3', name: 'MercadoFacil_Facebook_Horizontal_1200x630.png' },
                 { id: 'canvasBanner4', name: 'MercadoFacil_Comercios_B2B_1080x1080.png' },
-                { id: 'canvasBanner5', name: 'MercadoFacil_Alerta_Precios_1080x1080.png' }
+                { id: 'canvasBanner5', name: 'MercadoFacil_Alerta_Precios_1080x1080.png' },
+                { id: 'canvasBanner6', name: 'MercadoFacil_AutoRepuestos_Tech_1080x1080.png' }
             ];
 
             let delay = 0;
@@ -1102,6 +1343,7 @@ https://mercadofacil.webticocr.com
                     drawBanner3();
                     drawBanner4();
                     drawBanner5();
+                    drawBanner6();
                 });
             } else {
                 setTimeout(() => {
@@ -1110,6 +1352,7 @@ https://mercadofacil.webticocr.com
                     drawBanner3();
                     drawBanner4();
                     drawBanner5();
+                    drawBanner6();
                 }, 300);
             }
         });

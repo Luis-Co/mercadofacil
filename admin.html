@@ -484,6 +484,8 @@
         let allTelemetrySessions = [];
         let allPocketBaseUsers = [];
         let hasTelemetryCollection = false;
+        window.adminEmails = new Set(['corea3000@gmail.com']);
+        window.adminUserIds = new Set(['f1f73vhxyyivklt']);
 
         // Formateadores auxiliares
         const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -641,9 +643,8 @@
         function esSesionAdmin(s) {
             if (!s) return false;
             const em = (s.user_email || '').toLowerCase().trim();
-            if (em === 'corea3000@gmail.com') return true;
-            if (window.adminEmails && window.adminEmails.has(em)) return true;
-            if (s.user_id && window.adminUserIds && window.adminUserIds.has(s.user_id)) return true;
+            if (em === 'corea3000@gmail.com' || (window.adminEmails && window.adminEmails.has(em))) return true;
+            if (s.user_id && (s.user_id === 'f1f73vhxyyivklt' || (window.adminUserIds && window.adminUserIds.has(s.user_id)))) return true;
             if (pb && pb.authStore && pb.authStore.model) {
                 if (s.user_id && s.user_id === pb.authStore.model.id) return true;
                 const myEm = (pb.authStore.model.email || '').toLowerCase().trim();

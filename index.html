@@ -545,7 +545,7 @@
                                             Supermercados (MásxMenos y MegaSuper) · 6 Productos Muestra</span>
                                     </div>
                                     <p class="text-xs text-gray-700 font-semibold mt-1">
-                                        Estás probando gratis los precios de 6 productos esenciales en <strong>MásxMenos</strong> y <strong>MegaSuper</strong>. Para desbloquear Walmart, Maxi Palí, Palí, Auto Mercado y comparar entre <strong>TODOS los supermercados en tiempo real</strong>, activá tu membresía desde ₡10,000/mes.
+                                        Estás probando gratis los precios de 6 productos esenciales en <strong>MásxMenos</strong> y <strong>MegaSuper</strong>. Para desbloquear Walmart, Maxi Palí, Palí, Auto Mercado y comparar entre <strong>TODOS los supermercados en tiempo real</strong>, activá tu membresía desde ₡5,000/mes (Plan Mercados).
                                     </p>
                                 </div>
                             </div>
@@ -774,17 +774,17 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
 
-                        <!-- Plan Mercados (Destacado Multi-Supermercados) -->
+                        <!-- Plan Mercados (Destacado Multi-Supermercados - Más Popular y Económico) -->
                         <div
-                            class="bg-[#FEF9C3] stitch-box shadow-stitch p-6 flex flex-col relative border-4 border-vibrant-dark hover:shadow-none hover:translate-y-1 hover:translate-x-1 transition-all">
+                            class="bg-[#FEF9C3] stitch-box shadow-stitch p-6 flex flex-col relative border-4 border-vibrant-dark hover:shadow-none hover:translate-y-1 hover:translate-x-1 transition-all ring-2 ring-vibrant-dark">
                             <div
-                                class="absolute top-0 right-0 -mt-3.5 mr-3 bg-vibrant-blue text-white text-[10px] font-black px-3 py-1 uppercase tracking-widest border-2 border-vibrant-dark shadow-stitch">
-                                MULTI-SÚPER
+                                class="absolute top-0 right-0 -mt-3.5 mr-3 bg-red-600 text-white text-[10px] font-black px-3 py-1 uppercase tracking-widest border-2 border-vibrant-dark shadow-stitch animate-pulse">
+                                🔥 MÁS POPULAR · EL MÁS BARATO
                             </div>
                             <div class="flex-grow">
                                 <h3 class="text-2xl font-black text-vibrant-dark mb-1 uppercase">Plan Mercados</h3>
                                 <p class="text-xs font-black text-vibrant-blue mb-4 uppercase tracking-wider">Comparador
-                                    Completo</p>
+                                    Completo · El Favorito</p>
                                 <ul class="space-y-2.5 text-xs font-bold text-vibrant-dark mb-6">
                                     <li class="flex items-start gap-1.5"><span
                                             class="text-vibrant-blue font-black">➔</span> Comparativa de <strong>TODOS
@@ -801,11 +801,11 @@
                                 </ul>
                             </div>
                             <div class="stitch-border-t border-vibrant-dark pt-4 mt-auto">
-                                <div class="text-3xl font-black text-vibrant-dark mb-3">₡10,000 <span
+                                <div class="text-3xl font-black text-vibrant-dark mb-3">₡5,000 <span
                                         class="text-xs font-bold uppercase opacity-80">/mes</span></div>
                                 <button onclick="window.abrirModalRegistroPlanes('', 'plan1')"
                                     class="w-full bg-vibrant-blue hover:bg-blue-700 text-white font-black py-2.5 uppercase tracking-wider shadow-stitch hover:shadow-stitch-hover active:translate-y-0.5 transition-all text-xs cursor-pointer">
-                                    Solicitar Plan Mercados
+                                    Solicitar Plan Mercados (₡5,000)
                                 </button>
                             </div>
                         </div>
@@ -978,8 +978,8 @@
                         <li>
                             <button onclick="window.abrirModalRegistroPlanes('', 'plan1')"
                                 class="hover:text-vibrant-green transition-colors flex items-center justify-between w-full text-left cursor-pointer">
-                                <span>➔ Plan Mercados</span>
-                                <span class="font-bold text-gray-400">₡10,000/mes</span>
+                                <span>➔ Plan Mercados (Más Popular)</span>
+                                <span class="font-bold text-vibrant-green">₡5,000/mes</span>
                             </button>
                         </li>
                         <li>
@@ -1350,6 +1350,25 @@
         window.allData = allData;
         let filteredData = [];
         let isLoadingProducts = true;
+
+        // Helper global de verificación de acceso temprano a todos los supermercados (con fallback a localStorage)
+        window.hasAccessToAllSupermarkets = window.hasAccessToAllSupermarkets || function () {
+            try {
+                if (typeof pb !== 'undefined' && pb.authStore && pb.authStore.isValid && pb.authStore.model) {
+                    const u = pb.authStore.model;
+                    return Boolean(u.admin === true || u.admin === 'true' || u.admin === 1 || u.plan1 || u.plan2 || u.plan3 || u.plan4);
+                }
+                const raw = localStorage.getItem('pocketbase_auth');
+                if (raw) {
+                    const p = JSON.parse(raw);
+                    if (p && p.model) {
+                        return Boolean(p.model.admin === true || p.model.admin === 'true' || p.model.admin === 1 || p.model.plan1 || p.model.plan2 || p.model.plan3 || p.model.plan4);
+                    }
+                }
+            } catch (e) { }
+            return false;
+        };
+        var hasPlan = Boolean(window.hasAccessToAllSupermarkets());
 
         // Supermercados autorizados en el modo gratuito (únicamente MásxMenos y MegaSuper)
         window.FREE_TRIAL_SUPERS = ['MásxMenos', 'MegaSuper'];
@@ -3336,7 +3355,7 @@
         // MODAL DE REGISTRO / ELECCIÓN DE LOS 4 PLANES CON CHECKS
         // ==============================================
         const PLAN_DETAILS = {
-            plan1: { name: 'Plan 1: Mercados', price: 10000, desc: 'Multi-Supermercados (Walmart, MásxMenos, Maxi Palí, Palí, Auto Mercado)' },
+            plan1: { name: 'Plan 1: Mercados (Más Popular)', price: 5000, desc: 'Multi-Supermercados (Walmart, MásxMenos, Maxi Palí, Palí, Auto Mercado, MegaSuper)' },
             plan2: { name: 'Plan 2: Tiendas', price: 10000, desc: 'Abarrotes & Mini-súpers' },
             plan3: { name: 'Plan 3: Farmacias', price: 15000, desc: 'Salud & Medicamentos (Fischel, Sucre, La Bomba)' },
             plan4: { name: 'Plan 4: Comercios', price: 20000, desc: 'Retail, Hogar & Tecnología (Gollo, Monge, Siman)' }
@@ -3821,7 +3840,7 @@
             if (!isLogged) {
                 window.showCustomModal({
                     title: '🔒 Membresía Requerida para Todos los Supermercados',
-                    message: `En el <strong>modo de prueba gratuita</strong> solo podés consultar precios en <strong>MásxMenos</strong> y <strong>MegaSuper</strong>.<br><br>Para comparar precios en tiempo real entre <strong>TODAS las cadenas de Costa Rica</strong> (Walmart, MásxMenos, Maxi Palí, Palí, Auto Mercado y MegaSuper), necesitás una membresía activa (planes desde <strong>₡10,000/mes</strong>).<br><br>Podés pagar por <strong>SINPE Móvil al 6227 8771</strong> para habilitar tu cuenta al instante.`,
+                    message: `En el <strong>modo de prueba gratuita</strong> solo podés consultar precios en <strong>MásxMenos</strong> y <strong>MegaSuper</strong>.<br><br>Para comparar precios en tiempo real entre <strong>TODAS las cadenas de Costa Rica</strong> (Walmart, MásxMenos, Maxi Palí, Palí, Auto Mercado y MegaSuper), necesitás una membresía activa (Plan Mercados desde solo <strong>₡5,000/mes</strong>).<br><br>Podés pagar por <strong>SINPE Móvil al 6227 8771</strong> para habilitar tu cuenta al instante.`,
                     icon: '🔒',
                     headerBg: 'bg-vibrant-blue',
                     confirmText: 'Ver Planes y Afiliarme',
@@ -3835,10 +3854,10 @@
             } else {
                 window.showCustomModal({
                     title: '🔒 Membresía Plan Mercados Requerida',
-                    message: `Hola <strong>${pb.authStore.model.name || userEmail}</strong>.<br><br>Tu cuenta (<strong>${userEmail}</strong>) aún no tiene habilitado el <strong>Plan Mercados</strong> para comparar precios simultáneamente entre todos los supermercados.<br><br>En el modo gratuito podés consultar en MásxMenos y MegaSuper. Para desbloquear la comparativa entre todas las cadenas, activá tu membresía desde <strong>₡10,000/mes</strong> por <strong>SINPE Móvil al 6227 8771</strong>.`,
+                    message: `Hola <strong>${pb.authStore.model.name || userEmail}</strong>.<br><br>Tu cuenta (<strong>${userEmail}</strong>) aún no tiene habilitado el <strong>Plan Mercados</strong> para comparar precios simultáneamente entre todos los supermercados.<br><br>En el modo gratuito podés consultar en MásxMenos y MegaSuper. Para desbloquear la comparativa entre todas las cadenas, activá tu membresía desde solo <strong>₡5,000/mes</strong> por <strong>SINPE Móvil al 6227 8771</strong>.`,
                     icon: '🔒',
                     headerBg: 'bg-vibrant-orange',
-                    confirmText: 'Activar Membresía',
+                    confirmText: 'Activar Membresía (₡5,000)',
                     confirmBg: 'bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark',
                     cancelText: 'Continuar Navegando'
                 }).then(result => {
@@ -3856,10 +3875,10 @@
 
             window.showCustomModal({
                 title: '🔒 Supermercado Exclusivo con Membresía',
-                message: `La consulta de precios de <strong>${superName || 'este supermercado'}</strong> (así como Walmart, Maxi Palí, Palí y Auto Mercado) requiere una membresía activa de MercadoFácil.<br><br>En el <strong>modo gratuito</strong> únicamente podés consultar precios en <strong>MásxMenos</strong> y <strong>MegaSuper</strong>.<br><br>Activá tu membresía desde <strong>₡10,000/mes</strong> para desbloquear todas las cadenas y comparar simultáneamente en vivo.<br><br>Pagá por <strong>SINPE Móvil al 6227 8771</strong>.`,
+                message: `La consulta de precios de <strong>${superName || 'este supermercado'}</strong> (así como Walmart, Maxi Palí, Palí y Auto Mercado) requiere una membresía activa de MercadoFácil.<br><br>En el <strong>modo gratuito</strong> únicamente podés consultar precios en <strong>MásxMenos</strong> y <strong>MegaSuper</strong>.<br><br>Activá tu membresía desde solo <strong>₡5,000/mes</strong> para desbloquear todas las cadenas y comparar simultáneamente en vivo.<br><br>Pagá por <strong>SINPE Móvil al 6227 8771</strong>.`,
                 icon: '🏬',
                 headerBg: 'bg-vibrant-dark',
-                confirmText: isLogged ? 'Solicitar Membresía' : 'Ver Planes y Afiliarme',
+                confirmText: isLogged ? 'Solicitar Membresía (₡5,000)' : 'Ver Planes y Afiliarme',
                 confirmBg: 'bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark',
                 cancelText: 'Seguir con MásxMenos y MegaSuper'
             }).then(result => {
@@ -3876,7 +3895,7 @@
 
             window.showCustomModal({
                 title: '🔒 Producto Exclusivo con Membresía',
-                message: `El producto <strong>${itemName || 'seleccionado'}</strong> forma parte del catálogo completo de más de 80 artículos de MercadoFácil.<br><br>En el <strong>modo gratuito</strong> únicamente podés consultar <strong>productos esenciales de muestra</strong> (Arroz, Frijoles, Aceite, Leche, Café, Azúcar) en <strong>MásxMenos</strong> y <strong>MegaSuper</strong>.<br><br>Activá tu membresía desde <strong>₡10,000/mes</strong> para desbloquear todo el catálogo y comparar todas las cadenas (Walmart, MásxMenos, Maxi Palí, Palí, Auto Mercado y MegaSuper) en vivo.<br><br>Pagá por <strong>SINPE Móvil al 6227 8771</strong>.`,
+                message: `El producto <strong>${itemName || 'seleccionado'}</strong> forma parte del catálogo completo de más de 80 artículos de MercadoFácil.<br><br>En el <strong>modo gratuito</strong> únicamente podés consultar <strong>productos esenciales de muestra</strong> (Arroz, Frijoles, Aceite, Leche, Café, Azúcar) en <strong>MásxMenos</strong> y <strong>MegaSuper</strong>.<br><br>Activá tu membresía desde solo <strong>₡5,000/mes</strong> para desbloquear todo el catálogo y comparar todas las cadenas (Walmart, MásxMenos, Maxi Palí, Palí, Auto Mercado y MegaSuper) en vivo.<br><br>Pagá por <strong>SINPE Móvil al 6227 8771</strong>.`,
                 icon: '🛒',
                 headerBg: 'bg-vibrant-dark',
                 confirmText: isLogged ? 'Solicitar Membresía' : 'Ver Planes y Afiliarme',
@@ -5025,7 +5044,7 @@
                 const p4 = Boolean(u.plan4 === true || u.plan4 === 'true' || u.plan4 === 1);
 
                 if (p1 || p2 || p3 || p4) activePlanUsers++;
-                if (p1) { p1Count++; if (!isAdm && vig.vigente) mrrColones += 10000; }
+                if (p1) { p1Count++; if (!isAdm && vig.vigente) mrrColones += 5000; }
                 if (p2) { p2Count++; if (!isAdm && vig.vigente) mrrColones += 10000; }
                 if (p3) { p3Count++; if (!isAdm && vig.vigente) mrrColones += 15000; }
                 if (p4) { p4Count++; if (!isAdm && vig.vigente) mrrColones += 20000; }
@@ -5133,7 +5152,7 @@
             const plansEl = document.getElementById('adminPlansBreakdown');
             if (plansEl) {
                 const planRows = [
-                    { name: '🛒 Plan 1: Mercados (Multi-Súper)', count: p1Count, price: 10000, bg: 'bg-green-100 border-green-500 text-green-950' },
+                    { name: '🛒 Plan 1: Mercados (Más Popular)', count: p1Count, price: 5000, bg: 'bg-green-100 border-green-500 text-green-950' },
                     { name: '🏪 Plan 2: Tiendas (Abarrotes)', count: p2Count, price: 10000, bg: 'bg-orange-100 border-orange-500 text-orange-950' },
                     { name: '💊 Plan 3: Farmacias (Salud)', count: p3Count, price: 15000, bg: 'bg-emerald-100 border-emerald-500 text-emerald-950' },
                     { name: '🏬 Plan 4: Comercios (Retail)', count: p4Count, price: 20000, bg: 'bg-blue-100 border-blue-500 text-blue-950' }
@@ -5582,7 +5601,7 @@
                                 class="font-black text-sm uppercase tracking-wider flex items-center justify-between gap-2">
                                 <span>PAGO POR SINPE MÓVIL</span>
                                 <span id="modalPlanPriceBadge"
-                                    class="bg-vibrant-dark text-vibrant-green px-2 py-0.5 text-xs font-black shadow-sm">₡10,000/mes</span>
+                                    class="bg-vibrant-dark text-vibrant-green px-2 py-0.5 text-xs font-black shadow-sm">₡5,000/mes</span>
                             </div>
                             <div
                                 class="mt-2 bg-white p-2 border-2 border-vibrant-dark flex items-center justify-between">
@@ -5722,9 +5741,9 @@
                                 class="w-5 h-5 mt-0.5 accent-green-600 rounded cursor-pointer flex-shrink-0">
                             <div class="min-w-0 flex-grow">
                                 <div class="flex items-center justify-between gap-1">
-                                    <span class="font-black text-xs text-vibrant-dark uppercase">🛒 Plan Mercados</span>
+                                    <span class="font-black text-xs text-vibrant-dark uppercase">🛒 Plan Mercados (Más Popular)</span>
                                     <span
-                                        class="bg-green-600 text-white text-[10px] font-black px-1.5 py-0.2">₡10,000</span>
+                                        class="bg-green-600 text-white text-[10px] font-black px-1.5 py-0.2">₡5,000</span>
                                 </div>
                                 <p class="text-[11px] font-bold text-green-900 mt-0.5">Multi-Supermercados</p>
                                 <p class="text-[10px] text-gray-600 font-medium leading-tight mt-1">Walmart, MásxMenos,
@@ -5800,7 +5819,7 @@
                         </div>
                         <div class="text-right">
                             <span id="regTotalAmountBadge"
-                                class="bg-vibrant-dark text-vibrant-green text-base sm:text-lg font-black px-3 py-1 shadow-stitch">₡10,000
+                                class="bg-vibrant-dark text-vibrant-green text-base sm:text-lg font-black px-3 py-1 shadow-stitch">₡5,000
                                 / mes</span>
                         </div>
                     </div>
