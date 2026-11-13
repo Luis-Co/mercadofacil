@@ -64,7 +64,7 @@ class MercadoFacilHandler(http.server.SimpleHTTPRequestHandler):
         # Enviar evento inicial
         init_event = json.dumps({
             'type': 'start',
-            'message': 'Iniciando conexión en vivo con los portales de Walmart, MásxMenos, Maxi Palí, Palí, Auto Mercado y MegaSuper...',
+            'message': 'Iniciando conexión en vivo con los portales de Walmart, MásxMenos, Maxi Palí, Palí, Auto Mercado, MegaSuper, Perimercados, PriceSmart y Pequeño Mundo...',
             'timestamp': datetime.now().isoformat()
         })
         self.wfile.write(f"data: {init_event}\n\n".encode('utf-8'))

@@ -451,6 +451,9 @@
                             ✅ Palí
                             ✅ Auto Mercado
                             ✅ MegaSuper
+                            ✅ Perimercados (Supermercado general)
+                            ✅ PriceSmart (Club compras por volumen)
+                            ✅ Pequeño Mundo (Abarrotes y bajo costo)
 
                             Armá tu canasta antes de salir de casa y ahorrate hasta ₡15,000 en tu compra semanal.
 
@@ -483,7 +486,7 @@
                             🛒🇨🇷
 
                             Te muestra en vivo dónde está más barato cada producto entre Walmart, MásxMenos, Maxi Palí,
-                            Palí, Auto Mercado y MegaSuper.
+                            Palí, Auto Mercado, MegaSuper, Perimercados, PriceSmart y Pequeño Mundo.
 
                             A mí me ahorró más de ₡8,000 en la compra de la quincena 🔥
 
@@ -756,20 +759,20 @@
             ctx.font = '900 22px "Plus Jakarta Sans", sans-serif';
             ctx.fillText('AHORRO TOTAL EN ESTOS 4 PRODUCTOS: ₡1,795 (27% MENOS)', boxX + 25, boxY + boxH - 28);
 
-            // 6 Supermercados Badges en la parte inferior
-            const supers = ['WALMART', 'MÁSXMENOS', 'MAXI PALÍ', 'PALÍ', 'AUTO MERCADO', 'MEGASUPER'];
-            let supX = 50;
+            // 9 Supermercados Badges en la parte inferior
+            const supers = ['WALMART', 'MÁSXMENOS', 'MAXI PALÍ', 'PALÍ', 'AUTO MERCADO', 'MEGASUPER', 'PERIMERCADOS', 'PRICESMART', 'PEQUEÑO MUNDO'];
+            let supX = 25;
             supers.forEach(s => {
                 ctx.fillStyle = '#FFFFFF';
-                ctx.fillRect(supX, 860, 150, 42);
-                ctx.lineWidth = 3;
+                ctx.fillRect(supX, 860, 110, 42);
+                ctx.lineWidth = 2;
                 ctx.strokeStyle = '#0B0C10';
-                ctx.strokeRect(supX, 860, 150, 42);
+                ctx.strokeRect(supX, 860, 110, 42);
                 ctx.fillStyle = '#0B0C10';
-                ctx.font = '800 15px "Plus Jakarta Sans", sans-serif';
+                ctx.font = '800 11px "Plus Jakarta Sans", sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText(s, supX + 75, 887);
-                supX += 165;
+                ctx.fillText(s, supX + 55, 886);
+                supX += 117;
             });
 
             // Footer Call To Action
@@ -851,50 +854,57 @@
             ctx.font = '700 28px "Plus Jakarta Sans", sans-serif';
             ctx.fillText('Comparamos en tiempo real entre:', w / 2, 660);
 
-            // Lista de 6 Supermercados
+            // Lista de 9 Cadenas Monitoreadas
             const supers = [
-                { name: 'WALMART COSTA RICA', color: '#0071DC' },
+                { name: 'WALMART CR', color: '#0071DC' },
                 { name: 'MÁSXMENOS', color: '#D9251D' },
                 { name: 'MAXI PALÍ', color: '#E01932' },
                 { name: 'PALÍ', color: '#00A651' },
                 { name: 'AUTO MERCADO', color: '#1B4332' },
                 { name: 'MEGASUPER', color: '#FF6B35' },
+                { name: 'PERIMERCADOS', color: '#008080' },
+                { name: 'PRICESMART', color: '#003366' },
+                { name: 'PEQUEÑO MUNDO', color: '#D81B60' }
             ];
 
-            let itemY = 720;
-            supers.forEach((s) => {
+            const colW = (boxW - 100) / 2;
+            supers.forEach((s, idx) => {
+                const col = idx % 2;
+                const row = Math.floor(idx / 2);
+                const rx = boxX + 40 + col * (colW + 20);
+                const ry = 705 + row * 95;
+                const rw = (idx === 8) ? (boxW - 80) : colW; // Último elemento ocupa ancho completo si es impar
+
                 ctx.fillStyle = '#F3F4F6';
-                ctx.fillRect(boxX + 40, itemY, boxW - 80, 75);
+                ctx.fillRect(rx, ry, rw, 78);
                 ctx.lineWidth = 4;
                 ctx.strokeStyle = '#0B0C10';
-                ctx.strokeRect(boxX + 40, itemY, boxW - 80, 75);
+                ctx.strokeRect(rx, ry, rw, 78);
 
                 ctx.fillStyle = s.color;
-                ctx.fillRect(boxX + 50, itemY + 10, 20, 55);
+                ctx.fillRect(rx + 12, ry + 12, 16, 54);
 
                 ctx.fillStyle = '#0B0C10';
-                ctx.font = '900 32px "Plus Jakarta Sans", sans-serif';
+                ctx.font = '900 24px "Plus Jakarta Sans", sans-serif';
                 ctx.textAlign = 'left';
-                ctx.fillText(s.name, boxX + 90, itemY + 50);
+                ctx.fillText(s.name, rx + 38, ry + 48);
 
                 ctx.fillStyle = '#15803D';
-                ctx.font = '900 24px "JetBrains Mono", monospace';
+                ctx.font = '900 16px "JetBrains Mono", monospace';
                 ctx.textAlign = 'right';
-                ctx.fillText('● EN VIVO', boxX + boxW - 60, itemY + 48);
-
-                itemY += 95;
+                ctx.fillText('● EN VIVO', rx + rw - 15, ry + 46);
             });
 
             // Caja de Ahorro
             ctx.fillStyle = '#00E676';
-            ctx.fillRect(boxX + 40, 1260, boxW - 80, 70);
+            ctx.fillRect(boxX + 40, 1200, boxW - 80, 70);
             ctx.lineWidth = 4;
             ctx.strokeStyle = '#0B0C10';
-            ctx.strokeRect(boxX + 40, 1260, boxW - 80, 70);
+            ctx.strokeRect(boxX + 40, 1200, boxW - 80, 70);
             ctx.fillStyle = '#0B0C10';
             ctx.font = '900 28px "Plus Jakarta Sans", sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('AHORRÁ HASTA UN 40% CADA SEMANA', w / 2, 1305);
+            ctx.fillText('AHORRÁ HASTA UN 40% CADA SEMANA', w / 2, 1245);
 
             // Bloque Inferior con Flechas y Link
             ctx.fillStyle = '#0B0C10';
@@ -970,22 +980,22 @@
 
             ctx.fillStyle = '#4B5563';
             ctx.font = '700 22px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText('Monitoreamos en tiempo real los 6 supermercados principales:', boxX + 40, boxY + 250);
+            ctx.fillText('Monitoreamos en tiempo real 9 supermercados y cadenas de compras:', boxX + 40, boxY + 245);
 
-            // Grilla de supermercados
-            const supers = ['Walmart', 'MásxMenos', 'Maxi Palí', 'Palí', 'Auto Mercado', 'MegaSuper'];
-            let sx = boxX + 40, sy = boxY + 280;
+            // Grilla de 9 supermercados (3x3)
+            const supers = ['Walmart', 'MásxMenos', 'Maxi Palí', 'Palí', 'Auto Mercado', 'MegaSuper', 'Perimercados', 'PriceSmart', 'Pequeño Mundo'];
+            let sx = boxX + 40, sy = boxY + 270;
             supers.forEach((s, idx) => {
                 ctx.fillStyle = '#F3F4F6';
-                ctx.fillRect(sx, sy, 160, 40);
+                ctx.fillRect(sx, sy, 160, 36);
                 ctx.lineWidth = 3;
                 ctx.strokeStyle = '#0B0C10';
-                ctx.strokeRect(sx, sy, 160, 40);
+                ctx.strokeRect(sx, sy, 160, 36);
                 ctx.fillStyle = '#0B0C10';
-                ctx.font = '800 16px "Plus Jakarta Sans", sans-serif';
-                ctx.fillText('✔ ' + s, sx + 15, sy + 26);
+                ctx.font = '800 13px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('✔ ' + s, sx + 12, sy + 23);
                 sx += 175;
-                if (idx === 2) { sx = boxX + 40; sy += 50; }
+                if ((idx + 1) % 3 === 0) { sx = boxX + 40; sy += 42; }
             });
 
             // Call to action
@@ -1155,9 +1165,9 @@
 
             ctx.fillStyle = '#2962FF';
             ctx.font = '800 28px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText('No salgás sin revisar estos 6 supermercados:', bx + 40, by + 130);
+            ctx.fillText('No salgás sin revisar estas 9 cadenas de compras:', bx + 40, by + 130);
 
-            // 6 bloques con iconos
+            // 9 bloques con iconos
             const lista = [
                 { s: 'Walmart', note: 'Abarrotes y pañales' },
                 { s: 'MásxMenos', note: 'Carnicería y frescos' },
@@ -1165,27 +1175,34 @@
                 { s: 'Palí', note: 'Canasta básica económica' },
                 { s: 'Auto Mercado', note: 'Importados y delicatesen' },
                 { s: 'MegaSuper', note: 'Ofertas semanales ticas' },
+                { s: 'Perimercados', note: 'Supermercado general' },
+                { s: 'PriceSmart', note: 'Compras por volumen y club' },
+                { s: 'Pequeño Mundo', note: 'Abarrotes y bajo costo' }
             ];
 
-            let ly = by + 170;
+            const cW = (bw - 100) / 2;
             lista.forEach((item, i) => {
+                const col = i % 2;
+                const row = Math.floor(i / 2);
+                const rx = (i === 8) ? (bx + 40) : (bx + 40 + col * (cW + 20));
+                const ry = by + 160 + row * 66;
+                const rw = (i === 8) ? (bw - 80) : cW;
+
                 ctx.fillStyle = i % 2 === 0 ? '#FEF9C3' : '#F3F4F6';
-                ctx.fillRect(bx + 40, ly, bw - 80, 68);
+                ctx.fillRect(rx, ry, rw, 56);
                 ctx.lineWidth = 3;
                 ctx.strokeStyle = '#0B0C10';
-                ctx.strokeRect(bx + 40, ly, bw - 80, 68);
+                ctx.strokeRect(rx, ry, rw, 56);
 
                 ctx.fillStyle = '#0B0C10';
-                ctx.font = '900 26px "Plus Jakarta Sans", sans-serif';
-                ctx.fillText('🏬 ' + item.s, bx + 60, ly + 43);
+                ctx.font = '900 20px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('🏬 ' + item.s, rx + 15, ry + 35);
 
                 ctx.fillStyle = '#4B5563';
-                ctx.font = '700 20px "JetBrains Mono", monospace';
+                ctx.font = '700 15px "JetBrains Mono", monospace';
                 ctx.textAlign = 'right';
-                ctx.fillText(item.note, bx + bw - 60, ly + 43);
+                ctx.fillText(item.note, rx + rw - 15, ry + 35);
                 ctx.textAlign = 'left';
-
-                ly += 80;
             });
 
             // Resumen de ahorro

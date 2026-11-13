@@ -416,6 +416,9 @@
                                     <option value="Maxi Palí">🔒 MAXI PALÍ (REQUIERE PLAN)</option>
                                     <option value="Palí">🔒 PALÍ (REQUIERE PLAN)</option>
                                     <option value="Auto Mercado">🔒 AUTO MERCADO (REQUIERE PLAN)</option>
+                                    <option value="Perimercados">🔒 PERIMERCADOS (REQUIERE PLAN)</option>
+                                    <option value="PriceSmart">🔒 PRICESMART (REQUIERE PLAN)</option>
+                                    <option value="Pequeño Mundo">🔒 PEQUEÑO MUNDO (REQUIERE PLAN)</option>
                                 </select>
                             </div>
                             <div>
@@ -523,7 +526,7 @@
                             <div id="terminalFooter"
                                 class="p-3 bg-[#111827] border-t border-gray-800 flex flex-wrap items-center justify-between text-[11px] font-mono text-gray-400 gap-2">
                                 <div id="terminalStats">Supermercados monitoreados: Walmart, MásxMenos, Palí, Auto
-                                    Mercado, Maxi Palí, MegaSuper</div>
+                                    Mercado, Maxi Palí, MegaSuper, Perimercados, PriceSmart, Pequeño Mundo</div>
                                 <div class="text-vibrant-green font-bold flex items-center gap-1">
                                     <span class="w-2 h-2 rounded-full bg-vibrant-green inline-block"></span>
                                     Protocolo: Headless HTTPS Scraper + JSON Extractor
@@ -545,7 +548,7 @@
                                             Supermercados (MásxMenos y MegaSuper) · 6 Productos Muestra</span>
                                     </div>
                                     <p class="text-xs text-gray-700 font-semibold mt-1">
-                                        Estás probando gratis los precios de 6 productos esenciales en <strong>MásxMenos</strong> y <strong>MegaSuper</strong>. Para desbloquear Walmart, Maxi Palí, Palí, Auto Mercado y comparar entre <strong>TODOS los supermercados en tiempo real</strong>, activá tu membresía desde ₡5,000/mes (Plan Mercados).
+                                        Estás probando gratis los precios de 6 productos esenciales en <strong>MásxMenos</strong> y <strong>MegaSuper</strong>. Para desbloquear Walmart, Maxi Palí, Palí, Auto Mercado, Perimercados, PriceSmart, Pequeño Mundo y comparar entre <strong>TODOS los supermercados en tiempo real</strong>, activá tu membresía desde ₡5,000/mes (Plan Mercados).
                                     </p>
                                 </div>
                             </div>
@@ -794,7 +797,7 @@
                                         cuenta de Google.</li>
                                     <li class="flex items-start gap-1.5"><span
                                             class="text-vibrant-blue font-black">➔</span> Walmart, MásxMenos, Maxi Palí,
-                                        Palí, Auto Mercado y MegaSuper.</li>
+                                        Palí, Auto Mercado, MegaSuper, Perimercados, PriceSmart y Pequeño Mundo.</li>
                                     <li class="flex items-start gap-1.5"><span
                                             class="text-vibrant-blue font-black">➔</span> Detección de las mejores
                                         ofertas de la canasta básica.</li>
@@ -962,6 +965,21 @@
                         </li>
                         <li class="flex items-center justify-between hover:text-white transition-colors">
                             <span class="flex items-center gap-2">➔ MegaSuper</span>
+                            <span
+                                class="text-[10px] bg-green-900/60 text-green-300 px-1.5 py-0.5 border border-green-700">Activo</span>
+                        </li>
+                        <li class="flex items-center justify-between hover:text-white transition-colors">
+                            <span class="flex items-center gap-2">➔ Perimercados</span>
+                            <span
+                                class="text-[10px] bg-green-900/60 text-green-300 px-1.5 py-0.5 border border-green-700">Activo</span>
+                        </li>
+                        <li class="flex items-center justify-between hover:text-white transition-colors">
+                            <span class="flex items-center gap-2">➔ PriceSmart</span>
+                            <span
+                                class="text-[10px] bg-green-900/60 text-green-300 px-1.5 py-0.5 border border-green-700">Activo</span>
+                        </li>
+                        <li class="flex items-center justify-between hover:text-white transition-colors">
+                            <span class="flex items-center gap-2">➔ Pequeño Mundo</span>
                             <span
                                 class="text-[10px] bg-green-900/60 text-green-300 px-1.5 py-0.5 border border-green-700">Activo</span>
                         </li>
@@ -1905,7 +1923,10 @@
                 { name: 'Maxi Palí', factor: 0.97, baseUrl: 'https://www.maxipali.co.cr/busqueda?q=', suffix: 'Maxi Palí Mayorista' },
                 { name: 'Palí', factor: 0.94, baseUrl: 'https://www.maxipali.co.cr/busqueda?q=', suffix: 'Palí Ahorro' },
                 { name: 'Auto Mercado', factor: 1.13, baseUrl: 'https://www.automercado.cr/busqueda?q=', suffix: 'Auto Mercado Selección' },
-                { name: 'MegaSuper', factor: 0.96, baseUrl: 'https://www.megasuper.com/busqueda?q=', suffix: 'MegaSuper Oferta' }
+                { name: 'MegaSuper', factor: 0.96, baseUrl: 'https://www.megasuper.com/busqueda?q=', suffix: 'MegaSuper Oferta' },
+                { name: 'Perimercados', factor: 1.02, baseUrl: 'https://www.peridomicilio.com/busqueda?q=', suffix: 'Perimercados General' },
+                { name: 'PriceSmart', factor: 0.88, baseUrl: 'https://www.pricesmart.com/site/cr/es/buscar?q=', suffix: 'PriceSmart Club' },
+                { name: 'Pequeño Mundo', factor: 0.89, baseUrl: 'https://tienda.pequenomundo.com/busqueda?q=', suffix: 'Pequeño Mundo Ahorro' }
             ];
 
             LIVE_CANASTA_MATRIX.forEach((catObj) => {
@@ -2215,6 +2236,9 @@
                     else if (item.super === 'Auto Mercado') superColor = 'text-amber-300';
                     else if (item.super === 'Maxi Palí') superColor = 'text-yellow-300';
                     else if (item.super === 'MegaSuper') superColor = 'text-red-400';
+                    else if (item.super === 'Perimercados') superColor = 'text-teal-400';
+                    else if (item.super === 'PriceSmart') superColor = 'text-cyan-400';
+                    else if (item.super === 'Pequeño Mundo') superColor = 'text-pink-400';
 
                     const entry = document.createElement('div');
                     entry.className = 'py-0.5 border-b border-gray-900/40 hover:bg-gray-900/50';
@@ -3355,7 +3379,7 @@
         // MODAL DE REGISTRO / ELECCIÓN DE LOS 4 PLANES CON CHECKS
         // ==============================================
         const PLAN_DETAILS = {
-            plan1: { name: 'Plan 1: Mercados (Más Popular)', price: 5000, desc: 'Multi-Supermercados (Walmart, MásxMenos, Maxi Palí, Palí, Auto Mercado, MegaSuper)' },
+            plan1: { name: 'Plan 1: Mercados (Más Popular)', price: 5000, desc: 'Multi-Supermercados (Walmart, MásxMenos, Maxi Palí, Palí, Auto Mercado, MegaSuper, Perimercados, PriceSmart, Pequeño Mundo)' },
             plan2: { name: 'Plan 2: Tiendas', price: 10000, desc: 'Abarrotes & Mini-súpers' },
             plan3: { name: 'Plan 3: Farmacias', price: 15000, desc: 'Salud & Medicamentos (Fischel, Sucre, La Bomba)' },
             plan4: { name: 'Plan 4: Comercios', price: 20000, desc: 'Retail, Hogar & Tecnología (Gollo, Monge, Siman)' }
@@ -3840,7 +3864,7 @@
             if (!isLogged) {
                 window.showCustomModal({
                     title: '🔒 Membresía Requerida para Todos los Supermercados',
-                    message: `En el <strong>modo de prueba gratuita</strong> solo podés consultar precios en <strong>MásxMenos</strong> y <strong>MegaSuper</strong>.<br><br>Para comparar precios en tiempo real entre <strong>TODAS las cadenas de Costa Rica</strong> (Walmart, MásxMenos, Maxi Palí, Palí, Auto Mercado y MegaSuper), necesitás una membresía activa (Plan Mercados desde solo <strong>₡5,000/mes</strong>).<br><br>Podés pagar por <strong>SINPE Móvil al 6227 8771</strong> para habilitar tu cuenta al instante.`,
+                    message: `En el <strong>modo de prueba gratuita</strong> solo podés consultar precios en <strong>MásxMenos</strong> y <strong>MegaSuper</strong>.<br><br>Para comparar precios en tiempo real entre <strong>TODAS las cadenas de Costa Rica</strong> (Walmart, MásxMenos, Maxi Palí, Palí, Auto Mercado, MegaSuper, Perimercados, PriceSmart y Pequeño Mundo), necesitás una membresía activa (Plan Mercados desde solo <strong>₡5,000/mes</strong>).<br><br>Podés pagar por <strong>SINPE Móvil al 6227 8771</strong> para habilitar tu cuenta al instante.`,
                     icon: '🔒',
                     headerBg: 'bg-vibrant-blue',
                     confirmText: 'Ver Planes y Afiliarme',
@@ -3875,7 +3899,7 @@
 
             window.showCustomModal({
                 title: '🔒 Supermercado Exclusivo con Membresía',
-                message: `La consulta de precios de <strong>${superName || 'este supermercado'}</strong> (así como Walmart, Maxi Palí, Palí y Auto Mercado) requiere una membresía activa de MercadoFácil.<br><br>En el <strong>modo gratuito</strong> únicamente podés consultar precios en <strong>MásxMenos</strong> y <strong>MegaSuper</strong>.<br><br>Activá tu membresía desde solo <strong>₡5,000/mes</strong> para desbloquear todas las cadenas y comparar simultáneamente en vivo.<br><br>Pagá por <strong>SINPE Móvil al 6227 8771</strong>.`,
+                message: `La consulta de precios de <strong>${superName || 'este supermercado'}</strong> (así como Walmart, Maxi Palí, Palí, Auto Mercado, Perimercados, PriceSmart y Pequeño Mundo) requiere una membresía activa de MercadoFácil.<br><br>En el <strong>modo gratuito</strong> únicamente podés consultar precios en <strong>MásxMenos</strong> y <strong>MegaSuper</strong>.<br><br>Activá tu membresía desde solo <strong>₡5,000/mes</strong> para desbloquear todas las cadenas y comparar simultáneamente en vivo.<br><br>Pagá por <strong>SINPE Móvil al 6227 8771</strong>.`,
                 icon: '🏬',
                 headerBg: 'bg-vibrant-dark',
                 confirmText: isLogged ? 'Solicitar Membresía (₡5,000)' : 'Ver Planes y Afiliarme',
@@ -3895,7 +3919,7 @@
 
             window.showCustomModal({
                 title: '🔒 Producto Exclusivo con Membresía',
-                message: `El producto <strong>${itemName || 'seleccionado'}</strong> forma parte del catálogo completo de más de 80 artículos de MercadoFácil.<br><br>En el <strong>modo gratuito</strong> únicamente podés consultar <strong>productos esenciales de muestra</strong> (Arroz, Frijoles, Aceite, Leche, Café, Azúcar) en <strong>MásxMenos</strong> y <strong>MegaSuper</strong>.<br><br>Activá tu membresía desde solo <strong>₡5,000/mes</strong> para desbloquear todo el catálogo y comparar todas las cadenas (Walmart, MásxMenos, Maxi Palí, Palí, Auto Mercado y MegaSuper) en vivo.<br><br>Pagá por <strong>SINPE Móvil al 6227 8771</strong>.`,
+                message: `El producto <strong>${itemName || 'seleccionado'}</strong> forma parte del catálogo completo de más de 80 artículos de MercadoFácil.<br><br>En el <strong>modo gratuito</strong> únicamente podés consultar <strong>productos esenciales de muestra</strong> (Arroz, Frijoles, Aceite, Leche, Café, Azúcar) en <strong>MásxMenos</strong> y <strong>MegaSuper</strong>.<br><br>Activá tu membresía desde solo <strong>₡5,000/mes</strong> para desbloquear todo el catálogo y comparar todas las cadenas (Walmart, MásxMenos, Maxi Palí, Palí, Auto Mercado, MegaSuper, Perimercados, PriceSmart y Pequeño Mundo) en vivo.<br><br>Pagá por <strong>SINPE Móvil al 6227 8771</strong>.`,
                 icon: '🛒',
                 headerBg: 'bg-vibrant-dark',
                 confirmText: isLogged ? 'Solicitar Membresía' : 'Ver Planes y Afiliarme',
@@ -5134,10 +5158,10 @@
                 }).join('');
             }
 
-            // Estadísticas de los 6 Supermercados (incluyendo MegaSuper)
+            // Estadísticas de los 9 Supermercados y Cadenas Monitoreadas
             const supStatsEl = document.getElementById('adminSupermarketStats');
             if (supStatsEl && Array.isArray(window.allData)) {
-                const supers = ['Walmart', 'MásxMenos', 'Maxi Palí', 'Palí', 'Auto Mercado', 'MegaSuper'];
+                const supers = ['Walmart', 'MásxMenos', 'Maxi Palí', 'Palí', 'Auto Mercado', 'MegaSuper', 'Perimercados', 'PriceSmart', 'Pequeño Mundo'];
                 const minMap = {};
                 window.allData.forEach(d => {
                     if (!minMap[d.item] || d.precio < minMap[d.item]) minMap[d.item] = d.precio;
