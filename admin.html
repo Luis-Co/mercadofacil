@@ -826,10 +826,30 @@
 
             // 2. Cargar desde PocketBase 'visitor_logs' (donde residen todas las visitas e ingresos en vivo)
             try {
-                const vLogs = await pb.collection('visitor_logs').getFullList({ sort: '-created' });
+                let vLogs = [];
+                try {
+                    vLogs = await pb.collection('visitor_logs').getFullList({ sort: '-created' });
+                } catch (sortErr) {
+                    console.warn("Fallo sort -created en visitor_logs, reintentando sin sort:", sortErr);
+                    vLogs = await pb.collection('visitor_logs').getFullList();
+                }
                 allVisitorLogs = vLogs || [];
+            } catch (vErr) {
+                console.warn("No se pudo leer visitor_logs de PocketBase:", vErr);
+            }
 
-                // Integrar visitor_logs para que cada visita/usuario que haya ingresado quede visible en sesiones
+            // 2.5 Respaldo: si PocketBase devolvió 0 (por regla API restringida), cargar desde localStorage mirror
+            if (!allVisitorLogs || allVisitorLogs.length === 0) {
+                try {
+                    const fallbackLogs = JSON.parse(localStorage.getItem('mercadofacil_visitor_logs_db') || '[]');
+                    if (Array.isArray(fallbackLogs) && fallbackLogs.length > 0) {
+                        allVisitorLogs = fallbackLogs;
+                    }
+                } catch (lsErr) { }
+            }
+
+            // Integrar visitor_logs para que cada visita/usuario que haya ingresado quede visible en sesiones
+            if (allVisitorLogs && allVisitorLogs.length > 0) {
                 allVisitorLogs.forEach(v => {
                     const sid = v.session_id;
                     if (!sid) return;
@@ -844,9 +864,11 @@
                         if (!s.user_email && em) s.user_email = em;
                         if (!s.user_name && v.user_name) s.user_name = v.user_name;
                         if (isLog && !s.is_logged) s.is_logged = true;
+                        if (!Array.isArray(s.cta_clicks)) s.cta_clicks = [];
                         if (evType && !s.cta_clicks.some(c => (c.btn || c) === evType)) {
                             s.cta_clicks.push({ btn: evType, details: v.details || '' });
                         }
+                        if (!Array.isArray(s.filter_history)) s.filter_history = [];
                         if (evType === 'filtro' && v.details) {
                             s.filter_history.push({ super: 'Filtro', cat: v.details });
                         }
@@ -890,8 +912,6 @@
                         });
                     }
                 });
-            } catch (vErr) {
-                console.warn("No se pudo leer visitor_logs de PocketBase:", vErr);
             }
 
             // 3. Cargar desde localStorage mirror
@@ -1146,8 +1166,48 @@
                 return blob.includes(search);
             });
 
+            if (allVisitorLogs.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="p-8">
+                            <div class="bg-amber-50 border-3 border-amber-500 p-6 shadow-stitch text-left space-y-4 max-w-3xl mx-auto">
+                                <div class="flex items-start gap-3">
+                                    <span class="text-3xl">⚠️</span>
+                                    <div>
+                                        <h4 class="font-black text-amber-900 text-sm uppercase">PocketBase tiene registros en 'visitor_logs', pero la regla API (ListRule) está restringida</h4>
+                                        <p class="text-xs text-amber-800 mt-1 font-medium leading-relaxed">
+                                            En tu consola de PocketBase (<code>/_/</code>) tienes <strong>34 registros</strong> en <code>visitor_logs</code>, pero por defecto PocketBase bloquea la lectura a usuarios que no sean Superuser directo de la consola.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="border-t-2 border-amber-300 pt-3">
+                                    <p class="text-xs font-black text-vibrant-dark uppercase mb-2">Para desbloquear y ver todos los eventos aquí en vivo:</p>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                                        <div class="bg-white p-3 border-2 border-vibrant-dark">
+                                            <strong class="text-vibrant-blue block mb-1">Opción 1: En 1 Clic (Automático)</strong>
+                                            Haz clic en el botón verde de arriba <strong class="bg-emerald-200 px-1">⚡ PROVISIONAR POCKETBASE</strong> e introduce tu contraseña de superuser. El sistema actualizará las reglas de la API al instante.
+                                        </div>
+                                        <div class="bg-white p-3 border-2 border-vibrant-dark">
+                                            <strong class="text-amber-800 block mb-1">Opción 2: Desde tu pestaña de PocketBase</strong>
+                                            En tu pestaña abierta de PocketBase:
+                                            <ol class="list-decimal ml-4 mt-1 space-y-0.5 text-gray-700">
+                                                <li>Haz clic en el engranaje ⚙️ de <strong>visitor_logs</strong>.</li>
+                                                <li>Entra a <strong>API Rules</strong>.</li>
+                                                <li>En <strong>List/Search rule</strong> pon: <code class="bg-gray-100 font-bold">@request.auth.admin = true</code> (o déjalo en blanco).</li>
+                                                <li>Guarda con <strong>Save changes</strong> y refresca esta página.</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
             if (rows.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="py-12 text-center text-gray-500 font-bold text-xs">Sin eventos registrados en visitor_logs con estos filtros.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="py-12 text-center text-gray-500 font-bold text-xs">Sin eventos registrados en visitor_logs con estos filtros (${allVisitorLogs.length} eventos en total). Prueba cambiar el filtro de usuario arriba.</td></tr>`;
                 return;
             }
 
@@ -1441,27 +1501,69 @@
                     { name: 'grid_latency_avg_ms', type: 'number' }
                 ];
 
-                const createColRes = await fetch(`${PB_URL}/api/collections`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': superToken
-                    },
-                    body: JSON.stringify({
-                        name: 'telemetry_sessions',
-                        type: 'base',
-                        fields: fieldsPayload,
-                        createRule: '', // Abierto para que tanto anónimos como registrados envíen telemetría
-                        listRule: '@request.auth.admin = true',
-                        viewRule: '@request.auth.admin = true',
-                        updateRule: '',
-                        deleteRule: '@request.auth.admin = true'
-                    })
+                // 1. telemetry_sessions: Comprobar si existe, y crear o actualizar reglas (PATCH)
+                statusEl.innerText = "2/3 Configurando colección 'telemetry_sessions'...";
+                const chkTelRes = await fetch(`${PB_URL}/api/collections/telemetry_sessions`, {
+                    headers: { 'Authorization': superToken }
                 });
 
-                if (createColRes.ok || createColRes.status === 400) {
-                    // Si ya existía o se creó bien
-                    statusEl.innerText = "3/3 Provisionando 'visitor_logs' para auditoría...";
+                if (chkTelRes.ok) {
+                    await fetch(`${PB_URL}/api/collections/telemetry_sessions`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': superToken
+                        },
+                        body: JSON.stringify({
+                            listRule: '@request.auth.admin = true',
+                            viewRule: '@request.auth.admin = true',
+                            createRule: '',
+                            updateRule: '',
+                            deleteRule: '@request.auth.admin = true'
+                        })
+                    });
+                } else {
+                    await fetch(`${PB_URL}/api/collections`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': superToken
+                        },
+                        body: JSON.stringify({
+                            name: 'telemetry_sessions',
+                            type: 'base',
+                            fields: fieldsPayload,
+                            createRule: '',
+                            listRule: '@request.auth.admin = true',
+                            viewRule: '@request.auth.admin = true',
+                            updateRule: '',
+                            deleteRule: '@request.auth.admin = true'
+                        })
+                    });
+                }
+
+                // 2. visitor_logs: Comprobar si existe, y crear o actualizar reglas (PATCH) para desbloquear lectura
+                statusEl.innerText = "3/3 Configurando y desbloqueando reglas en 'visitor_logs'...";
+                const chkVLogRes = await fetch(`${PB_URL}/api/collections/visitor_logs`, {
+                    headers: { 'Authorization': superToken }
+                });
+
+                if (chkVLogRes.ok) {
+                    await fetch(`${PB_URL}/api/collections/visitor_logs`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': superToken
+                        },
+                        body: JSON.stringify({
+                            listRule: '@request.auth.admin = true',
+                            viewRule: '@request.auth.admin = true',
+                            createRule: '',
+                            updateRule: '@request.auth.admin = true',
+                            deleteRule: '@request.auth.admin = true'
+                        })
+                    });
+                } else {
                     await fetch(`${PB_URL}/api/collections`, {
                         method: 'POST',
                         headers: {
@@ -1488,11 +1590,11 @@
                             updateRule: '@request.auth.admin = true',
                             deleteRule: '@request.auth.admin = true'
                         })
-                    }).catch(() => { });
+                    });
                 }
 
                 statusEl.className = "text-xs font-mono font-bold p-3 border-2 bg-green-50 border-green-500 text-green-900 block";
-                statusEl.innerText = "✅ ¡Colección 'telemetry_sessions' creada exitosamente en PocketBase! La persistencia en vivo está lista.";
+                statusEl.innerText = "✅ ¡Colecciones 'telemetry_sessions' y 'visitor_logs' configuradas y reglas de API actualizadas exitosamente!";
                 setTimeout(() => {
                     window.cerrarModalProvisionPB();
                     comprobarColeccionPocketBase();

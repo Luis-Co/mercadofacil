@@ -105,7 +105,19 @@ def ensure_collection(base_url, token, name, fields, rules):
     headers = {"Authorization": token}
     status, res = request_json(chk_url, method="GET", headers=headers)
     if status == 200:
-        print(f"  [OK] La colección '{name}' ya existe en PocketBase.")
+        print(f"  [~] La colección '{name}' ya existe en PocketBase. Actualizando API Rules...")
+        patch_payload = {
+            "listRule": rules.get("listRule", "@request.auth.admin = true"),
+            "viewRule": rules.get("viewRule", "@request.auth.admin = true"),
+            "createRule": rules.get("createRule", ""),
+            "updateRule": rules.get("updateRule", ""),
+            "deleteRule": rules.get("deleteRule", "@request.auth.admin = true"),
+        }
+        patch_status, patch_res = request_json(chk_url, method="PATCH", headers=headers, data=patch_payload)
+        if patch_status in (200, 204):
+            print(f"  [OK] Reglas actualizadas exitosamente para '{name}'.")
+        else:
+            print(f"  [!] Nota al actualizar reglas de '{name}': {patch_res}")
         return res
 
     print(f"  [+] Creando colección '{name}' en PocketBase...")
