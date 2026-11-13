@@ -409,16 +409,20 @@
                                     Supermercado</label>
                                 <select id="superFilter"
                                     class="w-full bg-white text-vibrant-dark font-semibold py-3 px-4 shadow-sm">
-                                    <option value="Todos">🔒 TODOS LOS SUPERMERCADOS (SOLO CON MEMBRESÍA)</option>
-                                    <option value="MásxMenos" selected>⭐ MÁSXMENOS (MUESTRA GRATIS)</option>
-                                    <option value="MegaSuper">⭐ MEGASUPER (MUESTRA GRATIS)</option>
-                                    <option value="Walmart">🔒 WALMART (REQUIERE PLAN)</option>
-                                    <option value="Maxi Palí">🔒 MAXI PALÍ (REQUIERE PLAN)</option>
-                                    <option value="Palí">🔒 PALÍ (REQUIERE PLAN)</option>
-                                    <option value="Auto Mercado">🔒 AUTO MERCADO (REQUIERE PLAN)</option>
-                                    <option value="Perimercados">🔒 PERIMERCADOS (REQUIERE PLAN)</option>
-                                    <option value="PriceSmart">🔒 PRICESMART (REQUIERE PLAN)</option>
-                                    <option value="Pequeño Mundo">🔒 PEQUEÑO MUNDO (REQUIERE PLAN)</option>
+                                    <optgroup label="⭐ SUPERMERCADOS EN MODO GRATIS (2 HABILITADOS)">
+                                        <option value="MásxMenos" selected>⭐ MÁSXMENOS (MODO GRATIS)</option>
+                                        <option value="MegaSuper">⭐ MEGASUPER (MODO GRATIS)</option>
+                                    </optgroup>
+                                    <optgroup label="🔒 BLOQUEADOS (REQUIEREN PLAN MERCADOS - ₡5,000/MES)">
+                                        <option value="Todos">🔒 TODOS LOS SUPERMERCADOS (SOLO CON MEMBRESÍA)</option>
+                                        <option value="Walmart">🔒 WALMART (PLAN MERCADOS)</option>
+                                        <option value="Maxi Palí">🔒 MAXI PALÍ (PLAN MERCADOS)</option>
+                                        <option value="Palí">🔒 PALÍ (PLAN MERCADOS)</option>
+                                        <option value="Auto Mercado">🔒 AUTO MERCADO (PLAN MERCADOS)</option>
+                                        <option value="Perimercados">🔒 PERIMERCADOS (PLAN MERCADOS)</option>
+                                        <option value="PriceSmart">🔒 PRICESMART (PLAN MERCADOS)</option>
+                                        <option value="Pequeño Mundo">🔒 PEQUEÑO MUNDO (PLAN MERCADOS)</option>
+                                    </optgroup>
                                 </select>
                             </div>
                             <div>
@@ -446,7 +450,23 @@
                                     Producto Específico</label>
                                 <select id="itemFilter"
                                     class="w-full bg-white text-vibrant-dark font-semibold py-3 px-4 shadow-sm">
-                                    <option value="Todos">TODOS LOS PRODUCTOS (EN VIVO)</option>
+                                    <optgroup label="⭐ PRODUCTOS DE MUESTRA GRATIS (6 HABILITADOS)">
+                                        <option value="Todos" selected>⭐ [MUESTRA GRATIS] Todos los 6 Productos Esenciales</option>
+                                        <option value="Arroz Tío Pelón 1.8kg">⭐ [GRATIS] ARROZ TÍO PELÓN 1.8KG</option>
+                                        <option value="Frijoles Negros Don Pedro 800g">⭐ [GRATIS] FRIJOLES NEGROS DON PEDRO 800G</option>
+                                        <option value="Aceite de Soya Capullo 1L">⭐ [GRATIS] ACEITE DE SOYA CAPULLO 1L</option>
+                                        <option value="Leche Semidescremada Dos Pinos 1L">⭐ [GRATIS] LECHE SEMIDESCREMADA DOS PINOS 1L</option>
+                                        <option value="Café 1820 Clásico 250g">⭐ [GRATIS] CAFÉ 1820 CLÁSICO 250G</option>
+                                        <option value="Azúcar Blanco Doña María 1kg">⭐ [GRATIS] AZÚCAR BLANCO DOÑA MARÍA 1KG</option>
+                                    </optgroup>
+                                    <optgroup label="🔒 BLOQUEADOS (REQUIEREN PLAN MERCADOS - +80 PRODUCTOS)">
+                                        <option value="Atún Trozos Sardimar Aceite 140g">🔒 [PLAN MERCADOS] ATÚN TROZOS SARDIMAR 140G</option>
+                                        <option value="Huevo Blanco San Martino 30 un">🔒 [PLAN MERCADOS] HUEVO BLANCO SAN MARTINO 30 UN</option>
+                                        <option value="Queso Turrialba Dos Pinos 500g">🔒 [PLAN MERCADOS] QUESO TURRIALBA DOS PINOS 500G</option>
+                                        <option value="Pollo Entero Pipasa kg">🔒 [PLAN MERCADOS] POLLO ENTERO PIPASA KG</option>
+                                        <option value="Papel Higiénico Nevax 12 rollos">🔒 [PLAN MERCADOS] PAPEL HIGIÉNICO NEVAX 12 ROLLOS</option>
+                                        <option value="Detergente Irex Polvo 1kg">🔒 [PLAN MERCADOS] DETERGENTE IREX POLVO 1KG</option>
+                                    </optgroup>
                                 </select>
                             </div>
                         </div>
@@ -1386,7 +1406,8 @@
             } catch (e) { }
             return false;
         };
-        var hasPlan = Boolean(window.hasAccessToAllSupermarkets());
+        window.hasPlan = Boolean(window.hasAccessToAllSupermarkets && window.hasAccessToAllSupermarkets());
+        var hasPlan = window.hasPlan;
 
         // Supermercados autorizados en el modo gratuito (únicamente MásxMenos y MegaSuper)
         window.FREE_TRIAL_SUPERS = ['MásxMenos', 'MegaSuper'];
@@ -1576,6 +1597,7 @@
             pageEndItem.innerText = Math.min(endIndex, totalItems);
 
             const hasPlan = Boolean(window.hasAccessToAllSupermarkets && window.hasAccessToAllSupermarkets());
+            window.hasPlan = hasPlan;
 
             paginatedItems.forEach((row) => {
                 const tr = document.createElement('tr');
@@ -1587,7 +1609,13 @@
 
                 const isTrialItem = window.FREE_TRIAL_ITEMS && window.FREE_TRIAL_ITEMS.includes(row.item);
                 const trialBadge = (!hasPlan && isTrialItem)
-                    ? `<span class="inline-flex items-center gap-1 bg-amber-200 text-amber-950 text-[10px] font-black px-2 py-0.5 border border-vibrant-dark uppercase tracking-wider shadow-xs">⭐ Muestra Gratis</span>`
+                    ? `<span class="inline-flex items-center gap-1 bg-amber-300 text-amber-950 text-[10px] font-black px-2 py-0.5 border-2 border-vibrant-dark uppercase tracking-wider shadow-xs">⭐ Muestra Gratis</span>`
+                    : (!hasPlan
+                        ? `<span class="inline-flex items-center gap-1 bg-red-100 text-red-900 text-[10px] font-black px-2 py-0.5 border border-red-400 uppercase tracking-wider">🔒 Plan Mercados</span>`
+                        : '');
+
+                const superBadge = (!hasPlan && window.FREE_TRIAL_SUPERS && window.FREE_TRIAL_SUPERS.includes(row.super))
+                    ? `<span class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-900 border border-emerald-400 text-[10px] font-black px-1.5 py-0.5 uppercase tracking-wider">⭐ Modo Gratis</span>`
                     : '';
 
                 const displayTitle = row.product_title || row.item;
@@ -1598,7 +1626,12 @@
 
                 tr.innerHTML = `
                     <td class="py-4 px-6 stitch-border-r border-b-2 border-vibrant-dark text-sm text-gray-600 font-bold">${row.fecha}</td>
-                    <td class="py-4 px-6 stitch-border-r border-b-2 border-vibrant-dark text-sm font-black text-vibrant-dark">${row.super}</td>
+                    <td class="py-4 px-6 stitch-border-r border-b-2 border-vibrant-dark text-sm font-black text-vibrant-dark">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span>${row.super}</span>
+                            ${superBadge}
+                        </div>
+                    </td>
                     <td class="py-4 px-6 stitch-border-r border-b-2 border-vibrant-dark text-sm text-vibrant-dark font-semibold">
                         <div class="flex items-center flex-wrap gap-2 mb-1.5">
                             ${catBadge}
@@ -1659,6 +1692,7 @@
         function updateItemDropdownForCategory() {
             if (!itemFilter) return;
             const hasPlan = Boolean(window.hasAccessToAllSupermarkets && window.hasAccessToAllSupermarkets());
+            window.hasPlan = hasPlan;
             const currentItem = itemFilter.value;
             const selectedCategory = categoryFilter ? categoryFilter.value : 'Todas';
 
@@ -1668,29 +1702,63 @@
 
             const items = Array.from(new Set(pool.map(d => d.item))).filter(Boolean).sort();
 
+            itemFilter.innerHTML = '';
+
             if (hasPlan) {
-                itemFilter.innerHTML = '<option value="Todos">TODOS LOS PRODUCTOS (CATÁLOGO COMPLETO)</option>';
+                const groupPlan = document.createElement('optgroup');
+                groupPlan.label = '🔓 CATÁLOGO COMPLETO DESBLOQUEADO (PLAN MERCADOS)';
+
+                const optTodos = document.createElement('option');
+                optTodos.value = 'Todos';
+                optTodos.innerText = 'TODOS LOS PRODUCTOS (CATÁLOGO COMPLETO)';
+                groupPlan.appendChild(optTodos);
+
                 items.forEach(it => {
                     const opt = document.createElement('option');
                     opt.value = it;
                     opt.innerText = it.toUpperCase();
-                    itemFilter.appendChild(opt);
+                    groupPlan.appendChild(opt);
                 });
+                itemFilter.appendChild(groupPlan);
                 if (items.includes(currentItem)) itemFilter.value = currentItem;
             } else {
-                itemFilter.innerHTML = '<option value="Todos">⭐ PRODUCTOS DE MUESTRA GRATIS (6 DISPONIBLES)</option>';
-                items.forEach(it => {
+                const trialList = window.FREE_TRIAL_ITEMS || [];
+                const trialInPool = items.filter(it => trialList.includes(it));
+                const lockedInPool = items.filter(it => !trialList.includes(it));
+
+                // 1) Grupo Productos Gratis
+                const groupFree = document.createElement('optgroup');
+                groupFree.label = `⭐ PRODUCTOS EN MODO GRATIS (${trialInPool.length || trialList.length} HABILITADOS)`;
+
+                const optTodos = document.createElement('option');
+                optTodos.value = 'Todos';
+                optTodos.innerText = '⭐ [MUESTRA GRATIS] Todos los 6 Productos Esenciales';
+                groupFree.appendChild(optTodos);
+
+                const freeRenderList = trialInPool.length > 0 ? trialInPool : trialList;
+                freeRenderList.forEach(it => {
                     const opt = document.createElement('option');
                     opt.value = it;
-                    const isTrial = window.FREE_TRIAL_ITEMS && window.FREE_TRIAL_ITEMS.includes(it);
-                    if (isTrial) {
-                        opt.innerText = `⭐ [MUESTRA GRATIS] ${it.toUpperCase()}`;
-                    } else {
-                        opt.innerText = `🔒 [REQUIERE PLAN] ${it.toUpperCase()}`;
-                    }
-                    itemFilter.appendChild(opt);
+                    opt.innerText = `⭐ [GRATIS] ${it.toUpperCase()}`;
+                    groupFree.appendChild(opt);
                 });
-                if (items.includes(currentItem) && window.FREE_TRIAL_ITEMS && window.FREE_TRIAL_ITEMS.includes(currentItem)) {
+                itemFilter.appendChild(groupFree);
+
+                // 2) Grupo Productos Bloqueados
+                if (lockedInPool.length > 0) {
+                    const groupLocked = document.createElement('optgroup');
+                    groupLocked.label = `🔒 BLOQUEADOS / CATÁLOGO COMPLETO (${lockedInPool.length} PRODUCTOS - PLAN MERCADOS)`;
+
+                    lockedInPool.forEach(it => {
+                        const opt = document.createElement('option');
+                        opt.value = it;
+                        opt.innerText = `🔒 [PLAN MERCADOS] ${it.toUpperCase()}`;
+                        groupLocked.appendChild(opt);
+                    });
+                    itemFilter.appendChild(groupLocked);
+                }
+
+                if (items.includes(currentItem) && trialList.includes(currentItem)) {
                     itemFilter.value = currentItem;
                 } else {
                     itemFilter.value = 'Todos';
@@ -1702,34 +1770,70 @@
         function populateFilterDropdowns() {
             if (superFilter) {
                 const hasPlan = Boolean(window.hasAccessToAllSupermarkets && window.hasAccessToAllSupermarkets());
+                window.hasPlan = hasPlan;
                 const currentSuper = superFilter.value;
                 const supers = Array.from(new Set(allData.map(d => d.super))).filter(Boolean);
-                const todosLabel = hasPlan
-                    ? 'TODOS LOS SUPERMERCADOS 🔓 (PLAN MERCADOS ACTIVO)'
-                    : '🔒 TODOS LOS SUPERMERCADOS (SOLO CON MEMBRESÍA)';
 
-                superFilter.innerHTML = `<option value="Todos">${todosLabel}</option>`;
-                supers.forEach(sup => {
-                    const opt = document.createElement('option');
-                    opt.value = sup;
-                    if (hasPlan) {
+                superFilter.innerHTML = '';
+
+                if (hasPlan) {
+                    const groupAll = document.createElement('optgroup');
+                    groupAll.label = '🔓 ACCESO TOTAL - PLAN MERCADOS ACTIVO';
+
+                    const optTodos = document.createElement('option');
+                    optTodos.value = 'Todos';
+                    optTodos.innerText = '🔓 TODOS LOS SUPERMERCADOS (COMPARATIVA EN VIVO)';
+                    groupAll.appendChild(optTodos);
+
+                    supers.forEach(sup => {
+                        const opt = document.createElement('option');
+                        opt.value = sup;
                         opt.innerText = sup.toUpperCase();
-                    } else {
-                        const isAllowed = window.FREE_TRIAL_SUPERS && window.FREE_TRIAL_SUPERS.includes(sup);
-                        if (isAllowed) {
-                            opt.innerText = `⭐ ${sup.toUpperCase()} (MUESTRA GRATIS)`;
-                        } else {
-                            opt.innerText = `🔒 ${sup.toUpperCase()} (REQUIERE PLAN)`;
-                        }
-                    }
-                    superFilter.appendChild(opt);
-                });
+                        groupAll.appendChild(opt);
+                    });
+                    superFilter.appendChild(groupAll);
+                } else {
+                    // 1) Grupo Modo Gratis: Únicamente MásxMenos y MegaSuper
+                    const groupFree = document.createElement('optgroup');
+                    groupFree.label = '⭐ SUPERMERCADOS EN MODO GRATIS (2 HABILITADOS)';
+
+                    const freeAllowed = window.FREE_TRIAL_SUPERS || ['MásxMenos', 'MegaSuper'];
+                    const freeSupers = supers.filter(s => freeAllowed.includes(s));
+                    const finalFree = freeSupers.length > 0 ? freeSupers : freeAllowed;
+                    finalFree.forEach(sup => {
+                        const opt = document.createElement('option');
+                        opt.value = sup;
+                        opt.innerText = `⭐ ${sup.toUpperCase()} (MODO GRATIS)`;
+                        groupFree.appendChild(opt);
+                    });
+                    superFilter.appendChild(groupFree);
+
+                    // 2) Grupo Bloqueados: Requieren Plan Mercados
+                    const groupLocked = document.createElement('optgroup');
+                    groupLocked.label = '🔒 BLOQUEADOS (REQUIEREN PLAN MERCADOS - ₡5,000/MES)';
+
+                    const optTodos = document.createElement('option');
+                    optTodos.value = 'Todos';
+                    optTodos.innerText = '🔒 TODOS LOS SUPERMERCADOS (SOLO CON MEMBRESÍA)';
+                    groupLocked.appendChild(optTodos);
+
+                    const lockedSupers = supers.filter(s => !freeAllowed.includes(s));
+                    const defaultLocked = ['Walmart', 'Maxi Palí', 'Palí', 'Auto Mercado', 'Perimercados', 'PriceSmart', 'Pequeño Mundo'];
+                    const finalLocked = lockedSupers.length > 0 ? lockedSupers : defaultLocked;
+                    finalLocked.forEach(sup => {
+                        const opt = document.createElement('option');
+                        opt.value = sup;
+                        opt.innerText = `🔒 ${sup.toUpperCase()} (PLAN MERCADOS)`;
+                        groupLocked.appendChild(opt);
+                    });
+                    superFilter.appendChild(groupLocked);
+                }
 
                 if (hasPlan) {
                     superFilter.value = (currentSuper && currentSuper !== 'MásxMenos') ? currentSuper : 'Todos';
                 } else {
                     // Modo gratuito: únicamente MásxMenos y MegaSuper
-                    if (currentSuper && window.FREE_TRIAL_SUPERS.includes(currentSuper)) {
+                    if (currentSuper && window.FREE_TRIAL_SUPERS && window.FREE_TRIAL_SUPERS.includes(currentSuper)) {
                         superFilter.value = currentSuper;
                     } else {
                         superFilter.value = 'MásxMenos';
@@ -2271,24 +2375,26 @@
 
         window.renderTable = renderTable;
         if (superFilter) {
+            let lastValidSuper = superFilter.value || 'MásxMenos';
             superFilter.addEventListener('change', () => {
                 const hasPlan = Boolean(window.hasAccessToAllSupermarkets && window.hasAccessToAllSupermarkets());
                 if (!hasPlan) {
                     if (superFilter.value === 'Todos') {
                         window.mostrarModalBloqueoTodos();
-                        superFilter.value = 'MásxMenos';
+                        superFilter.value = (window.FREE_TRIAL_SUPERS && window.FREE_TRIAL_SUPERS.includes(lastValidSuper)) ? lastValidSuper : 'MásxMenos';
                         applyFilters();
                         return;
                     }
                     if (!window.FREE_TRIAL_SUPERS.includes(superFilter.value)) {
                         const lockedSuper = superFilter.value;
-                        superFilter.value = 'MásxMenos';
+                        superFilter.value = (window.FREE_TRIAL_SUPERS && window.FREE_TRIAL_SUPERS.includes(lastValidSuper)) ? lastValidSuper : 'MásxMenos';
                         if (window.mostrarModalBloqueoSupermercado) {
                             window.mostrarModalBloqueoSupermercado(lockedSuper);
                         }
                         applyFilters();
                         return;
                     }
+                    lastValidSuper = superFilter.value;
                 }
                 applyFilters();
             });
@@ -2300,18 +2406,20 @@
             });
         }
         if (itemFilter) {
+            let lastValidItem = itemFilter.value || 'Todos';
             itemFilter.addEventListener('change', () => {
                 const hasPlan = Boolean(window.hasAccessToAllSupermarkets && window.hasAccessToAllSupermarkets());
                 if (!hasPlan) {
                     if (itemFilter.value !== 'Todos' && !window.FREE_TRIAL_ITEMS.includes(itemFilter.value)) {
                         const lockedItem = itemFilter.value;
-                        itemFilter.value = 'Todos';
+                        itemFilter.value = (lastValidItem === 'Todos' || (window.FREE_TRIAL_ITEMS && window.FREE_TRIAL_ITEMS.includes(lastValidItem))) ? lastValidItem : 'Todos';
                         if (window.mostrarModalBloqueoProducto) {
                             window.mostrarModalBloqueoProducto(lockedItem);
                         }
                         applyFilters();
                         return;
                     }
+                    lastValidItem = itemFilter.value;
                     // Para usuarios de prueba gratuita, la búsqueda del producto se realiza ÚNICAMENTE
                     // dentro del almacén seleccionado (se mantiene superFilter en el almacén actual)
                 } else {
