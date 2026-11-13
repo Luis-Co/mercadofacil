@@ -58,7 +58,8 @@
       { "name": "details", "type": "text" },
       { "name": "device_info", "type": "text" },
       { "name": "language", "type": "text", "max": 20 },
-      { "name": "referrer", "type": "text" }
+      { "name": "referrer", "type": "text" },
+      { "name": "created_at", "type": "date" }
     ],
     "indexes": [
       "CREATE INDEX `idx_vis_session_id` ON `visitor_logs` (`session_id`)"

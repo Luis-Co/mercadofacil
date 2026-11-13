@@ -4828,10 +4828,23 @@
                             details: logEntry.details,
                             device_info: deviceInfo,
                             language: language,
-                            referrer: referrer
+                            referrer: referrer,
+                            created_at: createdAt
                         });
                     } catch (pbErr) {
-                        // Si la colección visitor_logs no está creada aún en el servidor PB, se mantiene en SQLite local sin interrumpir al usuario
+                        try {
+                            await pb.collection('visitor_logs').create({
+                                session_id: sessionId,
+                                is_logged: isLogged,
+                                user_email: userEmail,
+                                user_name: userName,
+                                event_type: eventType,
+                                details: logEntry.details,
+                                device_info: deviceInfo,
+                                language: language,
+                                referrer: referrer
+                            });
+                        } catch (e2) { }
                     }
                 }
 

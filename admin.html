@@ -628,9 +628,58 @@
         const fmtDate = (d) => {
             if (!d) return '—';
             try {
-                const date = new Date(d);
+                let str = String(d).trim();
+                if (/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}/.test(str)) {
+                    str = str.replace(' ', 'T');
+                    if (!str.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(str)) {
+                        str += 'Z';
+                    }
+                }
+                const date = new Date(str);
                 return isNaN(date.getTime()) ? String(d) : date.toLocaleString('es-CR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
             } catch (e) { return String(d); }
+        };
+
+        const getVisitorLogDate = (v) => {
+            if (!v) return '';
+            if (v.created && v.created !== '—') return v.created;
+            if (v.created_at && v.created_at !== '—') return v.created_at;
+            if (v.started_at && v.started_at !== '—') return v.started_at;
+            if (v.date && v.date !== '—') return v.date;
+
+            // Vincular con la sesión de telemetría consolidada correspondiente
+            if (v.session_id && typeof mapById !== 'undefined' && mapById.has(v.session_id)) {
+                const s = mapById.get(v.session_id);
+                if (s && s.started_at) return s.started_at;
+            }
+
+            // Buscar en el respaldo local de visitor_logs
+            try {
+                if (!window._localVisitorLogDates) {
+                    window._localVisitorLogDates = new Map();
+                    const raw = JSON.parse(localStorage.getItem('mercadofacil_visitor_logs_db') || '[]');
+                    if (Array.isArray(raw)) {
+                        raw.forEach(item => {
+                            const d = item.created_at || item.created || item.started_at;
+                            if (d) {
+                                if (item.id) window._localVisitorLogDates.set(String(item.id), d);
+                                if (item.session_id && item.event_type) {
+                                    window._localVisitorLogDates.set(`${item.session_id}_${item.event_type}`, d);
+                                }
+                            }
+                        });
+                    }
+                }
+                if (v.id && window._localVisitorLogDates.has(String(v.id))) {
+                    return window._localVisitorLogDates.get(String(v.id));
+                }
+                if (v.session_id && v.event_type && window._localVisitorLogDates.has(`${v.session_id}_${v.event_type}`)) {
+                    return window._localVisitorLogDates.get(`${v.session_id}_${v.event_type}`);
+                }
+            } catch (e) { }
+
+            if (v.updated && v.updated !== '—') return v.updated;
+            return '';
         };
 
         // 1. Verificación Inicial de Autenticación de Administrador
@@ -856,7 +905,7 @@
 
                     const isLog = Boolean(v.is_logged === true || v.is_logged === 1 || v.is_logged === 'true');
                     const em = (v.user_email && !v.user_email.toLowerCase().includes('sin loguear')) ? v.user_email.trim() : '';
-                    const date = v.created || v.created_at || '';
+                    const date = getVisitorLogDate(v);
                     const evType = v.event_type || 'visita';
 
                     if (mapById.has(sid)) {
@@ -930,6 +979,11 @@
             } catch (e) { }
 
             allTelemetrySessions = Array.from(mapById.values()).sort((a, b) => new Date(b.started_at || 0) - new Date(a.started_at || 0));
+
+            // Ordenar visitor_logs de forma descendente por fecha
+            if (allVisitorLogs && allVisitorLogs.length > 0) {
+                allVisitorLogs.sort((a, b) => new Date(getVisitorLogDate(b) || 0) - new Date(getVisitorLogDate(a) || 0));
+            }
 
             // Actualizar contadores de las pestañas
             const sTab = document.getElementById('countSessionsTab');
@@ -1249,10 +1303,12 @@
                 const evType = (v.event_type || 'visita').toLowerCase();
                 const badgeClass = evBadges[evType] || 'bg-gray-100 text-gray-800 border-gray-300';
 
+                const rawDate = getVisitorLogDate(v);
+
                 return `
                     <tr class="hover:bg-amber-50/50 transition-colors ${isAdm ? 'bg-amber-50/30' : ''}">
                         <td class="py-2.5 px-3 border-r border-gray-200 whitespace-nowrap">
-                            <div class="font-mono font-bold text-[11px]">${esc(fmtDate(v.created || v.created_at))}</div>
+                            <div class="font-mono font-bold text-[11px] text-vibrant-dark">${esc(fmtDate(rawDate))}</div>
                             <div class="text-[9px] text-gray-400 font-mono">ID: ${esc(v.id || '—')}</div>
                         </td>
                         <td class="py-2.5 px-3 border-r border-gray-200 whitespace-nowrap">
@@ -1296,10 +1352,10 @@
                 return;
             }
             const q = (v) => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
-            const headers = ['id', 'created', 'is_logged', 'user_email', 'user_name', 'event_type', 'details', 'device_info', 'language', 'referrer', 'session_id'];
+            const headers = ['id', 'fecha_hora', 'is_logged', 'user_email', 'user_name', 'event_type', 'details', 'device_info', 'language', 'referrer', 'session_id'];
             const lines = [headers.join(',')].concat(
                 allVisitorLogs.map(v => [
-                    q(v.id), q(v.created || v.created_at), q(v.is_logged ? '1' : '0'),
+                    q(v.id), q(fmtDate(getVisitorLogDate(v))), q(v.is_logged ? '1' : '0'),
                     q(v.user_email), q(v.user_name), q(v.event_type), q(v.details),
                     q(v.device_info), q(v.language), q(v.referrer), q(v.session_id)
                 ].join(','))
@@ -1604,7 +1660,8 @@
                                 { name: 'details', type: 'text' },
                                 { name: 'device_info', type: 'text' },
                                 { name: 'language', type: 'text', max: 20 },
-                                { name: 'referrer', type: 'text' }
+                                { name: 'referrer', type: 'text' },
+                                { name: 'created_at', type: 'date' }
                             ],
                             createRule: '',
                             listRule: '@request.auth.admin = true',

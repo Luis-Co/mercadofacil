@@ -63,6 +63,7 @@ VISITOR_LOGS_FIELDS = [
     {"name": "device_info", "type": "text"},
     {"name": "language", "type": "text", "max": 20},
     {"name": "referrer", "type": "text"},
+    {"name": "created_at", "type": "date"},
 ]
 
 
