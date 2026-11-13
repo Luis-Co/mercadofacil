@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MercadoFácil Costa Rica — Panel de Administración y Telemetría</title>
 
+    <!-- Favicon Actualizado -->
+    <link rel="icon" href="https://img.icons8.com/color/48/shopping-cart--v1.png">
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -297,7 +300,8 @@
                 <div class="bg-white border-2 border-vibrant-dark p-3.5 shadow-stitch">
                     <div class="text-[10px] font-black uppercase text-gray-500">Sesiones Totales</div>
                     <div id="telKpiSessions" class="text-2xl font-black text-vibrant-dark mt-1">0</div>
-                    <div id="telKpiSessionsSub" class="text-[10px] text-gray-500 font-bold">0 anónimas · 0 clientes · 0 admin
+                    <div id="telKpiSessionsSub" class="text-[10px] text-gray-500 font-bold">0 anónimas · 0 clientes · 0
+                        admin
                     </div>
                 </div>
                 <div class="bg-white border-2 border-vibrant-dark p-3.5 shadow-stitch">
@@ -338,7 +342,8 @@
             </div>
 
             <!-- Pestañas de Vista: Sesiones Consolidadas vs Bitácora de Eventos en Vivo (visitor_logs) -->
-            <div class="px-5 pt-3 pb-0 bg-gray-100 border-b-2 border-vibrant-dark flex flex-wrap items-center justify-between gap-3">
+            <div
+                class="px-5 pt-3 pb-0 bg-gray-100 border-b-2 border-vibrant-dark flex flex-wrap items-center justify-between gap-3">
                 <div class="flex items-center gap-2">
                     <button id="tabBtnSessions" onclick="window.cambiarVistaTelemetria('sessions')"
                         class="px-4 py-2 text-xs font-black uppercase border-t-2 border-x-2 border-vibrant-dark bg-white text-vibrant-dark shadow-xs cursor-pointer -mb-[2px] z-10 transition-all">
@@ -346,7 +351,8 @@
                     </button>
                     <button id="tabBtnVisitorLogs" onclick="window.cambiarVistaTelemetria('visitor_logs')"
                         class="px-4 py-2 text-xs font-black uppercase border-t-2 border-x-2 border-vibrant-dark bg-gray-200 text-gray-700 hover:bg-gray-300 shadow-xs cursor-pointer -mb-[2px] transition-all">
-                        📋 Bitácora en Vivo de Eventos / Ingresos (<span id="countVisitorLogsTab">0</span> en visitor_logs)
+                        📋 Bitácora en Vivo de Eventos / Ingresos (<span id="countVisitorLogsTab">0</span> en
+                        visitor_logs)
                     </button>
                 </div>
                 <div class="pb-2">
@@ -406,7 +412,8 @@
             </div>
 
             <!-- VISTA 2: Tabla de Bitácora de Eventos e Ingresos en Vivo (visitor_logs de PocketBase) -->
-            <div id="viewContainerVisitorLogs" class="hidden overflow-x-auto max-h-[580px] overflow-y-auto custom-scrollbar">
+            <div id="viewContainerVisitorLogs"
+                class="hidden overflow-x-auto max-h-[580px] overflow-y-auto custom-scrollbar">
                 <table class="w-full text-left border-collapse">
                     <thead class="sticky top-0 z-10">
                         <tr
@@ -1313,10 +1320,10 @@
                         </td>
                         <td class="py-2.5 px-3 border-r border-gray-200 whitespace-nowrap">
                             ${isAdm
-                                ? '<span class="bg-amber-300 text-vibrant-dark border-2 border-vibrant-dark px-2 py-0.5 text-[10px] font-black inline-flex items-center gap-1 shadow-xs">👑 ADMIN</span>'
-                                : (isLog
-                                    ? `<span class="bg-green-100 text-green-900 border border-green-500 px-2 py-0.5 text-[10px] font-black inline-flex items-center gap-1">🔐 CLIENTE</span>`
-                                    : '<span class="bg-orange-100 text-orange-900 border border-orange-400 px-2 py-0.5 text-[10px] font-black">🕵️ ANÓNIMO</span>')}
+                        ? '<span class="bg-amber-300 text-vibrant-dark border-2 border-vibrant-dark px-2 py-0.5 text-[10px] font-black inline-flex items-center gap-1 shadow-xs">👑 ADMIN</span>'
+                        : (isLog
+                            ? `<span class="bg-green-100 text-green-900 border border-green-500 px-2 py-0.5 text-[10px] font-black inline-flex items-center gap-1">🔐 CLIENTE</span>`
+                            : '<span class="bg-orange-100 text-orange-900 border border-orange-400 px-2 py-0.5 text-[10px] font-black">🕵️ ANÓNIMO</span>')}
                         </td>
                         <td class="py-2.5 px-3 border-r border-gray-200">
                             <div class="font-bold text-[11px] text-vibrant-dark">${esc(v.user_name || (isLog ? v.user_email : 'Visitante sin loguear'))}</div>
