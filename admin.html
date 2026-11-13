@@ -942,6 +942,15 @@
                 srcLabel.innerText = `Fuente: PocketBase (${allTelemetrySessions.length} sesiones consolidadas · ${allVisitorLogs.length} eventos en visitor_logs) — Persistencia en vivo activa.`;
             }
 
+            const notice = document.getElementById('tabViewNotice');
+            if (notice) {
+                if (currentTelemetryView === 'sessions') {
+                    notice.innerHTML = `⚡ Métricas consolidadas por visita única (23 parámetros). <button onclick="window.cambiarVistaTelemetria('visitor_logs')" class="underline text-vibrant-blue hover:text-blue-700 ml-1 font-black cursor-pointer">Ver los ${allVisitorLogs.length} eventos individuales en Bitácora →</button>`;
+                } else {
+                    notice.innerHTML = `📋 Bitácora detallada de eventos e ingresos en vivo. <button onclick="window.cambiarVistaTelemetria('sessions')" class="underline text-vibrant-blue hover:text-blue-700 ml-1 font-black cursor-pointer">← Volver a Sesiones Consolidadas</button>`;
+                }
+            }
+
             window.renderAdminTelemetry();
             window.renderAdminVisitorLogs();
         }
@@ -960,14 +969,14 @@
                 tabLogs.className = "px-4 py-2 text-xs font-black uppercase border-t-2 border-x-2 border-vibrant-dark bg-gray-200 text-gray-700 hover:bg-gray-300 shadow-xs cursor-pointer -mb-[2px] transition-all";
                 cSessions.classList.remove('hidden');
                 cLogs.classList.add('hidden');
-                if (notice) notice.innerText = "⚡ Mostrando métricas consolidadas por visita única (23 parámetros)";
+                if (notice) notice.innerHTML = `⚡ Métricas consolidadas por visita única (23 parámetros). <button onclick="window.cambiarVistaTelemetria('visitor_logs')" class="underline text-vibrant-blue hover:text-blue-700 ml-1 font-black cursor-pointer">Ver los ${allVisitorLogs.length} eventos individuales en Bitácora →</button>`;
                 window.renderAdminTelemetry();
             } else {
                 tabLogs.className = "px-4 py-2 text-xs font-black uppercase border-t-2 border-x-2 border-vibrant-dark bg-white text-vibrant-dark shadow-xs cursor-pointer -mb-[2px] z-10 transition-all";
                 tabSessions.className = "px-4 py-2 text-xs font-black uppercase border-t-2 border-x-2 border-vibrant-dark bg-gray-200 text-gray-700 hover:bg-gray-300 shadow-xs cursor-pointer -mb-[2px] transition-all";
                 cLogs.classList.remove('hidden');
                 cSessions.classList.add('hidden');
-                if (notice) notice.innerText = "⚡ Mostrando bitácora individual de eventos e ingresos en tiempo real (visitor_logs)";
+                if (notice) notice.innerHTML = `📋 Bitácora detallada de eventos e ingresos en vivo. <button onclick="window.cambiarVistaTelemetria('sessions')" class="underline text-vibrant-blue hover:text-blue-700 ml-1 font-black cursor-pointer">← Volver a Sesiones Consolidadas</button>`;
                 window.renderAdminVisitorLogs();
             }
         };
@@ -1220,7 +1229,20 @@
                 'scraping': 'bg-gray-100 text-gray-900 border-gray-400'
             };
 
-            tbody.innerHTML = rows.map(v => {
+            let filterNoticeHtml = '';
+            if (filterStatus === 'clientes_todos' && rows.length < allVisitorLogs.length) {
+                const hiddenCount = allVisitorLogs.length - rows.length;
+                filterNoticeHtml = `
+                    <tr class="bg-amber-100/70 border-b-2 border-amber-400">
+                        <td colspan="8" class="py-2.5 px-4 text-xs text-amber-950 font-bold">
+                            ℹ️ Mostrando <strong>${rows.length} eventos de clientes</strong> (${hiddenCount} eventos de tus pruebas con <code>corea3000@gmail.com</code> están ocultos por el filtro "Solo Clientes"). 
+                            <button onclick="document.getElementById('adminTelemetryStatusFilter').value='todos'; window.filtrarTablasTelemetria();" class="underline text-vibrant-blue hover:text-blue-900 font-black ml-2 cursor-pointer">Ver los ${allVisitorLogs.length} eventos (Clientes + Admin) →</button>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            tbody.innerHTML = filterNoticeHtml + rows.map(v => {
                 const em = (v.user_email || '').toLowerCase().trim();
                 const isAdm = em === 'corea3000@gmail.com' || (window.adminEmails && window.adminEmails.has(em));
                 const isLog = Boolean(v.is_logged === true || v.is_logged === 1 || v.is_logged === 'true');
