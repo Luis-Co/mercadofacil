@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MercadoFácil Costa Rica — Panel de Administración y Telemetría</title>
-    
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -30,47 +31,57 @@
             }
         }
     </script>
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700;800&display=swap"
+        rel="stylesheet">
+
     <!-- PocketBase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/pocketbase/dist/pocketbase.umd.js"></script>
-    
+
     <style>
         body {
             font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: #F4F5F0;
             color: #0B0C10;
         }
+
         .font-mono {
             font-family: 'JetBrains Mono', monospace;
         }
+
         .stitch-box {
             border: 2px solid #0B0C10;
         }
+
         .stitch-box-4 {
             border: 4px solid #0B0C10;
         }
+
         .custom-scrollbar::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
+
         .custom-scrollbar::-webkit-scrollbar-track {
             background: #E5E7EB;
             border-left: 1px solid #0B0C10;
         }
+
         .custom-scrollbar::-webkit-scrollbar-thumb {
             background: #0B0C10;
         }
     </style>
 </head>
+
 <body class="min-h-screen flex flex-col bg-vibrant-bg">
 
     <!-- Top Notice Ticker -->
-    <div class="bg-vibrant-dark text-white border-b-2 border-vibrant-dark py-1.5 px-4 text-xs font-mono font-bold flex items-center justify-between">
+    <div
+        class="bg-vibrant-dark text-white border-b-2 border-vibrant-dark py-1.5 px-4 text-xs font-mono font-bold flex items-center justify-between">
         <div class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-vibrant-green animate-pulse"></span>
             <span class="uppercase tracking-wider">Centro de Mando Administrativo · MercadoFácil CR</span>
@@ -83,32 +94,38 @@
     <!-- Header Principal Neo-Brutalista -->
     <header class="bg-vibrant-dark text-white border-b-4 border-vibrant-dark sticky top-0 z-50 shadow-stitch">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
-            
+
             <!-- Logo y Badge Admin -->
             <div class="flex items-center gap-3">
-                <a href="index.html" class="flex items-center gap-2.5 font-black text-xl sm:text-2xl tracking-tighter hover:opacity-90 transition-opacity">
+                <a href="index.html"
+                    class="flex items-center gap-2.5 font-black text-xl sm:text-2xl tracking-tighter hover:opacity-90 transition-opacity">
                     <img src="https://img.icons8.com/color/48/shopping-cart--v1.png" alt="Logo" class="w-8 h-8">
                     <span>MERCADOFÁCIL</span>
                 </a>
-                <span class="bg-amber-300 text-vibrant-dark text-[11px] font-black px-2.5 py-0.5 border-2 border-white uppercase tracking-wider shadow-stitch">
+                <span
+                    class="bg-amber-300 text-vibrant-dark text-[11px] font-black px-2.5 py-0.5 border-2 border-white uppercase tracking-wider shadow-stitch">
                     👑 ADMIN
                 </span>
             </div>
 
             <!-- Navegación & Acciones -->
             <div class="flex items-center gap-3 text-xs font-bold">
-                <a href="index.html" class="bg-white hover:bg-gray-100 text-vibrant-dark font-black px-3.5 py-2 border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover uppercase tracking-wider flex items-center gap-1.5 transition-all">
+                <a href="index.html"
+                    class="bg-white hover:bg-gray-100 text-vibrant-dark font-black px-3.5 py-2 border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover uppercase tracking-wider flex items-center gap-1.5 transition-all">
                     <span>⬅</span>
                     <span class="hidden sm:inline">Volver al Comparador</span>
                     <span class="sm:hidden">Volver</span>
                 </a>
 
                 <div id="adminAuthControls" class="flex items-center gap-2">
-                    <div id="adminUserBadge" class="hidden items-center gap-2 bg-[#1E293B] border-2 border-gray-600 px-3 py-1.5">
+                    <div id="adminUserBadge"
+                        class="hidden items-center gap-2 bg-[#1E293B] border-2 border-gray-600 px-3 py-1.5">
                         <span class="w-2 h-2 rounded-full bg-vibrant-green"></span>
-                        <span id="adminUserEmailLabel" class="text-white font-mono text-[11px] font-bold max-w-[140px] truncate">admin</span>
+                        <span id="adminUserEmailLabel"
+                            class="text-white font-mono text-[11px] font-bold max-w-[140px] truncate">admin</span>
                     </div>
-                    <button id="adminBtnLogout" onclick="window.cerrarSesionAdmin()" class="hidden bg-red-500 hover:bg-red-600 text-white font-black px-3 py-2 border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover uppercase tracking-wider transition-all cursor-pointer">
+                    <button id="adminBtnLogout" onclick="window.cerrarSesionAdmin()"
+                        class="hidden bg-red-500 hover:bg-red-600 text-white font-black px-3 py-2 border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover uppercase tracking-wider transition-all cursor-pointer">
                         Salir
                     </button>
                 </div>
@@ -120,18 +137,22 @@
     <!-- PANTALLA 1: ACCESO DENEGADO / LOGIN ADMIN (Si no tiene admin: true) -->
     <main id="adminLockScreen" class="hidden flex-1 flex items-center justify-center p-6">
         <div class="max-w-md w-full bg-white stitch-box-4 shadow-stitch-lg p-8 text-center space-y-6">
-            <div class="w-20 h-20 mx-auto bg-amber-400 border-4 border-vibrant-dark shadow-stitch flex items-center justify-center text-4xl">
+            <div
+                class="w-20 h-20 mx-auto bg-amber-400 border-4 border-vibrant-dark shadow-stitch flex items-center justify-center text-4xl">
                 🔒
             </div>
             <div class="space-y-2">
-                <span class="bg-vibrant-dark text-amber-300 text-[10px] font-black px-3 py-1 uppercase tracking-widest border border-vibrant-dark">
+                <span
+                    class="bg-vibrant-dark text-amber-300 text-[10px] font-black px-3 py-1 uppercase tracking-widest border border-vibrant-dark">
                     Área Exclusiva
                 </span>
                 <h1 class="text-2xl font-black uppercase tracking-tight text-vibrant-dark">
                     Acceso de Administrador
                 </h1>
                 <p class="text-xs text-gray-600 font-bold leading-relaxed">
-                    Esta página requiere una cuenta autorizada con el permiso <code class="bg-gray-100 px-1 py-0.5 border border-gray-300 text-vibrant-dark">admin: true</code> en PocketBase.
+                    Esta página requiere una cuenta autorizada con el permiso <code
+                        class="bg-gray-100 px-1 py-0.5 border border-gray-300 text-vibrant-dark">admin: true</code> en
+                    PocketBase.
                 </p>
             </div>
 
@@ -141,17 +162,23 @@
             </div>
 
             <div class="space-y-3">
-                <button onclick="window.iniciarSesionGoogleAdmin()" class="w-full bg-white hover:bg-gray-100 text-vibrant-dark font-black py-3 px-4 border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover flex items-center justify-center gap-3 text-xs uppercase tracking-wider cursor-pointer transition-all active:translate-y-0.5">
+                <button onclick="window.iniciarSesionGoogleAdmin()"
+                    class="w-full bg-white hover:bg-gray-100 text-vibrant-dark font-black py-3 px-4 border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover flex items-center justify-center gap-3 text-xs uppercase tracking-wider cursor-pointer transition-all active:translate-y-0.5">
                     <svg class="w-5 h-5" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                        <path fill="#4285F4"
+                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                        <path fill="#34A853"
+                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                        <path fill="#FBBC05"
+                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                        <path fill="#EA4335"
+                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
                     </svg>
                     <span>Identificarse con Google</span>
                 </button>
 
-                <a href="index.html" class="block w-full bg-gray-200 hover:bg-gray-300 text-vibrant-dark font-black py-2.5 px-4 border-2 border-vibrant-dark text-xs uppercase tracking-wider text-center">
+                <a href="index.html"
+                    class="block w-full bg-gray-200 hover:bg-gray-300 text-vibrant-dark font-black py-2.5 px-4 border-2 border-vibrant-dark text-xs uppercase tracking-wider text-center">
                     Regresar a la Tienda
                 </a>
             </div>
@@ -162,17 +189,21 @@
     <main id="adminMainContent" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
 
         <!-- Banner de Encabezado -->
-        <div class="bg-white stitch-box-4 shadow-stitch p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div
+            class="bg-white stitch-box-4 shadow-stitch p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div class="flex items-start sm:items-center gap-4">
-                <div class="w-16 h-16 bg-amber-400 border-4 border-vibrant-dark shadow-stitch flex items-center justify-center text-3xl flex-shrink-0">
+                <div
+                    class="w-16 h-16 bg-amber-400 border-4 border-vibrant-dark shadow-stitch flex items-center justify-center text-3xl flex-shrink-0">
                     👑
                 </div>
                 <div>
                     <div class="flex items-center gap-2 flex-wrap">
-                        <span class="bg-vibrant-dark text-amber-300 text-[10px] font-black px-2.5 py-0.5 uppercase tracking-widest border border-vibrant-dark">
+                        <span
+                            class="bg-vibrant-dark text-amber-300 text-[10px] font-black px-2.5 py-0.5 uppercase tracking-widest border border-vibrant-dark">
                             ADMINISTRACIÓN GENERAL
                         </span>
-                        <span id="pbStatusIndicator" class="inline-flex items-center gap-1.5 bg-blue-100 text-blue-900 text-[10px] font-black px-2.5 py-0.5 border border-blue-400 uppercase">
+                        <span id="pbStatusIndicator"
+                            class="inline-flex items-center gap-1.5 bg-blue-100 text-blue-900 text-[10px] font-black px-2.5 py-0.5 border border-blue-400 uppercase">
                             <span class="w-2 h-2 rounded-full bg-blue-600 animate-ping"></span> Conectando PocketBase...
                         </span>
                     </div>
@@ -180,27 +211,32 @@
                         Panel de Analítica y Telemetría
                     </h1>
                     <p class="text-xs font-bold text-gray-600 mt-0.5">
-                        Supervisión integral de las 23 métricas de sesión, clientes logueados/anónimos y administración de usuarios en PocketBase.
+                        Supervisión integral de las 23 métricas de sesión, clientes logueados/anónimos y administración
+                        de usuarios en PocketBase.
                     </p>
                 </div>
             </div>
 
             <!-- Botones de Acción Global -->
             <div class="flex flex-wrap items-center gap-3">
-                <a href="banners.html" class="bg-vibrant-yellow hover:bg-yellow-300 text-vibrant-dark font-black px-4 py-2.5 text-xs uppercase border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover flex items-center gap-1.5 transition-all">
+                <a href="banners.html"
+                    class="bg-vibrant-yellow hover:bg-yellow-300 text-vibrant-dark font-black px-4 py-2.5 text-xs uppercase border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover flex items-center gap-1.5 transition-all">
                     <span>🎨</span> Banners Publicitarios
                 </a>
-                <button onclick="window.recargarTodoAdmin()" class="bg-white hover:bg-gray-100 text-vibrant-dark font-black px-4 py-2.5 text-xs uppercase border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover cursor-pointer flex items-center gap-1.5">
+                <button onclick="window.recargarTodoAdmin()"
+                    class="bg-white hover:bg-gray-100 text-vibrant-dark font-black px-4 py-2.5 text-xs uppercase border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover cursor-pointer flex items-center gap-1.5">
                     <span>🔄</span> Refrescar Datos
                 </button>
-                <button onclick="window.abrirModalProvisionPocketBase()" class="bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black px-4 py-2.5 text-xs uppercase border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover cursor-pointer flex items-center gap-1.5">
+                <button onclick="window.abrirModalProvisionPocketBase()"
+                    class="bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black px-4 py-2.5 text-xs uppercase border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover cursor-pointer flex items-center gap-1.5">
                     <span>⚡</span> Provisionar PocketBase
                 </button>
             </div>
         </div>
 
         <!-- Alerta Dinámica de Colección PocketBase (Si aún no existe telemetry_sessions) -->
-        <div id="pbCollectionAlert" class="hidden bg-amber-100 border-4 border-amber-600 shadow-stitch p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div id="pbCollectionAlert"
+            class="hidden bg-amber-100 border-4 border-amber-600 shadow-stitch p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="flex items-start gap-3">
                 <span class="text-2xl">⚠️</span>
                 <div>
@@ -208,15 +244,20 @@
                         Colección 'telemetry_sessions' pendiente en PocketBase
                     </h3>
                     <p class="text-xs font-bold text-amber-800 mt-0.5">
-                        La colección aún no está creada en <code class="font-mono bg-white px-1 py-0.5 border border-amber-300">pb-mercadofacil.webticocr.com</code>. Los datos se están guardando localmente, pero para que sean persistentes en el servidor de PocketBase debés crear la colección con las 23 métricas.
+                        La colección aún no está creada en <code
+                            class="font-mono bg-white px-1 py-0.5 border border-amber-300">pb-mercadofacil.webticocr.com</code>.
+                        Los datos se están guardando localmente, pero para que sean persistentes en el servidor de
+                        PocketBase debés crear la colección con las 23 métricas.
                     </p>
                 </div>
             </div>
             <div class="flex items-center gap-2 flex-shrink-0">
-                <button onclick="window.abrirModalProvisionPocketBase()" class="bg-amber-400 hover:bg-amber-500 text-vibrant-dark font-black px-4 py-2 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer">
+                <button onclick="window.abrirModalProvisionPocketBase()"
+                    class="bg-amber-400 hover:bg-amber-500 text-vibrant-dark font-black px-4 py-2 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer">
                     🚀 Crear en 1 Clic
                 </button>
-                <button onclick="window.descargarSchemaJSON()" class="bg-white hover:bg-gray-100 text-vibrant-dark font-black px-3 py-2 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer">
+                <button onclick="window.descargarSchemaJSON()"
+                    class="bg-white hover:bg-gray-100 text-vibrant-dark font-black px-3 py-2 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer">
                     📥 Descargar JSON
                 </button>
             </div>
@@ -224,11 +265,12 @@
 
         <!-- SECCIÓN 1: TELEMETRÍA POR SESIÓN (23 MÉTRICAS) -->
         <section class="bg-white stitch-box-4 shadow-stitch overflow-hidden">
-            
+
             <!-- Barra Superior de Sección -->
             <div class="p-5 bg-vibrant-dark text-white flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
-                    <div class="inline-flex items-center gap-1.5 bg-vibrant-green text-vibrant-dark text-[10px] font-black px-2 py-0.5 uppercase tracking-wider mb-1">
+                    <div
+                        class="inline-flex items-center gap-1.5 bg-vibrant-green text-vibrant-dark text-[10px] font-black px-2 py-0.5 uppercase tracking-wider mb-1">
                         📡 Telemetría en Tiempo Real (23 Métricas)
                     </div>
                     <h2 class="text-xl font-black uppercase tracking-tight">
@@ -238,9 +280,14 @@
                         Cargando fuentes de datos...
                     </p>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button onclick="window.exportarSesionesCSV()" class="bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black px-4 py-2 text-xs uppercase border-2 border-white shadow-stitch cursor-pointer">
-                        📥 Exportar Sesiones CSV
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button onclick="window.exportarSesionesCSV()"
+                        class="bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black px-3.5 py-2 text-xs uppercase border-2 border-white shadow-stitch cursor-pointer flex items-center gap-1.5 transition-all">
+                        <span>📥</span> Exportar Sesiones CSV
+                    </button>
+                    <button onclick="window.exportarVisitorLogsCSV()"
+                        class="bg-amber-300 hover:bg-amber-400 text-vibrant-dark font-black px-3.5 py-2 text-xs uppercase border-2 border-white shadow-stitch cursor-pointer flex items-center gap-1.5 transition-all">
+                        <span>📋</span> Exportar visitor_logs CSV
                     </button>
                 </div>
             </div>
@@ -250,7 +297,8 @@
                 <div class="bg-white border-2 border-vibrant-dark p-3.5 shadow-stitch">
                     <div class="text-[10px] font-black uppercase text-gray-500">Sesiones Totales</div>
                     <div id="telKpiSessions" class="text-2xl font-black text-vibrant-dark mt-1">0</div>
-                    <div id="telKpiSessionsSub" class="text-[10px] text-gray-500 font-bold">0 anónimas · 0 logueadas</div>
+                    <div id="telKpiSessionsSub" class="text-[10px] text-gray-500 font-bold">0 anónimas · 0 clientes · 0 admin
+                    </div>
                 </div>
                 <div class="bg-white border-2 border-vibrant-dark p-3.5 shadow-stitch">
                     <div class="text-[10px] font-black uppercase text-gray-500">Permanencia Promedio</div>
@@ -289,13 +337,35 @@
                 </div>
             </div>
 
+            <!-- Pestañas de Vista: Sesiones Consolidadas vs Bitácora de Eventos en Vivo (visitor_logs) -->
+            <div class="px-5 pt-3 pb-0 bg-gray-100 border-b-2 border-vibrant-dark flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <button id="tabBtnSessions" onclick="window.cambiarVistaTelemetria('sessions')"
+                        class="px-4 py-2 text-xs font-black uppercase border-t-2 border-x-2 border-vibrant-dark bg-white text-vibrant-dark shadow-xs cursor-pointer -mb-[2px] z-10 transition-all">
+                        👥 Sesiones Consolidadas (<span id="countSessionsTab">0</span>)
+                    </button>
+                    <button id="tabBtnVisitorLogs" onclick="window.cambiarVistaTelemetria('visitor_logs')"
+                        class="px-4 py-2 text-xs font-black uppercase border-t-2 border-x-2 border-vibrant-dark bg-gray-200 text-gray-700 hover:bg-gray-300 shadow-xs cursor-pointer -mb-[2px] transition-all">
+                        📋 Bitácora en Vivo de Eventos / Ingresos (<span id="countVisitorLogsTab">0</span> en visitor_logs)
+                    </button>
+                </div>
+                <div class="pb-2">
+                    <span id="tabViewNotice" class="text-[11px] font-bold text-gray-600">
+                        ⚡ Mostrando métricas consolidadas por visita única (23 parámetros)
+                    </span>
+                </div>
+            </div>
+
             <!-- Filtros de la Tabla de Telemetría -->
-            <div class="p-4 bg-gray-100 border-b-2 border-vibrant-dark grid grid-cols-1 sm:grid-cols-12 gap-3">
+            <div class="p-4 bg-gray-50 border-b-2 border-vibrant-dark grid grid-cols-1 sm:grid-cols-12 gap-3">
                 <div class="sm:col-span-8">
-                    <input id="adminTelemetrySearch" type="text" oninput="window.renderAdminTelemetry()" placeholder="🔍 Buscar por ubicación, origen, SO, navegador, producto en canasta, búsqueda..." class="w-full bg-white text-vibrant-dark font-bold px-3 py-2 border-2 border-vibrant-dark text-xs shadow-stitch">
+                    <input id="adminTelemetrySearch" type="text" oninput="window.filtrarTablasTelemetria()"
+                        placeholder="🔍 Buscar por ubicación, origen, SO, navegador, producto, evento, correo..."
+                        class="w-full bg-white text-vibrant-dark font-bold px-3 py-2 border-2 border-vibrant-dark text-xs shadow-stitch">
                 </div>
                 <div class="sm:col-span-4">
-                    <select id="adminTelemetryStatusFilter" onchange="window.renderAdminTelemetry()" class="w-full bg-white text-vibrant-dark font-black px-3 py-2 border-2 border-vibrant-dark text-xs cursor-pointer shadow-stitch">
+                    <select id="adminTelemetryStatusFilter" onchange="window.filtrarTablasTelemetria()"
+                        class="w-full bg-white text-vibrant-dark font-black px-3 py-2 border-2 border-vibrant-dark text-xs cursor-pointer shadow-stitch">
                         <option value="todos">👥 Todos (Clientes + Admin)</option>
                         <option value="clientes_todos" selected>🎯 Solo Clientes (Excluir corea3000@gmail.com)</option>
                         <option value="admin_only">👑 Solo Mis Métricas (corea3000@gmail.com)</option>
@@ -305,11 +375,12 @@
                 </div>
             </div>
 
-            <!-- Tabla de Telemetría (23 Columnas completas) -->
-            <div class="overflow-x-auto max-h-[580px] overflow-y-auto custom-scrollbar">
+            <!-- VISTA 1: Tabla de Sesiones Consolidadas (23 Columnas completas) -->
+            <div id="viewContainerSessions" class="overflow-x-auto max-h-[580px] overflow-y-auto custom-scrollbar">
                 <table class="w-full text-left border-collapse">
                     <thead class="sticky top-0 z-10">
-                        <tr class="bg-gray-200 border-b-2 border-vibrant-dark text-[11px] font-black text-vibrant-dark uppercase tracking-wider">
+                        <tr
+                            class="bg-gray-200 border-b-2 border-vibrant-dark text-[11px] font-black text-vibrant-dark uppercase tracking-wider">
                             <th class="py-3 px-3 border-r border-gray-300">Inicio</th>
                             <th class="py-3 px-3 border-r border-gray-300">Tipo Tráfico</th>
                             <th class="py-3 px-3 border-r border-gray-300">Permanencia</th>
@@ -327,7 +398,33 @@
                     </thead>
                     <tbody id="adminTelemetryTbody" class="divide-y divide-gray-200 bg-white text-xs">
                         <tr>
-                            <td colspan="13" class="py-8 text-center text-gray-500 font-bold">Cargando registros de telemetría...</td>
+                            <td colspan="13" class="py-8 text-center text-gray-500 font-bold">Cargando registros de
+                                telemetría...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- VISTA 2: Tabla de Bitácora de Eventos e Ingresos en Vivo (visitor_logs de PocketBase) -->
+            <div id="viewContainerVisitorLogs" class="hidden overflow-x-auto max-h-[580px] overflow-y-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead class="sticky top-0 z-10">
+                        <tr
+                            class="bg-gray-200 border-b-2 border-vibrant-dark text-[11px] font-black text-vibrant-dark uppercase tracking-wider">
+                            <th class="py-3 px-3 border-r border-gray-300">Fecha y Hora</th>
+                            <th class="py-3 px-3 border-r border-gray-300">Estado Usuario</th>
+                            <th class="py-3 px-3 border-r border-gray-300">Usuario / Correo</th>
+                            <th class="py-3 px-3 border-r border-gray-300">Evento</th>
+                            <th class="py-3 px-3 border-r border-gray-300">Detalles de la Acción</th>
+                            <th class="py-3 px-3 border-r border-gray-300">Dispositivo & SO</th>
+                            <th class="py-3 px-3 border-r border-gray-300">Idioma / Referrer</th>
+                            <th class="py-3 px-3">Session ID</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminVisitorLogsTbody" class="divide-y divide-gray-200 bg-white text-xs">
+                        <tr>
+                            <td colspan="8" class="py-8 text-center text-gray-500 font-bold">Cargando bitácora de
+                                visitor_logs en vivo...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -339,7 +436,8 @@
         <section class="bg-white stitch-box-4 shadow-stitch overflow-hidden">
             <div class="p-5 bg-vibrant-dark text-white flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
-                    <div class="inline-flex items-center gap-1.5 bg-amber-300 text-vibrant-dark text-[10px] font-black px-2 py-0.5 uppercase tracking-wider mb-1">
+                    <div
+                        class="inline-flex items-center gap-1.5 bg-amber-300 text-vibrant-dark text-[10px] font-black px-2 py-0.5 uppercase tracking-wider mb-1">
                         🔐 Base de Datos PocketBase (`users`)
                     </div>
                     <h2 class="text-xl font-black uppercase tracking-tight">
@@ -350,7 +448,8 @@
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="window.abrirModalNuevoUsuario()" class="bg-amber-300 hover:bg-amber-400 text-vibrant-dark font-black px-4 py-2 text-xs uppercase border-2 border-white shadow-stitch cursor-pointer">
+                    <button onclick="window.abrirModalNuevoUsuario()"
+                        class="bg-amber-300 hover:bg-amber-400 text-vibrant-dark font-black px-4 py-2 text-xs uppercase border-2 border-white shadow-stitch cursor-pointer">
                         ➕ Registrar Nuevo Usuario
                     </button>
                 </div>
@@ -360,7 +459,8 @@
             <div class="overflow-x-auto max-h-[460px] overflow-y-auto custom-scrollbar">
                 <table class="w-full text-left border-collapse">
                     <thead class="sticky top-0 z-10">
-                        <tr class="bg-gray-200 border-b-2 border-vibrant-dark text-[11px] font-black text-vibrant-dark uppercase tracking-wider">
+                        <tr
+                            class="bg-gray-200 border-b-2 border-vibrant-dark text-[11px] font-black text-vibrant-dark uppercase tracking-wider">
                             <th class="py-3 px-4 border-r border-gray-300">Usuario / Correo</th>
                             <th class="py-3 px-3 border-r border-gray-300">Rol Admin</th>
                             <th class="py-3 px-3 border-r border-gray-300 text-center">Plan Mercados</th>
@@ -373,7 +473,8 @@
                     </thead>
                     <tbody id="adminUsersTbody" class="divide-y divide-gray-200 bg-white text-xs">
                         <tr>
-                            <td colspan="8" class="py-8 text-center text-gray-500 font-bold">Consultando colección 'users' en PocketBase...</td>
+                            <td colspan="8" class="py-8 text-center text-gray-500 font-bold">Consultando colección
+                                'users' en PocketBase...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -383,37 +484,50 @@
     </main>
 
     <!-- MODAL 1: PROVISIONAR COLECCIÓN POCKETBASE -->
-    <div id="modalProvisionPB" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="modalProvisionPB"
+        class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white stitch-box-4 shadow-stitch-lg max-w-lg w-full p-6 space-y-5">
             <div class="flex items-center justify-between border-b-2 border-vibrant-dark pb-3">
                 <div class="flex items-center gap-2">
                     <span class="text-2xl">⚡</span>
                     <h3 class="text-lg font-black uppercase text-vibrant-dark">Provisionar Colección PocketBase</h3>
                 </div>
-                <button onclick="window.cerrarModalProvisionPB()" class="text-xl font-black hover:text-red-600 cursor-pointer">✕</button>
+                <button onclick="window.cerrarModalProvisionPB()"
+                    class="text-xl font-black hover:text-red-600 cursor-pointer">✕</button>
             </div>
 
             <p class="text-xs text-gray-600 font-bold leading-relaxed">
-                Este asistente conectará con tu servidor <strong class="text-vibrant-dark">https://pb-mercadofacil.webticocr.com</strong> como Superuser y creará automáticamente la colección <strong class="text-vibrant-blue">telemetry_sessions</strong> con las 23 métricas requeridas e índice único.
+                Este asistente conectará con tu servidor <strong
+                    class="text-vibrant-dark">https://pb-mercadofacil.webticocr.com</strong> como Superuser y creará
+                automáticamente la colección <strong class="text-vibrant-blue">telemetry_sessions</strong> con las 23
+                métricas requeridas e índice único.
             </p>
 
             <div class="space-y-3 bg-gray-50 p-4 border-2 border-vibrant-dark">
                 <div>
-                    <label class="block text-[11px] font-black uppercase text-gray-700 mb-1">Identidad / Superuser Email:</label>
-                    <input id="pbProvEmail" type="email" value="corea3000@gmail.com" class="w-full bg-white text-vibrant-dark font-mono text-xs px-3 py-2 border-2 border-vibrant-dark" readonly>
+                    <label class="block text-[11px] font-black uppercase text-gray-700 mb-1">Identidad / Superuser
+                        Email:</label>
+                    <input id="pbProvEmail" type="email" value="corea3000@gmail.com"
+                        class="w-full bg-white text-vibrant-dark font-mono text-xs px-3 py-2 border-2 border-vibrant-dark"
+                        readonly>
                 </div>
                 <div>
-                    <label class="block text-[11px] font-black uppercase text-gray-700 mb-1">Contraseña de Superuser en PocketBase:</label>
-                    <input id="pbProvPassword" type="password" placeholder="Tu contraseña de administración en pb-mercadofacil" class="w-full bg-white text-vibrant-dark font-mono text-xs px-3 py-2 border-2 border-vibrant-dark">
+                    <label class="block text-[11px] font-black uppercase text-gray-700 mb-1">Contraseña de Superuser en
+                        PocketBase:</label>
+                    <input id="pbProvPassword" type="password"
+                        placeholder="Tu contraseña de administración en pb-mercadofacil"
+                        class="w-full bg-white text-vibrant-dark font-mono text-xs px-3 py-2 border-2 border-vibrant-dark">
                 </div>
                 <div id="pbProvStatus" class="hidden text-xs font-mono font-bold p-2.5 border-2"></div>
             </div>
 
             <div class="flex items-center justify-end gap-3 pt-2">
-                <button onclick="window.cerrarModalProvisionPB()" class="bg-gray-200 hover:bg-gray-300 text-vibrant-dark font-black px-4 py-2 text-xs uppercase border-2 border-vibrant-dark cursor-pointer">
+                <button onclick="window.cerrarModalProvisionPB()"
+                    class="bg-gray-200 hover:bg-gray-300 text-vibrant-dark font-black px-4 py-2 text-xs uppercase border-2 border-vibrant-dark cursor-pointer">
                     Cancelar
                 </button>
-                <button id="btnEjecutarProvision" onclick="window.ejecutarProvisionPocketBase()" class="bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black px-5 py-2 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer flex items-center gap-2">
+                <button id="btnEjecutarProvision" onclick="window.ejecutarProvisionPocketBase()"
+                    class="bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black px-5 py-2 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer flex items-center gap-2">
                     <span>🚀</span> Crear Colección Ahora
                 </button>
             </div>
@@ -421,41 +535,51 @@
     </div>
 
     <!-- MODAL 2: CREAR NUEVO USUARIO EN POCKETBASE -->
-    <div id="modalNuevoUsuario" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="modalNuevoUsuario"
+        class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white stitch-box-4 shadow-stitch-lg max-w-md w-full p-6 space-y-4">
             <div class="flex items-center justify-between border-b-2 border-vibrant-dark pb-3">
                 <div class="flex items-center gap-2">
                     <span class="text-2xl">➕</span>
                     <h3 class="text-lg font-black uppercase text-vibrant-dark">Nuevo Usuario en PocketBase</h3>
                 </div>
-                <button onclick="window.cerrarModalNuevoUsuario()" class="text-xl font-black hover:text-red-600 cursor-pointer">✕</button>
+                <button onclick="window.cerrarModalNuevoUsuario()"
+                    class="text-xl font-black hover:text-red-600 cursor-pointer">✕</button>
             </div>
 
             <div class="space-y-3 text-xs">
                 <div>
                     <label class="block font-black uppercase text-gray-700 mb-1">Correo Electrónico:</label>
-                    <input id="newUsrEmail" type="email" placeholder="cliente@ejemplo.com" class="w-full bg-white font-mono px-3 py-2 border-2 border-vibrant-dark">
+                    <input id="newUsrEmail" type="email" placeholder="cliente@ejemplo.com"
+                        class="w-full bg-white font-mono px-3 py-2 border-2 border-vibrant-dark">
                 </div>
                 <div>
                     <label class="block font-black uppercase text-gray-700 mb-1">Nombre Completo:</label>
-                    <input id="newUsrName" type="text" placeholder="Ej. Carlos Jiménez" class="w-full px-3 py-2 border-2 border-vibrant-dark">
+                    <input id="newUsrName" type="text" placeholder="Ej. Carlos Jiménez"
+                        class="w-full px-3 py-2 border-2 border-vibrant-dark">
                 </div>
                 <div>
                     <label class="block font-black uppercase text-gray-700 mb-1">Planes a Activar:</label>
                     <div class="grid grid-cols-2 gap-2 mt-1">
-                        <label class="flex items-center gap-2 font-bold"><input id="newUsrPlan1" type="checkbox" checked class="w-4 h-4"> Mercados</label>
-                        <label class="flex items-center gap-2 font-bold"><input id="newUsrPlan2" type="checkbox" class="w-4 h-4"> Tiendas</label>
-                        <label class="flex items-center gap-2 font-bold"><input id="newUsrPlan3" type="checkbox" class="w-4 h-4"> Farmacias</label>
-                        <label class="flex items-center gap-2 font-bold"><input id="newUsrPlan4" type="checkbox" class="w-4 h-4"> Comercios</label>
+                        <label class="flex items-center gap-2 font-bold"><input id="newUsrPlan1" type="checkbox" checked
+                                class="w-4 h-4"> Mercados</label>
+                        <label class="flex items-center gap-2 font-bold"><input id="newUsrPlan2" type="checkbox"
+                                class="w-4 h-4"> Tiendas</label>
+                        <label class="flex items-center gap-2 font-bold"><input id="newUsrPlan3" type="checkbox"
+                                class="w-4 h-4"> Farmacias</label>
+                        <label class="flex items-center gap-2 font-bold"><input id="newUsrPlan4" type="checkbox"
+                                class="w-4 h-4"> Comercios</label>
                     </div>
                 </div>
             </div>
 
             <div class="flex items-center justify-end gap-3 pt-3 border-t-2 border-gray-200">
-                <button onclick="window.cerrarModalNuevoUsuario()" class="bg-gray-200 text-vibrant-dark font-black px-4 py-2 text-xs uppercase border-2 border-vibrant-dark cursor-pointer">
+                <button onclick="window.cerrarModalNuevoUsuario()"
+                    class="bg-gray-200 text-vibrant-dark font-black px-4 py-2 text-xs uppercase border-2 border-vibrant-dark cursor-pointer">
                     Cancelar
                 </button>
-                <button onclick="window.guardarNuevoUsuarioPocketBase()" class="bg-amber-300 hover:bg-amber-400 text-vibrant-dark font-black px-5 py-2 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer">
+                <button onclick="window.guardarNuevoUsuarioPocketBase()"
+                    class="bg-amber-300 hover:bg-amber-400 text-vibrant-dark font-black px-5 py-2 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer">
                     Guardar Usuario
                 </button>
             </div>
@@ -464,14 +588,16 @@
 
     <!-- Footer Neo-Brutalista -->
     <footer class="bg-vibrant-dark text-white border-t-4 border-vibrant-dark py-8 px-4 sm:px-6 mt-12">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono font-bold text-gray-400">
+        <div
+            class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono font-bold text-gray-400">
             <div class="flex items-center gap-2">
                 <span>🛒 MERCADOFÁCIL COSTA RICA</span>
                 <span>·</span>
                 <span>100% Desarrollo Tico</span>
             </div>
             <div>
-                Desarrollado para <a href="https://webticocr.com" target="_blank" rel="noopener noreferrer" class="text-vibrant-green hover:underline">webticocr.com</a>
+                Desarrollado para <a href="https://webticocr.com" target="_blank" rel="noopener noreferrer"
+                    class="text-vibrant-green hover:underline">webticocr.com</a>
             </div>
         </div>
     </footer>
@@ -480,10 +606,13 @@
     <script>
         const PB_URL = 'https://pb-mercadofacil.webticocr.com';
         const pb = (typeof PocketBase !== 'undefined') ? new PocketBase(PB_URL) : null;
-        
+
         let allTelemetrySessions = [];
         let allPocketBaseUsers = [];
+        let allVisitorLogs = [];
+        let currentTelemetryView = 'sessions';
         let hasTelemetryCollection = false;
+        let hasVisitorLogsCollection = false;
         window.adminEmails = new Set(['corea3000@gmail.com']);
         window.adminUserIds = new Set(['f1f73vhxyyivklt']);
 
@@ -526,7 +655,7 @@
                             if (pb) pb.authStore.save(parsed.token, parsed.model);
                         }
                     }
-                } catch (e) {}
+                } catch (e) { }
             }
 
             const isSuperAdmin = Boolean(user && (user.admin === true || user.admin === 'true' || user.admin === 1));
@@ -564,7 +693,7 @@
         }
 
         // Login Google
-        window.iniciarSesionGoogleAdmin = async function() {
+        window.iniciarSesionGoogleAdmin = async function () {
             if (!pb) return;
             try {
                 await pb.collection('users').authWithOAuth2({ provider: 'google' });
@@ -575,13 +704,13 @@
         };
 
         // Logout
-        window.cerrarSesionAdmin = function() {
+        window.cerrarSesionAdmin = function () {
             if (pb && pb.authStore) pb.authStore.clear();
             localStorage.removeItem('pocketbase_auth');
             window.location.href = 'index.html';
         };
 
-        // 2. Comprobar existencia de 'telemetry_sessions' en PocketBase
+        // 2. Comprobar existencia de 'telemetry_sessions' y 'visitor_logs' en PocketBase
         async function comprobarColeccionPocketBase() {
             const alertBox = document.getElementById('pbCollectionAlert');
             const ind = document.getElementById('pbStatusIndicator');
@@ -590,22 +719,41 @@
             try {
                 await pb.collection('telemetry_sessions').getList(1, 1);
                 hasTelemetryCollection = true;
-                alertBox.classList.add('hidden');
-                ind.className = "inline-flex items-center gap-1.5 bg-green-100 text-green-900 text-[10px] font-black px-2.5 py-0.5 border border-green-500 uppercase";
-                ind.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-600"></span> Colección Activa en PocketBase`;
-                srcLabel.innerText = "Fuente: PocketBase (telemetry_sessions) — Persistencia en vivo activa.";
             } catch (err) {
                 hasTelemetryCollection = false;
-                alertBox.classList.remove('hidden');
-                ind.className = "inline-flex items-center gap-1.5 bg-amber-100 text-amber-900 text-[10px] font-black px-2.5 py-0.5 border border-amber-500 uppercase";
-                ind.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-600"></span> Colección Pendiente en PocketBase`;
-                srcLabel.innerText = "Fuente: Espejo local SQLite / localStorage (Pendiente crear colección en PocketBase).";
+            }
+
+            try {
+                await pb.collection('visitor_logs').getList(1, 1);
+                hasVisitorLogsCollection = true;
+            } catch (err) {
+                hasVisitorLogsCollection = false;
+            }
+
+            if (hasTelemetryCollection || hasVisitorLogsCollection) {
+                if (alertBox) alertBox.classList.add('hidden');
+                if (ind) {
+                    ind.className = "inline-flex items-center gap-1.5 bg-green-100 text-green-900 text-[10px] font-black px-2.5 py-0.5 border border-green-500 uppercase";
+                    ind.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-600"></span> Colecciones Activas en PocketBase`;
+                }
+                if (srcLabel) {
+                    srcLabel.innerText = "Fuente: PocketBase (telemetry_sessions + visitor_logs en vivo).";
+                }
+            } else {
+                if (alertBox) alertBox.classList.remove('hidden');
+                if (ind) {
+                    ind.className = "inline-flex items-center gap-1.5 bg-amber-100 text-amber-900 text-[10px] font-black px-2.5 py-0.5 border border-amber-500 uppercase";
+                    ind.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-600"></span> Colección Pendiente en PocketBase`;
+                }
+                if (srcLabel) {
+                    srcLabel.innerText = "Fuente: Espejo local SQLite / localStorage.";
+                }
             }
         }
 
-        // 3. Cargar Telemetría (PocketBase + LocalStorage Mirror)
+        // 3. Cargar Telemetría y Bitácora de Visitas (PocketBase + LocalStorage Mirror)
         function normalizarSesion(r) {
-            const arr = (v) => Array.isArray(v) ? v : (typeof v === 'string' && v ? (() => { try { return JSON.parse(v); } catch(e) { return []; } })() : []);
+            const arr = (v) => Array.isArray(v) ? v : (typeof v === 'string' && v ? (() => { try { return JSON.parse(v); } catch (e) { return []; } })() : []);
             return {
                 session_id: r.session_id || r.id || '—',
                 started_at: r.started_at || r.created || '',
@@ -658,24 +806,95 @@
                         return true;
                     }
                 }
-            } catch(e) {}
+            } catch (e) { }
             return false;
         }
 
         async function cargarSesionesTelemetria() {
             const mapById = new Map();
+            allVisitorLogs = [];
 
-            // 1. Cargar desde PocketBase si existe la colección
+            // 1. Cargar desde PocketBase 'telemetry_sessions' si existe
             if (hasTelemetryCollection) {
                 try {
-                    const res = await pb.collection('telemetry_sessions').getList(1, 500, { sort: '-started_at' });
-                    (res.items || []).forEach(r => mapById.set(r.session_id, normalizarSesion(r)));
+                    const res = await pb.collection('telemetry_sessions').getFullList({ sort: '-started_at' });
+                    (res || []).forEach(r => mapById.set(r.session_id, normalizarSesion(r)));
                 } catch (e) {
                     console.warn("No se pudo leer de PocketBase telemetry_sessions:", e);
                 }
             }
 
-            // 2. Cargar desde localStorage mirror
+            // 2. Cargar desde PocketBase 'visitor_logs' (donde residen todas las visitas e ingresos en vivo)
+            try {
+                const vLogs = await pb.collection('visitor_logs').getFullList({ sort: '-created' });
+                allVisitorLogs = vLogs || [];
+
+                // Integrar visitor_logs para que cada visita/usuario que haya ingresado quede visible en sesiones
+                allVisitorLogs.forEach(v => {
+                    const sid = v.session_id;
+                    if (!sid) return;
+
+                    const isLog = Boolean(v.is_logged === true || v.is_logged === 1 || v.is_logged === 'true');
+                    const em = (v.user_email && !v.user_email.toLowerCase().includes('sin loguear')) ? v.user_email.trim() : '';
+                    const date = v.created || v.created_at || '';
+                    const evType = v.event_type || 'visita';
+
+                    if (mapById.has(sid)) {
+                        const s = mapById.get(sid);
+                        if (!s.user_email && em) s.user_email = em;
+                        if (!s.user_name && v.user_name) s.user_name = v.user_name;
+                        if (isLog && !s.is_logged) s.is_logged = true;
+                        if (evType && !s.cta_clicks.some(c => (c.btn || c) === evType)) {
+                            s.cta_clicks.push({ btn: evType, details: v.details || '' });
+                        }
+                        if (evType === 'filtro' && v.details) {
+                            s.filter_history.push({ super: 'Filtro', cat: v.details });
+                        }
+                        if (evType === 'canasta' && v.details && !s.cart_last_product) {
+                            s.cart_last_product = v.details;
+                            s.cart_add_count = (s.cart_add_count || 0) + 1;
+                        }
+                    } else {
+                        mapById.set(sid, {
+                            session_id: sid,
+                            started_at: date,
+                            dwell_seconds: 30, // Estimación base
+                            is_logged: isLog,
+                            user_id: '',
+                            user_email: em,
+                            user_name: v.user_name || (isLog ? em : 'Visitante'),
+                            referrer: v.referrer || 'Directo',
+                            location: 'Costa Rica',
+                            device_type: (v.device_info && v.device_info.toLowerCase().includes('móvil')) ? 'Móvil' : 'Escritorio',
+                            os: v.device_info || 'Escritorio',
+                            browser: v.device_info || 'Navegador',
+                            resolution: '—',
+                            filter_history: evType === 'filtro' ? [{ super: 'Filtro', cat: v.details || '' }] : [],
+                            search_terms: [],
+                            language: v.language || 'es',
+                            language_history: [],
+                            grid_page_size: 15,
+                            grid_max_page: 1,
+                            grid_page_changes: 0,
+                            selected_super: '',
+                            selected_category: '',
+                            cart_last_product: evType === 'canasta' ? (v.details || '') : '',
+                            cart_add_count: evType === 'canasta' ? 1 : 0,
+                            cart_value: 0,
+                            cart_limit_reached: false,
+                            cta_clicks: [{ btn: evType, details: v.details || '' }],
+                            viewed_business: evType === 'plan' || (v.details && v.details.includes('plan')),
+                            renew_click_at: '',
+                            grid_latency_ms: 0,
+                            grid_latency_avg_ms: 0
+                        });
+                    }
+                });
+            } catch (vErr) {
+                console.warn("No se pudo leer visitor_logs de PocketBase:", vErr);
+            }
+
+            // 3. Cargar desde localStorage mirror
             try {
                 const mirrorRaw = localStorage.getItem('mercadofacil_telemetry_sessions');
                 if (mirrorRaw) {
@@ -688,14 +907,59 @@
                         });
                     }
                 }
-            } catch (e) {}
+            } catch (e) { }
 
             allTelemetrySessions = Array.from(mapById.values()).sort((a, b) => new Date(b.started_at || 0) - new Date(a.started_at || 0));
+
+            // Actualizar contadores de las pestañas
+            const sTab = document.getElementById('countSessionsTab');
+            if (sTab) sTab.innerText = allTelemetrySessions.length;
+            const vTab = document.getElementById('countVisitorLogsTab');
+            if (vTab) vTab.innerText = allVisitorLogs.length;
+
+            const srcLabel = document.getElementById('adminTelemetrySourceLabel');
+            if (srcLabel) {
+                srcLabel.innerText = `Fuente: PocketBase (${allTelemetrySessions.length} sesiones consolidadas · ${allVisitorLogs.length} eventos en visitor_logs) — Persistencia en vivo activa.`;
+            }
+
             window.renderAdminTelemetry();
+            window.renderAdminVisitorLogs();
         }
 
+        // Alternar vista entre Sesiones Consolidadas y Bitácora visitor_logs
+        window.cambiarVistaTelemetria = function (view) {
+            currentTelemetryView = view;
+            const tabSessions = document.getElementById('tabBtnSessions');
+            const tabLogs = document.getElementById('tabBtnVisitorLogs');
+            const cSessions = document.getElementById('viewContainerSessions');
+            const cLogs = document.getElementById('viewContainerVisitorLogs');
+            const notice = document.getElementById('tabViewNotice');
+
+            if (view === 'sessions') {
+                tabSessions.className = "px-4 py-2 text-xs font-black uppercase border-t-2 border-x-2 border-vibrant-dark bg-white text-vibrant-dark shadow-xs cursor-pointer -mb-[2px] z-10 transition-all";
+                tabLogs.className = "px-4 py-2 text-xs font-black uppercase border-t-2 border-x-2 border-vibrant-dark bg-gray-200 text-gray-700 hover:bg-gray-300 shadow-xs cursor-pointer -mb-[2px] transition-all";
+                cSessions.classList.remove('hidden');
+                cLogs.classList.add('hidden');
+                if (notice) notice.innerText = "⚡ Mostrando métricas consolidadas por visita única (23 parámetros)";
+                window.renderAdminTelemetry();
+            } else {
+                tabLogs.className = "px-4 py-2 text-xs font-black uppercase border-t-2 border-x-2 border-vibrant-dark bg-white text-vibrant-dark shadow-xs cursor-pointer -mb-[2px] z-10 transition-all";
+                tabSessions.className = "px-4 py-2 text-xs font-black uppercase border-t-2 border-x-2 border-vibrant-dark bg-gray-200 text-gray-700 hover:bg-gray-300 shadow-xs cursor-pointer -mb-[2px] transition-all";
+                cLogs.classList.remove('hidden');
+                cSessions.classList.add('hidden');
+                if (notice) notice.innerText = "⚡ Mostrando bitácora individual de eventos e ingresos en tiempo real (visitor_logs)";
+                window.renderAdminVisitorLogs();
+            }
+        };
+
+        // Filtro unificado para ambas vistas
+        window.filtrarTablasTelemetria = function () {
+            window.renderAdminTelemetry();
+            window.renderAdminVisitorLogs();
+        };
+
         // 4. Renderizar Telemetría y KPIs
-        window.renderAdminTelemetry = function() {
+        window.renderAdminTelemetry = function () {
             const tbody = document.getElementById('adminTelemetryTbody');
             const search = (document.getElementById('adminTelemetrySearch')?.value || '').toLowerCase().trim();
             const filterStatus = document.getElementById('adminTelemetryStatusFilter')?.value || 'clientes_todos';
@@ -773,10 +1037,10 @@
                         </td>
                         <td class="py-2.5 px-3 border-r border-gray-200 whitespace-nowrap">
                             ${isAdmin
-                                ? `<span class="bg-amber-300 text-vibrant-dark border-2 border-vibrant-dark px-2 py-0.5 text-[10px] font-black inline-flex items-center gap-1 shadow-xs">👑 ADMIN <span class="hidden sm:inline">(${esc(s.user_email || 'corea3000@gmail.com')})</span></span>`
-                                : s.is_logged
-                                    ? `<span class="bg-green-100 text-green-900 border border-green-500 px-1.5 py-0.5 text-[10px] font-black inline-flex items-center gap-1">🔐 CLIENTE <span class="text-[9px] text-gray-500">(${esc(s.user_email || 'Logueado')})</span></span>`
-                                    : '<span class="bg-orange-100 text-orange-900 border border-orange-400 px-1.5 py-0.5 text-[10px] font-black">🕵️ ANÓNIMO</span>'}
+                        ? `<span class="bg-amber-300 text-vibrant-dark border-2 border-vibrant-dark px-2 py-0.5 text-[10px] font-black inline-flex items-center gap-1 shadow-xs">👑 ADMIN <span class="hidden sm:inline">(${esc(s.user_email || 'corea3000@gmail.com')})</span></span>`
+                        : s.is_logged
+                            ? `<span class="bg-green-100 text-green-900 border border-green-500 px-1.5 py-0.5 text-[10px] font-black inline-flex items-center gap-1">🔐 CLIENTE <span class="text-[9px] text-gray-500">(${esc(s.user_email || 'Logueado')})</span></span>`
+                            : '<span class="bg-orange-100 text-orange-900 border border-orange-400 px-1.5 py-0.5 text-[10px] font-black">🕵️ ANÓNIMO</span>'}
                         </td>
                         <td class="py-2.5 px-3 border-r border-gray-200 whitespace-nowrap font-black font-mono">
                             ${esc(fmtDwell(s.dwell_seconds))}
@@ -827,7 +1091,7 @@
         };
 
         // Exportar CSV de Sesiones
-        window.exportarSesionesCSV = function() {
+        window.exportarSesionesCSV = function () {
             if (!allTelemetrySessions.length) {
                 alert("No hay sesiones de telemetría disponibles para exportar.");
                 return;
@@ -856,6 +1120,119 @@
             URL.revokeObjectURL(url);
         };
 
+        // Renderizar la Bitácora de Eventos / Ingresos en Vivo (visitor_logs)
+        window.renderAdminVisitorLogs = function () {
+            const tbody = document.getElementById('adminVisitorLogsTbody');
+            if (!tbody) return;
+
+            const search = (document.getElementById('adminTelemetrySearch')?.value || '').toLowerCase().trim();
+            const filterStatus = document.getElementById('adminTelemetryStatusFilter')?.value || 'clientes_todos';
+
+            let rows = allVisitorLogs.filter(v => {
+                const em = (v.user_email || '').toLowerCase().trim();
+                const isAdm = em === 'corea3000@gmail.com' || (window.adminEmails && window.adminEmails.has(em));
+                const isLog = Boolean(v.is_logged === true || v.is_logged === 1 || v.is_logged === 'true');
+
+                if (filterStatus === 'clientes_todos' && isAdm) return false;
+                if (filterStatus === 'admin_only' && !isAdm) return false;
+                if (filterStatus === 'clientes_logueados' && (!isLog || isAdm)) return false;
+                if (filterStatus === 'anonimos' && (isLog || isAdm)) return false;
+
+                if (!search) return true;
+                const blob = [
+                    v.id, v.session_id, v.user_email, v.user_name, v.event_type, v.details,
+                    v.device_info, v.language, v.referrer, v.created
+                ].join(' ').toLowerCase();
+                return blob.includes(search);
+            });
+
+            if (rows.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="py-12 text-center text-gray-500 font-bold text-xs">Sin eventos registrados en visitor_logs con estos filtros.</td></tr>`;
+                return;
+            }
+
+            const evBadges = {
+                'visita': 'bg-blue-100 text-blue-900 border-blue-500',
+                'filtro': 'bg-purple-100 text-purple-900 border-purple-500',
+                'canasta': 'bg-emerald-100 text-emerald-900 border-emerald-500',
+                'login': 'bg-amber-100 text-amber-900 border-amber-500',
+                'plan': 'bg-red-100 text-red-900 border-red-500',
+                'scraping': 'bg-gray-100 text-gray-900 border-gray-400'
+            };
+
+            tbody.innerHTML = rows.map(v => {
+                const em = (v.user_email || '').toLowerCase().trim();
+                const isAdm = em === 'corea3000@gmail.com' || (window.adminEmails && window.adminEmails.has(em));
+                const isLog = Boolean(v.is_logged === true || v.is_logged === 1 || v.is_logged === 'true');
+                const evType = (v.event_type || 'visita').toLowerCase();
+                const badgeClass = evBadges[evType] || 'bg-gray-100 text-gray-800 border-gray-300';
+
+                return `
+                    <tr class="hover:bg-amber-50/50 transition-colors ${isAdm ? 'bg-amber-50/30' : ''}">
+                        <td class="py-2.5 px-3 border-r border-gray-200 whitespace-nowrap">
+                            <div class="font-mono font-bold text-[11px]">${esc(fmtDate(v.created || v.created_at))}</div>
+                            <div class="text-[9px] text-gray-400 font-mono">ID: ${esc(v.id || '—')}</div>
+                        </td>
+                        <td class="py-2.5 px-3 border-r border-gray-200 whitespace-nowrap">
+                            ${isAdm
+                                ? '<span class="bg-amber-300 text-vibrant-dark border-2 border-vibrant-dark px-2 py-0.5 text-[10px] font-black inline-flex items-center gap-1 shadow-xs">👑 ADMIN</span>'
+                                : (isLog
+                                    ? `<span class="bg-green-100 text-green-900 border border-green-500 px-2 py-0.5 text-[10px] font-black inline-flex items-center gap-1">🔐 CLIENTE</span>`
+                                    : '<span class="bg-orange-100 text-orange-900 border border-orange-400 px-2 py-0.5 text-[10px] font-black">🕵️ ANÓNIMO</span>')}
+                        </td>
+                        <td class="py-2.5 px-3 border-r border-gray-200">
+                            <div class="font-bold text-[11px] text-vibrant-dark">${esc(v.user_name || (isLog ? v.user_email : 'Visitante sin loguear'))}</div>
+                            ${em && !em.includes('sin loguear') ? `<div class="font-mono text-gray-500 text-[10px]">${esc(v.user_email)}</div>` : ''}
+                        </td>
+                        <td class="py-2.5 px-3 border-r border-gray-200 whitespace-nowrap">
+                            <span class="inline-block px-2 py-0.5 text-[10px] font-black uppercase border tracking-wider ${badgeClass}">
+                                ${esc(v.event_type || 'visita')}
+                            </span>
+                        </td>
+                        <td class="py-2.5 px-3 border-r border-gray-200 text-[11px] max-w-[260px] break-words">
+                            ${esc(v.details || 'Ingreso / acción en el comparador')}
+                        </td>
+                        <td class="py-2.5 px-3 border-r border-gray-200 text-[11px] whitespace-nowrap">
+                            <div class="font-bold">${esc(v.device_info || 'Escritorio')}</div>
+                        </td>
+                        <td class="py-2.5 px-3 border-r border-gray-200 text-[11px] whitespace-nowrap">
+                            <div class="font-bold uppercase">${esc(v.language || 'ES')}</div>
+                            <div class="text-[10px] text-gray-500">${esc(v.referrer || 'Directo')}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-[10px] font-mono text-gray-400 whitespace-nowrap" title="${esc(v.session_id)}">
+                            ${esc((v.session_id || '').slice(0, 14))}…
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        };
+
+        // Exportar CSV de visitor_logs
+        window.exportarVisitorLogsCSV = function () {
+            if (!allVisitorLogs.length) {
+                alert("No hay registros de visitor_logs para exportar.");
+                return;
+            }
+            const q = (v) => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
+            const headers = ['id', 'created', 'is_logged', 'user_email', 'user_name', 'event_type', 'details', 'device_info', 'language', 'referrer', 'session_id'];
+            const lines = [headers.join(',')].concat(
+                allVisitorLogs.map(v => [
+                    q(v.id), q(v.created || v.created_at), q(v.is_logged ? '1' : '0'),
+                    q(v.user_email), q(v.user_name), q(v.event_type), q(v.details),
+                    q(v.device_info), q(v.language), q(v.referrer), q(v.session_id)
+                ].join(','))
+            );
+            const blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `MercadoFacil_VisitorLogs_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
         // 5. Cargar y Administrar Usuarios de PocketBase (`users`)
         async function cargarUsuariosPocketBase() {
             const tbody = document.getElementById('adminUsersTbody');
@@ -876,6 +1253,7 @@
 
                 renderUsuariosPocketBase();
                 window.renderAdminTelemetry();
+                window.renderAdminVisitorLogs();
             } catch (err) {
                 tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-red-600 font-bold text-xs">Error al cargar usuarios de PocketBase: ${esc(err.message || err)}</td></tr>`;
             }
@@ -910,8 +1288,8 @@
                         </td>
                         <td class="py-3 px-3 border-r border-gray-200">
                             ${isSuper
-                                ? '<span class="bg-amber-300 text-vibrant-dark font-black px-2 py-0.5 text-[10px] border border-vibrant-dark">👑 ADMIN</span>'
-                                : '<span class="bg-gray-100 text-gray-600 font-bold px-2 py-0.5 text-[10px] border border-gray-300">CLIENTE</span>'}
+                        ? '<span class="bg-amber-300 text-vibrant-dark font-black px-2 py-0.5 text-[10px] border border-vibrant-dark">👑 ADMIN</span>'
+                        : '<span class="bg-gray-100 text-gray-600 font-bold px-2 py-0.5 text-[10px] border border-gray-300">CLIENTE</span>'}
                         </td>
                         <td class="py-3 px-3 border-r border-gray-200 text-center">${pillBtn('plan1', p1)}</td>
                         <td class="py-3 px-3 border-r border-gray-200 text-center">${pillBtn('plan2', p2)}</td>
@@ -931,7 +1309,7 @@
             }).join('');
         }
 
-        window.toggleUserPlan = async function(userId, planKey, newStatus) {
+        window.toggleUserPlan = async function (userId, planKey, newStatus) {
             try {
                 const payload = {};
                 payload[planKey] = newStatus;
@@ -944,7 +1322,7 @@
             }
         };
 
-        window.extenderVigencia = async function(userId) {
+        window.extenderVigencia = async function (userId) {
             const u = allPocketBaseUsers.find(x => x.id === userId);
             if (!u) return;
             const base = (u.expire && new Date(u.expire) > new Date()) ? new Date(u.expire) : new Date();
@@ -959,7 +1337,7 @@
             }
         };
 
-        window.eliminarUsuarioPocketBase = async function(userId, email) {
+        window.eliminarUsuarioPocketBase = async function (userId, email) {
             if (!confirm(`¿Estás seguro de eliminar permanentemente al usuario ${email} de PocketBase?`)) return;
             try {
                 await pb.collection('users').delete(userId);
@@ -971,18 +1349,18 @@
         };
 
         // 6. Asistente de Provisión Automática de Colecciones en PocketBase
-        window.abrirModalProvisionPocketBase = function() {
+        window.abrirModalProvisionPocketBase = function () {
             document.getElementById('modalProvisionPB').classList.remove('hidden');
             const st = document.getElementById('pbProvStatus');
             st.className = "hidden";
             st.innerText = "";
         };
 
-        window.cerrarModalProvisionPB = function() {
+        window.cerrarModalProvisionPB = function () {
             document.getElementById('modalProvisionPB').classList.add('hidden');
         };
 
-        window.ejecutarProvisionPocketBase = async function() {
+        window.ejecutarProvisionPocketBase = async function () {
             const email = document.getElementById('pbProvEmail').value.trim();
             const pass = document.getElementById('pbProvPassword').value;
             const statusEl = document.getElementById('pbProvStatus');
@@ -1110,7 +1488,7 @@
                             updateRule: '@request.auth.admin = true',
                             deleteRule: '@request.auth.admin = true'
                         })
-                    }).catch(() => {});
+                    }).catch(() => { });
                 }
 
                 statusEl.className = "text-xs font-mono font-bold p-3 border-2 bg-green-50 border-green-500 text-green-900 block";
@@ -1130,18 +1508,18 @@
         };
 
         // Descargar Schema JSON
-        window.descargarSchemaJSON = function() {
+        window.descargarSchemaJSON = function () {
             window.location.href = 'pocketbase/collections.json';
         };
 
         // Modales de Usuario
-        window.abrirModalNuevoUsuario = function() {
+        window.abrirModalNuevoUsuario = function () {
             document.getElementById('modalNuevoUsuario').classList.remove('hidden');
         };
-        window.cerrarModalNuevoUsuario = function() {
+        window.cerrarModalNuevoUsuario = function () {
             document.getElementById('modalNuevoUsuario').classList.add('hidden');
         };
-        window.guardarNuevoUsuarioPocketBase = async function() {
+        window.guardarNuevoUsuarioPocketBase = async function () {
             const email = document.getElementById('newUsrEmail').value.trim();
             const name = document.getElementById('newUsrName').value.trim();
             const p1 = document.getElementById('newUsrPlan1').checked;
@@ -1178,7 +1556,7 @@
         };
 
         // Recargar todo
-        window.recargarTodoAdmin = async function() {
+        window.recargarTodoAdmin = async function () {
             await comprobarColeccionPocketBase();
             await cargarSesionesTelemetria();
             await cargarUsuariosPocketBase();
@@ -1190,5 +1568,5 @@
         });
     </script>
 </body>
-</html>
 
+</html>

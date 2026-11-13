@@ -4505,7 +4505,11 @@
             function pbPayload() {
                 const s = snapshot();
                 s.started_at = pbDate(s.started_at);
-                s.renew_click_at = pbDate(s.renew_click_at);
+                if (s.renew_click_at) {
+                    s.renew_click_at = pbDate(s.renew_click_at);
+                } else {
+                    delete s.renew_click_at;
+                }
                 s.session_token = state.session_token;
                 return s;
             }
@@ -4513,10 +4517,11 @@
             function mirrorLocal() {
                 const snap = snapshot();
                 try {
-                    const list = JSON.parse(localStorage.getItem(MF_TELEMETRY_MIRROR_KEY) || '[]').filter(r => r.session_id !== snap.session_id);
-                    list.unshift(snap);
-                    if (list.length > 100) list.length = 100;
-                    localStorage.setItem(MF_TELEMETRY_MIRROR_KEY, JSON.stringify(list));
+                    const list = JSON.parse(localStorage.getItem(MF_TELEMETRY_MIRROR_KEY) || '[]');
+                    const filtered = list.filter(r => r.session_id !== snap.session_id);
+                    filtered.unshift(snap);
+                    if (filtered.length > 100) filtered.length = 100;
+                    localStorage.setItem(MF_TELEMETRY_MIRROR_KEY, JSON.stringify(filtered));
                 } catch (e) { }
                 if (sqliteDb) {
                     try {
@@ -4548,9 +4553,12 @@
                 const v = version;
                 try {
                     if (!state.pb_created) {
-                        await pb.collection('telemetry_sessions').create(Object.assign({ id: state.pb_id }, pbPayload()));
-                        state.pb_created = true;
-                    } else {
+                        const rec = await pb.collection('telemetry_sessions').create(pbPayload());
+                        if (rec && rec.id) {
+                            state.pb_id = rec.id;
+                            state.pb_created = true;
+                        }
+                    } else if (state.pb_id) {
                         await pb.collection('telemetry_sessions').update(state.pb_id, pbPayload());
                     }
                     flushedVersion = v;
