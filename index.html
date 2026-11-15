@@ -402,6 +402,25 @@
                     <div class="bg-white stitch-box shadow-stitch overflow-hidden">
 
                         <!-- Controles / Filtros -->
+                        <!-- 0. Barra de Búsqueda Rápida en Tiempo Real & Armador de Canasta Multi-Producto -->
+                        <div class="p-4 bg-[#09152b] stitch-border-b flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                            <div class="relative flex-1">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-base">🔍</span>
+                                <input type="search" id="productSearchInput" data-telemetry-search="true"
+                                    placeholder="Buscar por nombre de producto en tiempo real (ej: Arroz, Leche, Atún, Huevos, Café...)"
+                                    class="w-full pl-10 pr-10 py-3 bg-white text-vibrant-dark placeholder-gray-500 font-bold text-sm border-2 border-vibrant-dark shadow-stitch focus:outline-none focus:ring-2 focus:ring-vibrant-green transition-all" />
+                                <button id="clearProductSearch" onclick="window.clearProductSearch && window.clearProductSearch()"
+                                    class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-red-600 font-black text-sm cursor-pointer"
+                                    title="Limpiar búsqueda">✕</button>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="window.abrirModalArmarCanasta && window.abrirModalArmarCanasta()"
+                                    class="w-full md:w-auto bg-vibrant-green hover:bg-green-400 text-vibrant-dark font-black py-3 px-5 text-xs border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all active:translate-y-0.5 whitespace-nowrap">
+                                    <span>⚡</span> Armar Canasta (Varios Productos)
+                                </button>
+                            </div>
+                        </div>
+
                         <!-- Controles / Filtros: Supermercado, Categoría Oficial, Producto -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 bg-vibrant-blue stitch-border-b">
                             <div>
@@ -646,6 +665,9 @@
                             <table class="w-full text-left border-collapse">
                                 <thead>
                                     <tr class="bg-gray-100 stitch-border-b">
+                                        <th class="py-4 px-3 text-center stitch-border-r w-12" title="Seleccionar/Deseleccionar todos los de esta página">
+                                            <input type="checkbox" id="selectAllTableCheckbox" onchange="window.toggleSelectAllTableRows && window.toggleSelectAllTableRows(this.checked)" class="w-4 h-4 cursor-pointer accent-[#2962FF]" />
+                                        </th>
                                         <th
                                             class="py-4 px-6 text-xs font-black text-vibrant-dark uppercase tracking-widest stitch-border-r w-36">
                                             Última Revisión</th>
@@ -709,6 +731,13 @@
                                     </p>
                                 </div>
                                 <div class="controls flex flex-wrap items-center gap-2">
+                                    <!-- Botón Armar Canasta Multi-Producto -->
+                                    <button onclick="window.abrirModalArmarCanasta && window.abrirModalArmarCanasta()"
+                                        class="bg-vibrant-yellow hover:bg-yellow-400 text-vibrant-dark font-black py-2 px-3.5 shadow-stitch hover:shadow-stitch-hover border-2 border-vibrant-dark uppercase tracking-wider text-xs flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5"
+                                        title="Escoger varios productos al mismo tiempo con comparativa instantánea">
+                                        <span>⚡</span> Escoger Varios
+                                    </button>
+
                                     <!-- Botón Compartir en WhatsApp -->
                                     <button onclick="window.compartirWhatsApp && window.compartirWhatsApp()"
                                         class="bg-[#25D366] hover:bg-[#20bd5a] text-white font-black py-2 px-3.5 shadow-stitch hover:shadow-stitch-hover border-2 border-vibrant-dark uppercase tracking-wider text-xs flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5"
@@ -772,6 +801,13 @@
                             <div
                                 class="layout-container min-h-[90px] p-4 bg-white border-2 border-vibrant-dark shadow-stitch">
                                 <!-- Items añadidos dinámicamente con SQLite & Anime.js -->
+                            </div>
+
+                            <!-- ==============================================
+                                 COMPARATIVA MULTI-ALMACÉN EN VIVO: ¿DÓNDE LE SALE MÁS BARATO?
+                                 ============================================== -->
+                            <div id="canastaComparisonSection" class="mt-8 pt-6 border-t-2 border-vibrant-dark">
+                                <!-- Se rellena dinámicamente por window.renderCanastaComparison() -->
                             </div>
                         </div>
                     </div>
@@ -1463,13 +1499,23 @@
             });
         }
 
-        const applyFilters = () => {
+        const applyFilters = (skipAnimation = false) => {
             // Telemetría: marca de inicio para medir la latencia de carga de la grilla
             window.__mfFilterStart = performance.now();
             const hasPlan = Boolean(window.hasAccessToAllSupermarkets && window.hasAccessToAllSupermarkets());
             let selectedSuper = superFilter ? superFilter.value : (hasPlan ? 'Walmart' : 'MásxMenos');
             const selectedCategory = categoryFilter ? categoryFilter.value : 'Todas';
             let selectedItem = itemFilter ? itemFilter.value : 'Todos';
+
+            const searchInp = document.getElementById('productSearchInput');
+            const searchTerm = searchInp ? searchInp.value.trim().toLowerCase() : '';
+
+            // Visibilidad del botón de limpiar búsqueda
+            const clearBtn = document.getElementById('clearProductSearch');
+            if (clearBtn) {
+                if (searchTerm.length > 0) clearBtn.classList.remove('hidden');
+                else clearBtn.classList.add('hidden');
+            }
 
             // Actualizar visibilidad del banner de aviso de prueba
             const trialBanner = document.getElementById('trialModeNoticeBanner');
@@ -1508,25 +1554,31 @@
                 const matchSuper = selectedSuper === 'Todos' || d.super === selectedSuper;
                 const matchCategory = selectedCategory === 'Todas' || d.categoria === selectedCategory;
 
+                // Coincidencia con la búsqueda en tiempo real (por título, nombre de artículo o categoría)
+                const matchSearch = !searchTerm ||
+                    (d.product_title && d.product_title.toLowerCase().includes(searchTerm)) ||
+                    (d.item && d.item.toLowerCase().includes(searchTerm)) ||
+                    (d.categoria && d.categoria.toLowerCase().includes(searchTerm));
+
                 if (!hasPlan) {
                     // Modo gratuito: solo se muestran los 6 productos de muestra en MásxMenos o MegaSuper
                     const isTrial = window.FREE_TRIAL_ITEMS.includes(d.item);
                     if (!isTrial) return false;
 
                     if (selectedItem !== 'Todos') {
-                        return matchSuper && matchCategory && d.item === selectedItem;
+                        return matchSuper && matchCategory && d.item === selectedItem && matchSearch;
                     }
-                    return matchSuper && matchCategory;
+                    return matchSuper && matchCategory && matchSearch;
                 }
 
                 const matchItem = selectedItem === 'Todos' || d.item === selectedItem;
-                return matchSuper && matchCategory && matchItem;
+                return matchSuper && matchCategory && matchItem && matchSearch;
             });
 
             filteredData.sort((a, b) => a.precio - b.precio);
 
             currentPage = 1;
-            if (window.triggerGridAnimation) {
+            if (!skipAnimation && window.triggerGridAnimation) {
                 window.triggerGridAnimation(() => renderTable());
             } else {
                 renderTable();
@@ -1550,6 +1602,10 @@
         const renderTable = () => {
             tableBody.innerHTML = '';
 
+            const selectAllCb = document.getElementById('selectAllTableCheckbox');
+            if (selectAllCb) selectAllCb.checked = false;
+            if (window.deseleccionarTodosFilas) window.deseleccionarTodosFilas();
+
             if (isLoadingProducts) {
                 tableBody.parentElement.classList.remove('hidden');
                 noResults.classList.add('hidden');
@@ -1560,7 +1616,7 @@
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td colspan="5" class="py-16 text-center text-vibrant-dark font-bold text-sm bg-gray-50">
+                    <td colspan="6" class="py-16 text-center text-vibrant-dark font-bold text-sm bg-gray-50">
                         <div class="inline-flex items-center gap-3">
                             <span class="animate-spin text-2xl inline-block">🔄</span>
                             <span class="text-base font-black">Conectando con el servicio de scraping en vivo...</span>
@@ -1625,6 +1681,9 @@
                     : '';
 
                 tr.innerHTML = `
+                    <td class="py-4 px-3 text-center stitch-border-r border-b-2 border-vibrant-dark">
+                        <input type="checkbox" class="row-select-checkbox w-4 h-4 cursor-pointer accent-[#2962FF]" data-id="${row.id}" onchange="window.handleRowCheckboxChange && window.handleRowCheckboxChange()">
+                    </td>
                     <td class="py-4 px-6 stitch-border-r border-b-2 border-vibrant-dark text-sm text-gray-600 font-bold">${row.fecha}</td>
                     <td class="py-4 px-6 stitch-border-r border-b-2 border-vibrant-dark text-sm font-black text-vibrant-dark">
                         <div class="flex items-center gap-2 flex-wrap">
@@ -2434,6 +2493,81 @@
             });
         }
 
+        // Búsqueda en tiempo real por nombre de producto
+        const productSearchInput = document.getElementById('productSearchInput');
+        if (productSearchInput) {
+            productSearchInput.addEventListener('input', () => {
+                if (itemFilter && itemFilter.value !== 'Todos' && productSearchInput.value.trim().length > 0) {
+                    itemFilter.value = 'Todos';
+                }
+                applyFilters(true);
+            });
+        }
+        window.clearProductSearch = function () {
+            if (productSearchInput) {
+                productSearchInput.value = '';
+                applyFilters(false);
+            }
+        };
+
+        // Selección múltiple de filas en la tabla
+        window.toggleSelectAllTableRows = function (checked) {
+            const cbs = document.querySelectorAll('.row-select-checkbox');
+            cbs.forEach(cb => { cb.checked = checked; });
+            window.handleRowCheckboxChange();
+        };
+
+        window.handleRowCheckboxChange = function () {
+            const checkedCbs = document.querySelectorAll('.row-select-checkbox:checked');
+            const batchBar = document.getElementById('batchSelectionBar');
+            const batchBadge = document.getElementById('batchCountBadge');
+            const selectAll = document.getElementById('selectAllTableCheckbox');
+            const allCbs = document.querySelectorAll('.row-select-checkbox');
+
+            if (selectAll && allCbs.length > 0) {
+                selectAll.checked = (checkedCbs.length === allCbs.length);
+            }
+
+            if (batchBar && batchBadge) {
+                if (checkedCbs.length > 0) {
+                    batchBadge.innerText = `${checkedCbs.length} ${checkedCbs.length === 1 ? 'producto seleccionado' : 'productos seleccionados'}`;
+                    batchBar.classList.remove('hidden');
+                } else {
+                    batchBar.classList.add('hidden');
+                }
+            }
+        };
+
+        window.deseleccionarTodosFilas = function () {
+            const cbs = document.querySelectorAll('.row-select-checkbox');
+            cbs.forEach(cb => { cb.checked = false; });
+            const selectAll = document.getElementById('selectAllTableCheckbox');
+            if (selectAll) selectAll.checked = false;
+            const batchBar = document.getElementById('batchSelectionBar');
+            if (batchBar) batchBar.classList.add('hidden');
+        };
+
+        window.agregarSeleccionadosACanasta = function () {
+            const checkedCbs = Array.from(document.querySelectorAll('.row-select-checkbox:checked'));
+            if (checkedCbs.length === 0) return;
+
+            let addedCount = 0;
+            checkedCbs.forEach(cb => {
+                const id = parseInt(cb.getAttribute('data-id'), 10);
+                if (id && window.agregarProductoCanasta) {
+                    window.agregarProductoCanasta(id);
+                    addedCount++;
+                }
+            });
+
+            window.deseleccionarTodosFilas();
+
+            const canastaEl = document.getElementById('canastaComparisonSection') || document.querySelector('.layout-container');
+            if (canastaEl) {
+                canastaEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
             renderTable();
             loadProductsData();
@@ -2997,6 +3131,10 @@
                     root.appendChild(card);
                 });
             });
+
+            if (window.renderCanastaComparison) {
+                window.renderCanastaComparison();
+            }
         }
 
         // 5. Generador de Imagen de la Canasta (Canvas de alta resolución)
@@ -3219,7 +3357,24 @@
             });
             waText += `━━━━━━━━━━━━━━━━━━━━━\n`;
             waText += `💰 *TOTAL GENERAL ESTIMADO: ₡${Number(total).toLocaleString('es-CR')}*\n`;
-            waText += `📦 *Total:* ${totalUnits} ${totalUnits === 1 ? 'artículo' : 'artículos'}${items.length !== totalUnits ? ` (${items.length} productos)` : ''}\n\n`;
+            waText += `📦 *Total:* ${totalUnits} ${totalUnits === 1 ? 'artículo' : 'artículos'}${items.length !== totalUnits ? ` (${items.length} productos)` : ''}\n`;
+
+            const compData = window.calcularComparativaCanasta ? window.calcularComparativaCanasta() : null;
+            if (compData && compData.cheapest && compData.resultsBySuper) {
+                waText += `━━━━━━━━━━━━━━━━━━━━━\n`;
+                waText += `🏆 *¿DÓNDE SALE MÁS BARATO COMPRAR TODO?*\n`;
+                waText += `🥇 *${compData.cheapest.super}:* ₡${Number(compData.cheapest.total).toLocaleString('es-CR')} (¡Opción más barata!)\n`;
+                if (compData.resultsBySuper[1]) {
+                    waText += `🥈 *${compData.resultsBySuper[1].super}:* ₡${Number(compData.resultsBySuper[1].total).toLocaleString('es-CR')}\n`;
+                }
+                if (compData.resultsBySuper[2]) {
+                    waText += `🥉 *${compData.resultsBySuper[2].super}:* ₡${Number(compData.resultsBySuper[2].total).toLocaleString('es-CR')}\n`;
+                }
+                if (compData.maxSavings > 0) {
+                    waText += `💡 *Ahorro máximo:* ₡${Number(compData.maxSavings).toLocaleString('es-CR')} frente a la tienda más cara.\n`;
+                }
+            }
+            waText += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
             waText += `✨ Comparado en: https://mercadofacil.webticocr.com`;
 
             // Intentar compartir con foto si el navegador lo soporta (móviles)
@@ -3314,6 +3469,545 @@
                 renderCanastaUI();
             }
         };
+
+        // ==============================================
+        // COMPARATIVA MULTI-ALMACÉN: ¿DÓNDE SALE MÁS BARATO?
+        // ==============================================
+        window.calcularComparativaCanasta = function () {
+            const items = getItemsFromStorage();
+            if (!items || items.length === 0) return null;
+
+            // Agrupar items únicos y sus cantidades acumuladas
+            const itemMap = {};
+            items.forEach(it => {
+                if (!itemMap[it.item]) {
+                    itemMap[it.item] = {
+                        item: it.item,
+                        cantidad: 0,
+                        categoria: it.categoria || ''
+                    };
+                }
+                itemMap[it.item].cantidad += (Number(it.cantidad) || 1);
+            });
+
+            const uniqueItems = Object.values(itemMap);
+            const supers = ['Walmart', 'MásxMenos', 'Maxi Palí', 'Palí', 'Auto Mercado', 'MegaSuper', 'Perimercados', 'PriceSmart', 'Pequeño Mundo'];
+
+            const resultsBySuper = supers.map(supName => {
+                let total = 0;
+                let countAvailable = 0;
+                const prices = {};
+
+                uniqueItems.forEach(u => {
+                    const match = (window.allData || []).find(d => d.item === u.item && d.super === supName);
+                    if (match && match.precio) {
+                        prices[u.item] = match.precio;
+                        total += match.precio * u.cantidad;
+                        countAvailable++;
+                    } else {
+                        // Buscar en cualquier otro súper como referencia
+                        const anyMatch = (window.allData || []).find(d => d.item === u.item);
+                        if (anyMatch && anyMatch.precio) {
+                            prices[u.item] = anyMatch.precio;
+                            total += anyMatch.precio * u.cantidad;
+                        } else {
+                            prices[u.item] = null;
+                        }
+                    }
+                });
+
+                return {
+                    super: supName,
+                    total: total,
+                    countAvailable: countAvailable,
+                    totalItems: uniqueItems.length,
+                    prices: prices
+                };
+            });
+
+            resultsBySuper.sort((a, b) => a.total - b.total);
+
+            const cheapest = resultsBySuper[0];
+            const mostExpensive = resultsBySuper[resultsBySuper.length - 1];
+            const maxSavings = (mostExpensive && cheapest) ? (mostExpensive.total - cheapest.total) : 0;
+
+            return {
+                uniqueItems,
+                resultsBySuper,
+                cheapest,
+                mostExpensive,
+                maxSavings
+            };
+        };
+
+        window.renderCanastaComparison = function () {
+            const compSection = document.getElementById('canastaComparisonSection');
+            if (!compSection) return;
+
+            const items = getItemsFromStorage();
+            if (!items || items.length === 0) {
+                compSection.innerHTML = `
+                    <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-8 text-center">
+                        <span class="text-3xl block mb-2">🧺</span>
+                        <h4 class="font-black text-sm uppercase text-gray-700">Sin productos en la canasta para comparar</h4>
+                        <p class="text-xs text-gray-500 mt-1 max-w-md mx-auto">
+                            Agregue varios productos desde la tabla con "➕ Agregar" o utilice el botón <strong>"⚡ Armar Canasta"</strong> para ver en cuál almacén le sale más barato comprar toda su lista.
+                        </p>
+                        <button onclick="window.abrirModalArmarCanasta && window.abrirModalArmarCanasta()" class="mt-4 bg-vibrant-green hover:bg-green-400 text-vibrant-dark font-black px-4 py-2 text-xs border-2 border-vibrant-dark shadow-stitch uppercase tracking-wider inline-flex items-center gap-1.5 cursor-pointer">
+                            <span>⚡</span> Armar Canasta (Varios Productos)
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            const data = window.calcularComparativaCanasta();
+            if (!data) return;
+
+            const { uniqueItems, resultsBySuper, cheapest, mostExpensive, maxSavings } = data;
+            const hasPlan = Boolean(window.hasAccessToAllSupermarkets && window.hasAccessToAllSupermarkets());
+
+            // 1. Podio / Tarjetas de Totales por Supermercado
+            const rankCardsHtml = resultsBySuper.map((sup, idx) => {
+                const isCheapest = idx === 0;
+                const diff = sup.total - cheapest.total;
+                const isFreeSuper = window.FREE_TRIAL_SUPERS && window.FREE_TRIAL_SUPERS.includes(sup.super);
+                const isLockedNotice = !hasPlan && !isFreeSuper;
+
+                let cardBg = isCheapest ? 'bg-[#FEF9C3] border-vibrant-dark border-4 shadow-stitch' : 'bg-white border-2 border-vibrant-dark shadow-stitch';
+                let trophyBadge = isCheapest
+                    ? `<span class="inline-flex items-center gap-1 bg-vibrant-green text-vibrant-dark text-[10px] font-black px-2 py-0.5 border border-vibrant-dark uppercase tracking-wider">🏆 PUESTO 1 · MÁS BARATO</span>`
+                    : `<span class="inline-flex items-center gap-1 bg-gray-100 text-gray-700 text-[10px] font-bold px-2 py-0.5 border border-gray-300">Puesto #${idx + 1}</span>`;
+
+                return `
+                    <div class="${cardBg} p-4 flex flex-col justify-between transition-transform hover:-translate-y-0.5">
+                        <div>
+                            <div class="flex items-center justify-between gap-2 mb-2">
+                                ${trophyBadge}
+                                ${isFreeSuper ? '<span class="text-[9px] bg-emerald-100 text-emerald-900 px-1.5 py-0.5 border border-emerald-400 font-black uppercase">⭐ Modo Gratis</span>' : (isLockedNotice ? '<span class="text-[9px] bg-blue-100 text-blue-900 px-1.5 py-0.5 border border-blue-400 font-black uppercase">🔒 Plan</span>' : '')}
+                            </div>
+                            <h4 class="font-black text-base text-vibrant-dark uppercase tracking-tight">${sup.super}</h4>
+                            <div class="text-[11px] text-gray-500 font-semibold mb-3">
+                                ${sup.countAvailable} de ${sup.totalItems} productos cotizados
+                            </div>
+                        </div>
+                        <div class="pt-3 border-t-2 ${isCheapest ? 'border-vibrant-dark' : 'border-gray-200'}">
+                            <div class="text-[10px] font-bold uppercase text-gray-600 mb-0.5">Total de su Canasta:</div>
+                            <div class="text-xl md:text-2xl font-black ${isCheapest ? 'text-green-800' : 'text-vibrant-dark'} leading-tight">
+                                ${formatCRC(sup.total)}
+                            </div>
+                            <div class="text-[11px] font-bold mt-1.5">
+                                ${isCheapest
+                                    ? `<span class="text-emerald-700 font-black">🎉 ¡Ahorras ${formatCRC(maxSavings)} frente al más caro!</span>`
+                                    : `<span class="text-red-600 font-bold">+${formatCRC(diff)} más que el puesto 1</span>`
+                                }
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // 2. Matriz Detallada Producto x Supermercado
+            const minPricesByItem = {};
+            uniqueItems.forEach(u => {
+                let min = Infinity;
+                resultsBySuper.forEach(s => {
+                    const p = s.prices[u.item];
+                    if (p && p < min) min = p;
+                });
+                minPricesByItem[u.item] = min;
+            });
+
+            const theadCols = resultsBySuper.map((s, idx) => {
+                const isCheapest = idx === 0;
+                return `
+                    <th class="py-3 px-3 text-right text-xs font-black border-b-2 border-r-2 border-vibrant-dark ${isCheapest ? 'bg-emerald-200 text-emerald-950 font-black' : 'bg-gray-100 text-vibrant-dark'}">
+                        <div class="flex items-center justify-end gap-1">
+                            <span>${s.super}</span>
+                            ${isCheapest ? '<span>🏆</span>' : ''}
+                        </div>
+                        <div class="text-[10px] font-extrabold ${isCheapest ? 'text-green-900' : 'text-gray-500'}">${formatCRC(s.total)}</div>
+                    </th>
+                `;
+            }).join('');
+
+            const tbodyRows = uniqueItems.map(u => {
+                const minPrice = minPricesByItem[u.item];
+                const cells = resultsBySuper.map((s, idx) => {
+                    const price = s.prices[u.item];
+                    const isMin = price === minPrice;
+                    const subtotal = price ? price * u.cantidad : null;
+                    const isCheapestCol = idx === 0;
+
+                    return `
+                        <td class="py-3 px-3 text-right text-xs font-bold border-b border-r border-gray-300 ${isMin ? 'bg-emerald-50 text-emerald-900 font-black' : 'text-gray-700'} ${isCheapestCol && !isMin ? 'bg-amber-50/40' : ''}">
+                            ${subtotal ? `${formatCRC(subtotal)} ${isMin ? '<span class="ml-1 text-[10px] bg-emerald-200 text-emerald-950 px-1 py-0.5 border border-emerald-500 font-black">⭐</span>' : ''}` : '<span class="text-gray-400">N/D</span>'}
+                            ${u.cantidad > 1 && subtotal ? `<div class="text-[9px] text-gray-400 font-normal">(${formatCRC(price)} c/u)</div>` : ''}
+                        </td>
+                    `;
+                }).join('');
+
+                return `
+                    <tr class="hover:bg-blue-50/30 transition-colors">
+                        <td class="sticky left-0 bg-white py-3 px-4 text-xs font-black text-vibrant-dark border-b border-r-2 border-vibrant-dark z-10 shadow-xs">
+                            ${u.item}
+                        </td>
+                        <td class="py-3 px-3 text-center text-xs font-bold text-gray-600 border-b border-r-2 border-vibrant-dark bg-gray-50">
+                            x${u.cantidad}
+                        </td>
+                        ${cells}
+                    </tr>
+                `;
+            }).join('');
+
+            const tfootCols = resultsBySuper.map((s, idx) => {
+                const isCheapest = idx === 0;
+                return `
+                    <td class="py-4 px-3 text-right text-xs md:text-sm font-black border-r-2 border-gray-700 ${isCheapest ? 'bg-vibrant-green text-vibrant-dark font-black' : 'text-white'}">
+                        ${formatCRC(s.total)}
+                        ${isCheapest ? '<div class="text-[9px] uppercase font-black tracking-wider text-vibrant-dark">🏆 MÁS ECONÓMICO</div>' : ''}
+                    </td>
+                `;
+            }).join('');
+
+            const totalUnits = uniqueItems.reduce((acc, u) => acc + u.cantidad, 0);
+
+            compSection.innerHTML = `
+                <div class="bg-vibrant-dark text-white p-5 border-2 border-vibrant-dark shadow-stitch flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                    <div>
+                        <div class="inline-flex items-center gap-2 bg-vibrant-green text-vibrant-dark text-[10px] font-black px-2.5 py-0.5 border border-vibrant-dark uppercase tracking-wider mb-2">
+                            🏆 Comparativa Inteligente Multi-Almacén
+                        </div>
+                        <h3 class="text-xl md:text-2xl font-black uppercase tracking-tight flex items-center gap-2">
+                            <span>📊</span> ¿En qué almacén le sale más barato comprar toda esta canasta?
+                        </h3>
+                        <p class="text-xs text-gray-300 font-medium mt-1">
+                            Calculamos el costo exacto de sus ${uniqueItems.length} productos (${totalUnits} unidades) en los 9 supermercados monitoreados.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <button onclick="window.aplicarSuperMasBaratoACanasta && window.aplicarSuperMasBaratoACanasta()" 
+                            class="bg-vibrant-green hover:bg-green-400 text-vibrant-dark font-black py-2.5 px-4 text-xs border-2 border-vibrant-dark shadow-stitch uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5">
+                            <span>⚡</span> Comprar todo en ${cheapest.super} (${formatCRC(cheapest.total)})
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="text-xs font-black uppercase tracking-wider text-gray-700 mb-3 flex items-center gap-2">
+                        <span>🏁</span> Ranking de Precios Totales por Supermercado (De menor a mayor)
+                    </h4>
+                    <div id="canastaSuperRankCards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        ${rankCardsHtml}
+                    </div>
+                </div>
+
+                <div class="bg-white border-2 border-vibrant-dark shadow-stitch p-4 overflow-hidden">
+                    <div class="flex items-center justify-between gap-4 mb-3 flex-wrap">
+                        <h4 class="text-xs font-black uppercase tracking-wider text-gray-800 flex items-center gap-2">
+                            <span>📋</span> Desglose Producto por Producto en Cada Almacén
+                        </h4>
+                        <span class="text-[11px] text-gray-600 font-bold">
+                            ⭐ Badge verde resalta el precio más bajo de cada producto
+                        </span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table id="canastaMatrixTable" class="w-full text-left border-collapse min-w-[850px]">
+                            <thead>
+                                <tr class="bg-gray-100 stitch-border-b">
+                                    <th class="sticky left-0 bg-gray-100 py-3 px-4 text-xs font-black text-vibrant-dark border-b-2 border-r-2 border-vibrant-dark z-10 w-56">Producto</th>
+                                    <th class="py-3 px-3 text-center text-xs font-black text-vibrant-dark border-b-2 border-r-2 border-vibrant-dark w-16">Cant.</th>
+                                    ${theadCols}
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                ${tbodyRows}
+                            </tbody>
+                            <tfoot>
+                                <tr class="bg-gray-900 text-white font-black">
+                                    <td class="sticky left-0 bg-gray-900 text-white py-4 px-4 text-xs uppercase tracking-wider border-r-2 border-gray-700 z-10">
+                                        TOTAL CANASTA
+                                    </td>
+                                    <td class="py-4 px-3 text-center text-xs border-r-2 border-gray-700">
+                                        ${totalUnits}
+                                    </td>
+                                    ${tfootCols}
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            `;
+        };
+
+        window.aplicarSuperMasBaratoACanasta = function () {
+            const data = window.calcularComparativaCanasta();
+            if (!data || !data.cheapest) return;
+
+            const cheapest = data.cheapest;
+            const items = getItemsFromStorage();
+
+            items.forEach(it => {
+                const match = (window.allData || []).find(d => d.item === it.item && d.super === cheapest.super);
+                if (match && match.precio) {
+                    it.super = cheapest.super;
+                    it.precio = match.precio;
+                }
+            });
+
+            if (sqliteDb) {
+                try {
+                    items.forEach(it => {
+                        sqliteDb.run("UPDATE canasta SET super = ?, precio = ? WHERE id = ?", [it.super, it.precio, it.id]);
+                    });
+                    persistSQLite();
+                } catch (e) {
+                    console.error('Error al actualizar SQLite a súper más barato:', e);
+                }
+            }
+            localStorage.setItem(FALLBACK_STORAGE_KEY, JSON.stringify(items));
+            renderCanastaUI();
+
+            window.customAlert(
+                `¡Su canasta se ha actualizado por completo!<br><br>Todos los productos están ahora cotizados con los precios de <strong>${cheapest.super}</strong> por un total de <strong>${formatCRC(cheapest.total)}</strong>.`,
+                'Canasta Optimizada',
+                '🏆'
+            );
+        };
+
+        // ==============================================
+        // MODAL DE SELECCIÓN MÚLTIPLE DE PRODUCTOS
+        // ==============================================
+        let modalSelectedItems = new Set();
+
+        window.abrirModalArmarCanasta = function () {
+            const modal = document.getElementById('modalArmarCanasta');
+            if (!modal) return;
+            modalSelectedItems.clear();
+
+            // Pre-seleccionar los items que ya estén en la canasta
+            const currentCanasta = getItemsFromStorage();
+            currentCanasta.forEach(it => modalSelectedItems.add(it.item));
+
+            const searchInp = document.getElementById('modalCanastaSearchInput');
+            if (searchInp) searchInp.value = '';
+
+            window.renderModalCanastaList('');
+            window.actualizarModalCanastaBadge();
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.cerrarModalArmarCanasta = function () {
+            const modal = document.getElementById('modalArmarCanasta');
+            if (modal) modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        };
+
+        window.renderModalCanastaList = function (filterText = '') {
+            const container = document.getElementById('modalCanastaProductList');
+            if (!container) return;
+
+            const hasPlan = Boolean(window.hasAccessToAllSupermarkets && window.hasAccessToAllSupermarkets());
+            const term = filterText.trim().toLowerCase();
+
+            // Agrupar items únicos del catálogo
+            const uniqueCatalog = [];
+            const seen = new Set();
+            (window.allData || []).forEach(d => {
+                if (!seen.has(d.item)) {
+                    seen.add(d.item);
+                    uniqueCatalog.push({
+                        item: d.item,
+                        categoria: d.categoria || 'Canasta Básica',
+                        minPrice: minPrices[d.item] || d.precio,
+                        id: d.id,
+                        isTrial: window.FREE_TRIAL_ITEMS && window.FREE_TRIAL_ITEMS.includes(d.item)
+                    });
+                }
+            });
+
+            const filtered = uniqueCatalog.filter(u => {
+                if (term) {
+                    const matchName = u.item.toLowerCase().includes(term);
+                    const matchCat = u.categoria.toLowerCase().includes(term);
+                    return matchName || matchCat;
+                }
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="py-10 text-center text-gray-500 font-bold text-sm">
+                        No se encontraron productos con "${filterText}".
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(u => {
+                const isChecked = modalSelectedItems.has(u.item);
+                const isLocked = !hasPlan && !u.isTrial;
+                return `
+                    <label class="flex items-center justify-between p-3 hover:bg-blue-50/60 cursor-pointer transition-colors ${isChecked ? 'bg-emerald-50 border-l-4 border-vibrant-green' : ''}">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" value="${u.item}" ${isChecked ? 'checked' : ''} 
+                                onchange="window.toggleModalItem('${u.item.replace(/'/g, "\\'")}', this.checked)"
+                                class="w-5 h-5 cursor-pointer accent-[#2962FF]" />
+                            <div>
+                                <div class="font-black text-sm text-vibrant-dark flex items-center gap-2">
+                                    <span>${u.item}</span>
+                                    ${u.isTrial ? '<span class="text-[9px] bg-amber-200 text-amber-950 font-black px-1.5 py-0.5 border border-vibrant-dark uppercase">⭐ Gratis</span>' : (isLocked ? '<span class="text-[9px] bg-red-100 text-red-700 font-black px-1.5 py-0.5 border border-red-300 uppercase">🔒 Plan</span>' : '')}
+                                </div>
+                                <div class="text-[11px] text-gray-500 font-semibold">${u.categoria}</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[11px] text-gray-500 font-medium block">Desde</span>
+                            <span class="font-black text-xs md:text-sm text-green-700">${formatCRC(u.minPrice)}</span>
+                        </div>
+                    </label>
+                `;
+            }).join('');
+        };
+
+        window.toggleModalItem = function (itemName, isChecked) {
+            if (isChecked) {
+                modalSelectedItems.add(itemName);
+            } else {
+                modalSelectedItems.delete(itemName);
+            }
+            window.actualizarModalCanastaBadge();
+        };
+
+        window.actualizarModalCanastaBadge = function () {
+            const badge = document.getElementById('modalCanastaCountBadge');
+            if (badge) {
+                const count = modalSelectedItems.size;
+                badge.innerText = `${count} ${count === 1 ? 'producto seleccionado' : 'productos seleccionados'}`;
+            }
+        };
+
+        window.clearModalCanastaSearch = function () {
+            const inp = document.getElementById('modalCanastaSearchInput');
+            if (inp) {
+                inp.value = '';
+                window.renderModalCanastaList('');
+            }
+        };
+
+        window.seleccionarPresetCanasta = function (presetKey) {
+            const presets = {
+                esenciales: [
+                    'Arroz Tío Pelón 1.8kg',
+                    'Frijoles Negros Don Pedro 800g',
+                    'Aceite de Soya Capullo 1L',
+                    'Leche Semidescremada Dos Pinos 1L',
+                    'Café 1820 Clásico 250g',
+                    'Azúcar Blanco Doña María 1kg'
+                ],
+                desayuno: [
+                    'Leche Semidescremada Dos Pinos 1L',
+                    'Café 1820 Clásico 250g',
+                    'Pan Baguette',
+                    'Avena Quaker 400g'
+                ],
+                almuerzo: [
+                    'Arroz Tío Pelón 1.8kg',
+                    'Frijoles Negros Don Pedro 800g',
+                    'Bistec de Res',
+                    'Pollo Entero',
+                    'Tomate Primera',
+                    'Cebolla Amarilla',
+                    'Aceite de Soya Capullo 1L'
+                ],
+                limpieza: [
+                    'Papel Higiénico Scott 4 rollos',
+                    'Pasta Dental Colgate Total 12',
+                    'Detergente en Polvo Xedex 1kg',
+                    'Jabón de Baño Protex 3 Pack',
+                    'Jabón para Ropa y Platos Axion'
+                ]
+            };
+
+            const itemsToAdd = presets[presetKey] || [];
+            itemsToAdd.forEach(it => {
+                const match = (window.allData || []).find(d => d.item.toLowerCase().includes(it.toLowerCase()) || it.toLowerCase().includes(d.item.toLowerCase()));
+                if (match) modalSelectedItems.add(match.item);
+                else modalSelectedItems.add(it);
+            });
+
+            const searchInp = document.getElementById('modalCanastaSearchInput');
+            window.renderModalCanastaList(searchInp ? searchInp.value : '');
+            window.actualizarModalCanastaBadge();
+        };
+
+        window.marcarTodosModalCanasta = function (check) {
+            const cbs = document.querySelectorAll('#modalCanastaProductList input[type="checkbox"]');
+            cbs.forEach(cb => {
+                cb.checked = check;
+                if (check) modalSelectedItems.add(cb.value);
+                else modalSelectedItems.delete(cb.value);
+            });
+            window.actualizarModalCanastaBadge();
+            const searchInp = document.getElementById('modalCanastaSearchInput');
+            window.renderModalCanastaList(searchInp ? searchInp.value : '');
+        };
+
+        window.confirmarAgregarCanastaModal = function () {
+            if (modalSelectedItems.size === 0) {
+                window.customAlert('Por favor seleccione al menos un producto para armar su canasta.', 'Ningún producto seleccionado', '⚠️');
+                return;
+            }
+
+            const currentItems = getItemsFromStorage();
+
+            modalSelectedItems.forEach(itemName => {
+                const alreadyIn = currentItems.some(i => i.item === itemName);
+                if (!alreadyIn) {
+                    const prodsForItem = (window.allData || []).filter(d => d.item === itemName);
+                    if (prodsForItem.length > 0) {
+                        prodsForItem.sort((a, b) => a.precio - b.precio);
+                        const best = prodsForItem[0];
+                        insertItem(best.item, best.super, best.precio, best.fecha);
+                    }
+                }
+            });
+
+            window.cerrarModalArmarCanasta();
+            renderCanastaUI();
+
+            const compSection = document.getElementById('canastaComparisonSection');
+            if (compSection) {
+                compSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            window.customAlert(
+                `Se han incorporado <strong>${modalSelectedItems.size} productos</strong> a su canasta.<br><br>A continuación puede revisar la <strong>comparativa por almacén</strong> para descubrir dónde le sale más barato.`,
+                '¡Canasta Lista para Comparar!',
+                '🧺'
+            );
+        };
+
+        // Listener para búsqueda dentro del modal
+        const modalSearchInp = document.getElementById('modalCanastaSearchInput');
+        if (modalSearchInp) {
+            modalSearchInp.addEventListener('input', () => {
+                const clearBtn = document.getElementById('modalClearSearch');
+                if (clearBtn) {
+                    if (modalSearchInp.value.trim().length > 0) clearBtn.classList.remove('hidden');
+                    else clearBtn.classList.add('hidden');
+                }
+                window.renderModalCanastaList(modalSearchInp.value);
+            });
+        }
+
+        // Renderizado inicial de la comparativa de canasta si ya hay productos
+        setTimeout(() => {
+            if (window.renderCanastaComparison) {
+                window.renderCanastaComparison();
+            }
+        }, 300);
 
 
         // ==============================================
@@ -6201,6 +6895,112 @@
                     class="bg-vibrant-dark text-white font-black px-5 py-2 text-xs uppercase tracking-wider border-2 border-vibrant-dark shadow-stitch hover:bg-black cursor-pointer">
                     Cerrar Panel
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==============================================
+         BARRA FLOTANTE DE ACCIÓN BATCH (SELECCIÓN MÚLTIPLE EN TABLA)
+         ============================================== -->
+    <div id="batchSelectionBar" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#0F172A] text-white border-2 border-vibrant-green shadow-2xl px-6 py-3.5 flex items-center gap-4 flex-wrap animate-fadeIn">
+        <div class="flex items-center gap-2">
+            <span class="text-xl">🧺</span>
+            <span id="batchCountBadge" class="font-black text-sm text-vibrant-green">0 seleccionados</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="window.agregarSeleccionadosACanasta && window.agregarSeleccionadosACanasta()" 
+                class="bg-vibrant-green hover:bg-green-400 text-vibrant-dark font-black px-4 py-2 text-xs border-2 border-vibrant-dark shadow-stitch uppercase tracking-wider cursor-pointer transition-all active:translate-y-0.5 flex items-center gap-1.5">
+                <span>➕</span> Agregar a Canasta
+            </button>
+            <button onclick="window.deseleccionarTodosFilas && window.deseleccionarTodosFilas()" 
+                class="bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold px-3 py-2 text-xs border border-gray-600 cursor-pointer">
+                ✕ Desmarcar
+            </button>
+        </div>
+    </div>
+
+    <!-- ==============================================
+         MODAL ARMAR CANASTA MULTI-PRODUCTO
+         ============================================== -->
+    <div id="modalArmarCanasta" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white border-4 border-vibrant-dark shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fadeIn">
+            <!-- Header -->
+            <div class="bg-[#0F172A] text-white p-5 border-b-4 border-vibrant-dark flex items-start justify-between gap-4">
+                <div>
+                    <div class="inline-flex items-center gap-2 bg-vibrant-green text-vibrant-dark text-[10px] font-black px-2.5 py-0.5 border border-vibrant-dark uppercase tracking-wider mb-2">
+                        ⚡ Selección Rápida
+                    </div>
+                    <h3 class="text-xl md:text-2xl font-black uppercase tracking-tight flex items-center gap-2">
+                        <span>🧺</span> Armar Canasta y Comparar Almacenes
+                    </h3>
+                    <p class="text-xs text-gray-300 font-medium mt-1">
+                        Seleccione varios productos al mismo tiempo. El sistema calculará automáticamente en cuál almacén le sale más barato comprar toda su lista.
+                    </p>
+                </div>
+                <button onclick="window.cerrarModalArmarCanasta && window.cerrarModalArmarCanasta()" class="text-gray-400 hover:text-white text-2xl font-black cursor-pointer leading-none p-1">✕</button>
+            </div>
+
+            <!-- Controles de Filtro & Presets -->
+            <div class="p-4 bg-gray-100 border-b-2 border-vibrant-dark space-y-3">
+                <!-- Buscador en tiempo real dentro del modal -->
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-base">🔍</span>
+                    <input type="text" id="modalCanastaSearchInput" 
+                        placeholder="Filtrar productos por nombre (ej: Arroz, Atún, Leche, Huevos, Café...)"
+                        class="w-full pl-10 pr-10 py-2.5 bg-white text-vibrant-dark placeholder-gray-500 font-bold text-sm border-2 border-vibrant-dark shadow-sm focus:outline-none focus:ring-2 focus:ring-vibrant-blue" />
+                    <button id="modalClearSearch" onclick="window.clearModalCanastaSearch && window.clearModalCanastaSearch()" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-red-600 font-black text-sm">✕</button>
+                </div>
+
+                <!-- Botones de Selección Rápida / Paquetes Frecuentes -->
+                <div class="flex items-center gap-2 flex-wrap text-xs">
+                    <span class="font-black text-gray-700 uppercase text-[11px]">Paquetes rápidos:</span>
+                    <button onclick="window.seleccionarPresetCanasta && window.seleccionarPresetCanasta('esenciales')" class="bg-amber-200 hover:bg-amber-300 text-amber-950 font-black px-2.5 py-1 border border-vibrant-dark uppercase text-[11px] cursor-pointer">
+                        ⭐ Canasta 6 Esenciales
+                    </button>
+                    <button onclick="window.seleccionarPresetCanasta && window.seleccionarPresetCanasta('desayuno')" class="bg-blue-100 hover:bg-blue-200 text-blue-900 font-bold px-2.5 py-1 border border-blue-400 uppercase text-[11px] cursor-pointer">
+                        🍳 Desayuno
+                    </button>
+                    <button onclick="window.seleccionarPresetCanasta && window.seleccionarPresetCanasta('almuerzo')" class="bg-green-100 hover:bg-green-200 text-green-900 font-bold px-2.5 py-1 border border-green-400 uppercase text-[11px] cursor-pointer">
+                        🥩 Almuerzo
+                    </button>
+                    <button onclick="window.seleccionarPresetCanasta && window.seleccionarPresetCanasta('limpieza')" class="bg-purple-100 hover:bg-purple-200 text-purple-900 font-bold px-2.5 py-1 border border-purple-400 uppercase text-[11px] cursor-pointer">
+                        🧴 Limpieza
+                    </button>
+                    <div class="ml-auto flex items-center gap-2">
+                        <button onclick="window.marcarTodosModalCanasta && window.marcarTodosModalCanasta(true)" class="text-blue-700 hover:underline font-bold text-xs cursor-pointer">
+                            ✓ Marcar visibles
+                        </button>
+                        <span class="text-gray-300">|</span>
+                        <button onclick="window.marcarTodosModalCanasta && window.marcarTodosModalCanasta(false)" class="text-red-600 hover:underline font-bold text-xs cursor-pointer">
+                            ✕ Desmarcar todos
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista scrolleable de productos -->
+            <div id="modalCanastaProductList" class="flex-1 overflow-y-auto p-4 max-h-[50vh] divide-y divide-gray-200 bg-white">
+                <!-- Inyectado dinámicamente con JS -->
+            </div>
+
+            <!-- Footer fijo del modal -->
+            <div class="p-4 bg-gray-50 border-t-2 border-vibrant-dark flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <span id="modalCanastaCountBadge" class="bg-[#0F172A] text-vibrant-green font-black px-3 py-1.5 text-xs border border-vibrant-dark">
+                        0 productos seleccionados
+                    </span>
+                    <span class="text-xs text-gray-600 font-medium hidden sm:inline">
+                        Se sumarán a su canasta con comparativa automática
+                    </span>
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button onclick="window.cerrarModalArmarCanasta && window.cerrarModalArmarCanasta()" class="w-1/2 sm:w-auto px-4 py-2 border-2 border-vibrant-dark font-bold text-xs bg-white hover:bg-gray-100 text-vibrant-dark cursor-pointer">
+                        Cancelar
+                    </button>
+                    <button onclick="window.confirmarAgregarCanastaModal && window.confirmarAgregarCanastaModal()" class="w-1/2 sm:w-auto px-5 py-2 border-2 border-vibrant-dark font-black text-xs bg-vibrant-green hover:bg-green-400 text-vibrant-dark shadow-stitch uppercase tracking-wider cursor-pointer transition-all active:translate-y-0.5">
+                        🧺 Agregar y Comparar Almacenes
+                    </button>
+                </div>
             </div>
         </div>
     </div>
