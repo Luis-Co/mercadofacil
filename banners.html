@@ -158,7 +158,11 @@
         <div class="flex items-center gap-2 overflow-x-auto pb-2">
             <button onclick="window.filtrarBanners('todos')"
                 class="filter-btn active bg-vibrant-dark text-white font-black px-4 py-2 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer">
-                Todos (6)
+                Todos (9)
+            </button>
+            <button onclick="window.filtrarBanners('nueva_canasta')"
+                class="filter-btn bg-white hover:bg-gray-100 text-vibrant-dark font-black px-4 py-2 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer">
+                🧺 Nueva Canasta (3)
             </button>
             <button onclick="window.filtrarBanners('fb_cuadrado')"
                 class="filter-btn bg-white hover:bg-gray-100 text-vibrant-dark font-black px-4 py-2 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer">
@@ -410,6 +414,108 @@
                 </div>
             </div>
 
+            <!-- BANNER 7: FEED CUADRADO (1:1) - NUEVO FEATURE CANASTA Y COMPARATIVA -->
+            <div class="banner-card bg-white stitch-box-4 shadow-stitch flex flex-col justify-between"
+                data-category="fb_cuadrado nueva_canasta">
+                <div class="p-4 border-b-2 border-vibrant-dark bg-yellow-100 flex items-center justify-between">
+                    <div>
+                        <span class="bg-vibrant-dark text-vibrant-green text-[10px] font-black px-2 py-0.5 uppercase">Nuevo Feature · 1:1</span>
+                        <h3 class="font-black text-sm uppercase text-vibrant-dark mt-1">7. Canasta Multi-Súper y Podio</h3>
+                    </div>
+                    <span class="font-mono text-xs font-bold text-gray-500">1080 × 1080</span>
+                </div>
+
+                <div class="p-4 bg-gray-50 flex items-center justify-center">
+                    <canvas id="canvasBanner7" class="w-full h-auto border-2 border-vibrant-dark shadow-stitch max-w-[340px]"></canvas>
+                </div>
+
+                <div class="p-4 space-y-3 border-t-2 border-vibrant-dark bg-white">
+                    <div class="flex items-center gap-2">
+                        <button
+                            onclick="window.descargarCanvas('canvasBanner7', 'MercadoFacil_NuevoFeature_Canasta_1080x1080.png')"
+                            class="flex-1 bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black py-2.5 px-3 text-xs uppercase border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover cursor-pointer flex items-center justify-center gap-1.5 transition-all">
+                            <span>📥</span> Descargar PNG
+                        </button>
+                        <button onclick="window.copiarTextoPromo('copy7')"
+                            class="bg-white hover:bg-gray-100 text-vibrant-dark font-black py-2.5 px-3 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer"
+                            title="Copiar texto para la publicación">
+                            📋 Texto
+                        </button>
+                    </div>
+                    <div class="p-2.5 bg-gray-50 border border-gray-300 text-[11px] font-medium text-gray-700 leading-tight">
+                        <strong class="text-vibrant-dark font-bold">Uso recomendado:</strong> Feed de Facebook, publicaciones en grupos, difusión de WhatsApp y LinkedIn.
+                    </div>
+                </div>
+            </div>
+
+            <!-- BANNER 8: VERTICAL STORY (9:16) - NUEVO FEATURE ARMÁ TU CANASTA -->
+            <div class="banner-card bg-white stitch-box-4 shadow-stitch flex flex-col justify-between"
+                data-category="whatsapp_status nueva_canasta">
+                <div class="p-4 border-b-2 border-vibrant-dark bg-yellow-100 flex items-center justify-between">
+                    <div>
+                        <span class="bg-vibrant-yellow text-vibrant-dark text-[10px] font-black px-2 py-0.5 uppercase">Nuevo Feature · 9:16</span>
+                        <h3 class="font-black text-sm uppercase text-vibrant-dark mt-1">8. Story: Armá Tu Canasta y Ahorrá</h3>
+                    </div>
+                    <span class="font-mono text-xs font-bold text-gray-500">1080 × 1920</span>
+                </div>
+
+                <div class="p-4 bg-gray-50 flex items-center justify-center">
+                    <canvas id="canvasBanner8" class="w-full h-auto border-2 border-vibrant-dark shadow-stitch max-w-[200px]"></canvas>
+                </div>
+
+                <div class="p-4 space-y-3 border-t-2 border-vibrant-dark bg-white">
+                    <div class="flex items-center gap-2">
+                        <button
+                            onclick="window.descargarCanvas('canvasBanner8', 'MercadoFacil_NuevoFeature_Story_WhatsApp_1080x1920.png')"
+                            class="flex-1 bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black py-2.5 px-3 text-xs uppercase border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover cursor-pointer flex items-center justify-center gap-1.5 transition-all">
+                            <span>📥</span> Descargar PNG
+                        </button>
+                        <button onclick="window.copiarTextoPromo('copy8')"
+                            class="bg-white hover:bg-gray-100 text-vibrant-dark font-black py-2.5 px-3 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer"
+                            title="Copiar texto para la publicación">
+                            📋 Texto
+                        </button>
+                    </div>
+                    <div class="p-2.5 bg-gray-50 border border-gray-300 text-[11px] font-medium text-gray-700 leading-tight">
+                        <strong class="text-vibrant-dark font-bold">Uso recomendado:</strong> Estados de WhatsApp, Instagram Stories, Facebook Stories y TikTok.
+                    </div>
+                </div>
+            </div>
+
+            <!-- BANNER 9: HORIZONTAL (16:9) - COMPARADOR MULTI-ALMACÉN -->
+            <div class="banner-card bg-white stitch-box-4 shadow-stitch flex flex-col justify-between"
+                data-category="fb_horizontal nueva_canasta">
+                <div class="p-4 border-b-2 border-vibrant-dark bg-yellow-100 flex items-center justify-between">
+                    <div>
+                        <span class="bg-vibrant-blue text-white text-[10px] font-black px-2 py-0.5 uppercase">Nuevo Feature · 16:9</span>
+                        <h3 class="font-black text-sm uppercase text-vibrant-dark mt-1">9. Horizontal: Comparador Multi-Súper</h3>
+                    </div>
+                    <span class="font-mono text-xs font-bold text-gray-500">1200 × 630</span>
+                </div>
+
+                <div class="p-4 bg-gray-50 flex items-center justify-center">
+                    <canvas id="canvasBanner9" class="w-full h-auto border-2 border-vibrant-dark shadow-stitch max-w-[340px]"></canvas>
+                </div>
+
+                <div class="p-4 space-y-3 border-t-2 border-vibrant-dark bg-white">
+                    <div class="flex items-center gap-2">
+                        <button
+                            onclick="window.descargarCanvas('canvasBanner9', 'MercadoFacil_NuevoFeature_Horizontal_1200x630.png')"
+                            class="flex-1 bg-vibrant-green hover:bg-emerald-400 text-vibrant-dark font-black py-2.5 px-3 text-xs uppercase border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover cursor-pointer flex items-center justify-center gap-1.5 transition-all">
+                            <span>📥</span> Descargar PNG
+                        </button>
+                        <button onclick="window.copiarTextoPromo('copy9')"
+                            class="bg-white hover:bg-gray-100 text-vibrant-dark font-black py-2.5 px-3 text-xs uppercase border-2 border-vibrant-dark shadow-stitch cursor-pointer"
+                            title="Copiar texto para la publicación">
+                            📋 Texto
+                        </button>
+                    </div>
+                    <div class="p-2.5 bg-gray-50 border border-gray-300 text-[11px] font-medium text-gray-700 leading-tight">
+                        <strong class="text-vibrant-dark font-bold">Uso recomendado:</strong> Publicaciones horizontales de Facebook, blogs, banners web y cabeceras.
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <!-- SECCIÓN: TEXTOS PUBLICITARIOS LISTOS PARA COPIAR -->
@@ -595,6 +701,99 @@
                     <button onclick="window.copiarTextoPromo('copy6')"
                         class="w-full bg-slate-900 hover:bg-black text-vibrant-yellow font-black py-2.5 text-xs uppercase border border-vibrant-dark shadow-stitch cursor-pointer">
                         📋 Copiar Texto Auto Repuestos & Tecnología
+                    </button>
+                </div>
+
+                <!-- Texto 7: Nuevo Feature Canasta Multi-Súper -->
+                <div class="bg-yellow-50 border-2 border-vibrant-dark p-4 space-y-3 flex flex-col justify-between">
+                    <div>
+                        <div
+                            class="flex items-center justify-between border-b border-gray-300 pb-2 mb-2 font-black text-vibrant-dark">
+                            <span>🧺 Texto 7: Nuevo Feature Canasta Multi-Almacén</span>
+                            <span class="text-blue-600">Facebook / WhatsApp</span>
+                        </div>
+                        <p id="copy7" class="font-mono text-gray-800 whitespace-pre-line leading-relaxed">
+                            🧺🇨🇷 ¡NUEVO EN MERCADOFÁCIL: ARMÁ TU CANASTA Y DESCUBRÍ DÓNDE PAGAR MENOS!
+
+                            ¿Tenés que hacer las compras de la semana o quincena y querés saber en qué supermercado te sale más barata la compra completa?
+
+                            Acabamos de lanzar el nuevo COMPARADOR DE CANASTA MULTI-ALMACÉN:
+
+                            🔍 1. BUSCADOR EN VIVO: Escribí cualquier producto y la lista se filtra al instante en tiempo real mientras digitás.
+                            🧺 2. ARMÁ TU LISTA: Marcá con un clic los productos que vas a comprar (arroz, aceite, café, leche, atún, frijoles...).
+                            📊 3. COMPARATIVA EN TIEMPO REAL: El sistema suma el precio de cada artículo en cada supermercado y te muestra exactamente el costo total en cada cadena:
+
+                            🥇 Maxi Palí: ₡14,250 🏆 (¡El más barato!)
+                            🥈 MegaSuper: ₡15,100
+                            🥉 Walmart: ₡15,850
+                            🔴 MásxMenos: ₡16,980
+                            🟢 Auto Mercado: ₡19,450
+                            (¡Ahorrás hasta ₡5,200 en la misma compra!)
+
+                            Comparamos en tiempo real entre 9 cadenas:
+                            Walmart, Maxi Palí, MásxMenos, Palí, Auto Mercado, MegaSuper, Perimercados, PriceSmart y Pequeño Mundo.
+
+                            👉 Armá tu canasta 100% gratis aquí:
+                            🌐 https://mercadofacil.webticocr.com
+
+                            #MercadoFacilCR #CostaRica #AhorroTico #SupermercadosCR #CanastaBasica #ComprasInteligentes
+                        </p>
+                    </div>
+                    <button onclick="window.copiarTextoPromo('copy7')"
+                        class="w-full bg-vibrant-dark hover:bg-black text-vibrant-green font-black py-2.5 text-xs uppercase border border-vibrant-dark shadow-stitch cursor-pointer">
+                        📋 Copiar Texto Canasta Multi-Almacén
+                    </button>
+                </div>
+
+                <!-- Texto 8: Stories y Estados WhatsApp -->
+                <div class="bg-yellow-50 border-2 border-vibrant-dark p-4 space-y-3 flex flex-col justify-between">
+                    <div>
+                        <div
+                            class="flex items-center justify-between border-b border-gray-300 pb-2 mb-2 font-black text-vibrant-dark">
+                            <span>📲 Texto 8: Estados de WhatsApp & Stories</span>
+                            <span class="text-green-600">WhatsApp Status</span>
+                        </div>
+                        <p id="copy8" class="font-mono text-gray-800 whitespace-pre-line leading-relaxed">
+                            🛒🇨🇷 ¡NO COMPRÉS A CIEGAS EL SÚPER ESTA SEMANA!
+
+                            Acabamos de habilitar el nuevo ARMADOR DE CANASTA en MercadoFácil Costa Rica:
+
+                            1️⃣ Buscás lo que necesitás (filtra al instante mientras escribís) 🔍
+                            2️⃣ Seleccionás tus productos de la semana 🧺
+                            3️⃣ El sistema compara los precios en todos los supermercados y te dice dónde gastarás menos dinero 💰
+
+                            ¡Ahorros de más de ₡5,000 colones en una sola compra semanal!
+
+                            Entrá desde tu celular y probá tu canasta gratis:
+                            👉 https://mercadofacil.webticocr.com
+                        </p>
+                    </div>
+                    <button onclick="window.copiarTextoPromo('copy8')"
+                        class="w-full bg-vibrant-dark hover:bg-black text-vibrant-yellow font-black py-2.5 text-xs uppercase border border-vibrant-dark shadow-stitch cursor-pointer">
+                        📋 Copiar Texto para Estados de WhatsApp
+                    </button>
+                </div>
+
+                <!-- Texto 9: Para Grupos y Comunidades -->
+                <div class="bg-gray-50 border-2 border-vibrant-dark p-4 space-y-3 flex flex-col justify-between">
+                    <div>
+                        <div
+                            class="flex items-center justify-between border-b border-gray-300 pb-2 mb-2 font-black text-vibrant-dark">
+                            <span>👥 Texto 9: Recomendación Directa en Grupos</span>
+                            <span class="text-blue-600">Grupos de Vecinos</span>
+                        </div>
+                        <p id="copy9" class="font-mono text-gray-800 whitespace-pre-line leading-relaxed">
+                            🇨🇷 Vecinos: si van a ir al súper este fin de semana, les comparto este dato para que no paguen de más.
+
+                            En https://mercadofacil.webticocr.com pusieron un buscador y comparador de canasta completo:
+                            Ustedes marcan lo que van a comprar (arroz, aceite, café, etc.) y la página les suma y les dice exactamente cuánto les cuesta en Walmart, Maxi Palí, MásxMenos, MegaSuper, Auto Mercado, Perimercados y Pequeño Mundo.
+
+                            Nosotros comparamos una compra de 5 artículos y la diferencia entre el más barato y el más caro fue de más de ₡5,000. ¡Vale la pena chequear antes de salir de la casa!
+                        </p>
+                    </div>
+                    <button onclick="window.copiarTextoPromo('copy9')"
+                        class="w-full bg-vibrant-dark hover:bg-black text-white font-black py-2.5 text-xs uppercase border border-vibrant-dark shadow-stitch cursor-pointer">
+                        📋 Copiar Texto Recomendación Vecinos
                     </button>
                 </div>
 
@@ -1398,6 +1597,542 @@
             ctx.fillText('MercadoFácil CR · Scraping Inteligente y Análisis Automatizado de Mercados', w / 2, 1040);
         }
 
+        // ==========================================
+        // BANNER 7: FEED CUADRADO 1080x1080 (1:1) - NUEVO FEATURE CANASTA
+        // ==========================================
+        function drawBanner7() {
+            const canvas = document.getElementById('canvasBanner7');
+            if (!canvas) return;
+            const w = 1080, h = 1080;
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d');
+
+            // Fondo crema neo-brutalista
+            ctx.fillStyle = '#FFFDF9';
+            ctx.fillRect(0, 0, w, h);
+
+            // Borde exterior
+            ctx.lineWidth = 16;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(8, 8, w - 16, h - 16);
+
+            // Barra superior
+            ctx.fillStyle = '#0B0C10';
+            ctx.fillRect(16, 16, w - 32, 90);
+            ctx.fillStyle = '#00E676';
+            ctx.font = '900 30px "JetBrains Mono", monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText('🇨🇷 MERCADOFÁCIL · ¡NUEVO FEATURE EN VIVO!', 46, 70);
+
+            // Sello ahorro / canasta (rotado)
+            ctx.save();
+            ctx.translate(w - 180, 180);
+            ctx.rotate(0.08);
+            ctx.fillStyle = '#FFD600';
+            ctx.fillRect(-120, -45, 240, 90);
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(-120, -45, 240, 90);
+            ctx.fillStyle = '#0B0C10';
+            ctx.font = '900 24px "Plus Jakarta Sans", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('🧺 ARMÁ TU CANASTA', 0, -10);
+            ctx.font = '900 32px "JetBrains Mono", monospace';
+            ctx.fillText('¡Y AHORRÁ!', 0, 25);
+            ctx.restore();
+
+            // Titular
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#0B0C10';
+            ctx.font = '900 58px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('¿EN CUÁL SÚPER TE SALE', 50, 205);
+            ctx.fillText('MÁS BARATA LA CANASTA?', 50, 270);
+
+            ctx.fillStyle = '#2962FF';
+            ctx.font = '700 26px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('¡Elegí varios productos a la vez y compará el total en cada súper!', 50, 320);
+
+            // Mockup Caja de Búsqueda en Vivo
+            const searchX = 50, searchY = 350, searchW = w - 100, searchH = 70;
+            ctx.fillStyle = '#0B0C10';
+            ctx.fillRect(searchX + 6, searchY + 6, searchW, searchH);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(searchX, searchY, searchW, searchH);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(searchX, searchY, searchW, searchH);
+
+            ctx.fillStyle = '#6B7280';
+            ctx.font = '700 24px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('🔍 Buscador: "arroz, aceite, atún, café, leche..."', searchX + 24, searchY + 44);
+
+            // Badge filtro en vivo a la derecha
+            ctx.fillStyle = '#00E676';
+            ctx.fillRect(searchX + searchW - 250, searchY + 12, 235, 46);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(searchX + searchW - 250, searchY + 12, 235, 46);
+            ctx.fillStyle = '#0B0C10';
+            ctx.font = '900 18px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('⚡ FILTRO EN VIVO', searchX + searchW - 132, searchY + 41);
+
+            // Caja Resultados / Podio Multi-Súper
+            const boxX = 50, boxY = 445, boxW = w - 100, boxH = 435;
+            ctx.fillStyle = '#0B0C10';
+            ctx.fillRect(boxX + 12, boxY + 12, boxW, boxH);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(boxX, boxY, boxW, boxH);
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(boxX, boxY, boxW, boxH);
+
+            // Encabezado de la caja de resultados
+            ctx.fillStyle = '#0B0C10';
+            ctx.fillRect(boxX, boxY, boxW, 55);
+            ctx.fillStyle = '#FFD600';
+            ctx.font = '900 22px "JetBrains Mono", monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText('🛒 RESULTADO EN VIVO · CANASTA SEMANAL (5 ARTÍCULOS)', boxX + 25, boxY + 36);
+
+            // Filas de Supermercados
+            const filas = [
+                { pos: '🥇 #1', super: 'MAXI PALÍ', precio: '₡14,250', diff: '¡GANADOR 🏆!', bg: '#00E676', text: '#0B0C10', bold: true },
+                { pos: '🥈 #2', super: 'MegaSuper', precio: '₡15,100', diff: '+₡850', bg: '#F8FAFC', text: '#0B0C10', bold: false },
+                { pos: '🥉 #3', super: 'Walmart', precio: '₡15,850', diff: '+₡1,600', bg: '#FFFFFF', text: '#0B0C10', bold: false },
+                { pos: '4', super: 'MásxMenos', precio: '₡16,980', diff: '+₡2,730', bg: '#F8FAFC', text: '#4B5563', bold: false },
+                { pos: '5', super: 'Auto Mercado', precio: '₡19,450', diff: '+₡5,200', bg: '#FFFFFF', text: '#EF4444', bold: false },
+            ];
+
+            let rowY = boxY + 55;
+            filas.forEach((f, idx) => {
+                const rH = (idx === 0) ? 75 : 60;
+                ctx.fillStyle = f.bg;
+                ctx.fillRect(boxX, rowY, boxW, rH);
+                ctx.lineWidth = (idx === 0) ? 4 : 2;
+                ctx.strokeStyle = '#0B0C10';
+                ctx.strokeRect(boxX, rowY, boxW, rH);
+
+                // Posición y Súper
+                ctx.fillStyle = f.text;
+                ctx.font = (idx === 0) ? '900 28px "Plus Jakarta Sans", sans-serif' : '800 22px "Plus Jakarta Sans", sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(f.pos + '  ' + f.super, boxX + 25, rowY + (rH / 2) + 8);
+
+                // Diferencia tag
+                ctx.font = (idx === 0) ? '900 22px "JetBrains Mono", monospace' : '700 18px "JetBrains Mono", monospace';
+                ctx.textAlign = 'right';
+                ctx.fillText(f.diff, boxX + boxW - 250, rowY + (rH / 2) + 7);
+
+                // Precio Total
+                ctx.font = (idx === 0) ? '900 34px "JetBrains Mono", monospace' : '800 24px "JetBrains Mono", monospace';
+                ctx.fillText(f.precio, boxX + boxW - 25, rowY + (rH / 2) + 9);
+
+                rowY += rH;
+            });
+
+            // Nota al pie dentro de la caja
+            ctx.fillStyle = '#4B5563';
+            ctx.font = '700 18px "Plus Jakarta Sans", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('✔ Compara también en Palí, Perimercados, PriceSmart y Pequeño Mundo.', boxX + boxW / 2, boxY + boxH - 18);
+
+            // FOOTER CALL TO ACTION
+            const footY = 905, footH = 135;
+            ctx.fillStyle = '#0B0C10';
+            ctx.fillRect(boxX + 10, footY + 10, boxW, footH);
+            ctx.fillStyle = '#FFD600';
+            ctx.fillRect(boxX, footY, boxW, footH);
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(boxX, footY, boxW, footH);
+
+            ctx.fillStyle = '#0B0C10';
+            ctx.textAlign = 'center';
+            ctx.font = '900 30px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('👉 ARMÁ TU CANASTA Y AHORRÁ HASTA ₡5,200 EN:', boxX + boxW / 2, footY + 48);
+
+            ctx.font = '900 42px "JetBrains Mono", monospace';
+            ctx.fillText('mercadofacil.webticocr.com', boxX + boxW / 2, footY + 98);
+        }
+
+        // ==========================================
+        // BANNER 8: VERTICAL STORY (9:16 / 1080x1920) - NUEVO FEATURE
+        // ==========================================
+        function drawBanner8() {
+            const canvas = document.getElementById('canvasBanner8');
+            if (!canvas) return;
+            const w = 1080, h = 1920;
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d');
+
+            // Fondo Vibrante Amarillo Neo-Brutalista
+            ctx.fillStyle = '#FFD600';
+            ctx.fillRect(0, 0, w, h);
+
+            // Borde exterior
+            ctx.lineWidth = 20;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(10, 10, w - 20, h - 20);
+
+            // Barra superior
+            ctx.fillStyle = '#0B0C10';
+            ctx.fillRect(30, 40, w - 60, 110);
+            ctx.fillStyle = '#00E676';
+            ctx.font = '900 36px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('🇨🇷 COSTA RICA · NUEVA FUNCIÓN', w / 2, 110);
+
+            // Titular Principal
+            ctx.fillStyle = '#0B0C10';
+            ctx.font = '900 70px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('NO COMPRÉS A CIEGAS:', w / 2, 235);
+
+            ctx.fillStyle = '#2962FF';
+            ctx.font = '900 58px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('ARMÁ TU CANASTA Y', w / 2, 305);
+            ctx.fillText('DESCUBRÍ DÓNDE PAGAR MENOS', w / 2, 375);
+
+            // 3 TARJETAS PASO A PASO
+            const cW = w - 100, cX = 50;
+
+            // PASO 1: BUSCADOR EN TIEMPO REAL
+            const p1Y = 425, p1H = 265;
+            ctx.fillStyle = '#0B0C10';
+            ctx.fillRect(cX + 12, p1Y + 12, cW, p1H);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(cX, p1Y, cW, p1H);
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(cX, p1Y, cW, p1H);
+
+            ctx.fillStyle = '#2962FF';
+            ctx.fillRect(cX, p1Y, cW, 55);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '900 26px "JetBrains Mono", monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText('1️⃣ BUSCADOR INSTANTÁNEO EN VIVO', cX + 25, p1Y + 38);
+
+            ctx.fillStyle = '#0B0C10';
+            ctx.font = '800 24px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('A medida que digitás, la lista se filtra en tiempo real:', cX + 25, p1Y + 105);
+
+            // Mockup barra de búsqueda
+            ctx.fillStyle = '#F3F4F6';
+            ctx.fillRect(cX + 25, p1Y + 130, cW - 50, 65);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(cX + 25, p1Y + 130, cW - 50, 65);
+
+            ctx.fillStyle = '#1F2937';
+            ctx.font = '700 26px "JetBrains Mono", monospace';
+            ctx.fillText('🔍 "leche dos pinos..."', cX + 45, p1Y + 172);
+
+            ctx.fillStyle = '#00E676';
+            ctx.fillRect(cX + cW - 245, p1Y + 140, 200, 45);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(cX + cW - 245, p1Y + 140, 200, 45);
+            ctx.fillStyle = '#0B0C10';
+            ctx.font = '900 18px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('⚡ 4 encontrados', cX + cW - 145, p1Y + 169);
+
+            ctx.fillStyle = '#4B5563';
+            ctx.font = '600 20px "Plus Jakarta Sans", sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('¡Encontrá arroz, atún, café o lácteos en medio segundo!', cX + 25, p1Y + 235);
+
+            // PASO 2: ARMADO DE CANASTA
+            const p2Y = 720, p2H = 345;
+            ctx.fillStyle = '#0B0C10';
+            ctx.fillRect(cX + 12, p2Y + 12, cW, p2H);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(cX, p2Y, cW, p2H);
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(cX, p2Y, cW, p2H);
+
+            ctx.fillStyle = '#FF6B35';
+            ctx.fillRect(cX, p2Y, cW, 55);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '900 26px "JetBrains Mono", monospace';
+            ctx.fillText('2️⃣ ARMÁ TU CANASTA CON VARIOS PRODUCTOS', cX + 25, p2Y + 38);
+
+            ctx.fillStyle = '#0B0C10';
+            ctx.font = '800 24px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('Marcá los artículos de tu compra semanal o mensual:', cX + 25, p2Y + 105);
+
+            const checks = [
+                '☑ Arroz Grano Entero 99% (1.8 kg)',
+                '☑ Aceite de Soya Puro (800 ml)',
+                '☑ Leche Semidescremada UHT (1 L)',
+                '☑ Frijoles Negros Primera (900 g)',
+                '☑ Café Puro Tostado y Molido (250 g)'
+            ];
+
+            let chkY = p2Y + 145;
+            checks.forEach(item => {
+                ctx.fillStyle = '#0B0C10';
+                ctx.font = '800 22px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText(item, cX + 35, chkY);
+                chkY += 38;
+            });
+
+            // PASO 3: COMPARATIVA MULTI-ALMACÉN (PODIO)
+            const p3Y = 1095, p3H = 505;
+            ctx.fillStyle = '#0B0C10';
+            ctx.fillRect(cX + 12, p3Y + 12, cW, p3H);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(cX, p3Y, cW, p3H);
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(cX, p3Y, cW, p3H);
+
+            ctx.fillStyle = '#0B0C10';
+            ctx.fillRect(cX, p3Y, cW, 55);
+            ctx.fillStyle = '#00E676';
+            ctx.font = '900 24px "JetBrains Mono", monospace';
+            ctx.fillText('3️⃣ EL SISTEMA SUMA Y COMPARA EN 9 CADENAS', cX + 25, p3Y + 38);
+
+            // Winner podium rows
+            const podio = [
+                { rank: '🥇 #1', super: 'MAXI PALÍ', total: '₡14,250', status: '🏆 ¡EL MÁS BARATO!', bg: '#00E676', bold: true },
+                { rank: '🥈 #2', super: 'MegaSuper', total: '₡15,100', status: '+₡850', bg: '#F8FAFC', bold: false },
+                { rank: '🥉 #3', super: 'Walmart', total: '₡15,850', status: '+₡1,600', bg: '#FFFFFF', bold: false },
+                { rank: '4', super: 'MásxMenos', total: '₡16,980', status: '+₡2,730', bg: '#F8FAFC', bold: false },
+                { rank: '5', super: 'Auto Mercado', total: '₡19,450', status: '+₡5,200', bg: '#FFFFFF', bold: false },
+            ];
+
+            let podY = p3Y + 55;
+            podio.forEach((p, idx) => {
+                const rH = (idx === 0) ? 75 : 58;
+                ctx.fillStyle = p.bg;
+                ctx.fillRect(cX, podY, cW, rH);
+                ctx.lineWidth = (idx === 0) ? 4 : 2;
+                ctx.strokeStyle = '#0B0C10';
+                ctx.strokeRect(cX, podY, cW, rH);
+
+                ctx.fillStyle = '#0B0C10';
+                ctx.font = (idx === 0) ? '900 28px "Plus Jakarta Sans", sans-serif' : '800 22px "Plus Jakarta Sans", sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(p.rank + '  ' + p.super, cX + 25, podY + (rH / 2) + 8);
+
+                ctx.font = (idx === 0) ? '900 22px "JetBrains Mono", monospace' : '700 18px "JetBrains Mono", monospace';
+                ctx.textAlign = 'right';
+                ctx.fillText(p.status, cX + cW - 230, podY + (rH / 2) + 7);
+
+                ctx.font = (idx === 0) ? '900 32px "JetBrains Mono", monospace' : '800 24px "JetBrains Mono", monospace';
+                ctx.fillText(p.total, cX + cW - 25, podY + (rH / 2) + 8);
+
+                podY += rH;
+            });
+
+            // Callout dentro del paso 3
+            ctx.fillStyle = '#FF6B35';
+            ctx.fillRect(cX + 20, p3Y + p3H - 75, cW - 40, 55);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(cX + 20, p3Y + p3H - 75, cW - 40, 55);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '900 24px "Plus Jakarta Sans", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('💰 ¡DIFERENCIA DE HASTA ₡5,200 EN LA MISMA COMPRA!', cX + cW / 2, p3Y + p3H - 39);
+
+            // BOTÓN FOOTER
+            const bFootY = 1630, bFootH = 220;
+            ctx.fillStyle = '#0B0C10';
+            ctx.fillRect(cX + 12, bFootY + 12, cW, bFootH);
+            ctx.fillStyle = '#0B0C10';
+            ctx.fillRect(cX, bFootY, cW, bFootH);
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.strokeRect(cX, bFootY, cW, bFootH);
+
+            ctx.fillStyle = '#00E676';
+            ctx.font = '900 36px "Plus Jakarta Sans", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('📲 ¡ENTRÁ YA Y ARMÁ TU CANASTA!', w / 2, bFootY + 65);
+
+            ctx.fillStyle = '#FFD600';
+            ctx.font = '900 52px "JetBrains Mono", monospace';
+            ctx.fillText('mercadofacil.webticocr.com', w / 2, bFootY + 130);
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '700 22px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('9 supermercados de Costa Rica monitoreados en vivo 🇨🇷', w / 2, bFootY + 180);
+        }
+
+        // ==========================================
+        // BANNER 9: HORIZONTAL FACEBOOK (1200x630) - NUEVO FEATURE
+        // ==========================================
+        function drawBanner9() {
+            const canvas = document.getElementById('canvasBanner9');
+            if (!canvas) return;
+            const w = 1200, h = 630;
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d');
+
+            // Fondo Neo-Brutalista Off-white
+            ctx.fillStyle = '#FFFDF9';
+            ctx.fillRect(0, 0, w, h);
+
+            // Borde exterior
+            ctx.lineWidth = 14;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(7, 7, w - 14, h - 14);
+
+            // Barra superior
+            ctx.fillStyle = '#0B0C10';
+            ctx.fillRect(14, 14, w - 28, 65);
+            ctx.fillStyle = '#FFD600';
+            ctx.font = '900 26px "JetBrains Mono", monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText('🛒 MERCADOFÁCIL COSTA RICA', 40, 55);
+
+            ctx.fillStyle = '#00E676';
+            ctx.font = '900 22px "JetBrains Mono", monospace';
+            ctx.textAlign = 'right';
+            ctx.fillText('🇨🇷 ¡NUEVO: COMPARADOR DE CANASTA MULTI-SÚPER!', w - 40, 54);
+
+            // COLUMNA IZQUIERDA (Info & Features)
+            const colLX = 50, colLY = 105;
+
+            // Badge
+            ctx.fillStyle = '#2962FF';
+            ctx.fillRect(colLX, colLY, 310, 36);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(colLX, colLY, 310, 36);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '900 16px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('✨ NUEVA HERRAMIENTA EN VIVO', colLX + 155, colLY + 24);
+
+            // Titular
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#0B0C10';
+            ctx.font = '900 48px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('¿DÓNDE SALE MÁS', colLX, colLY + 90);
+            ctx.fillText('BARATA TU CANASTA?', colLX, colLY + 145);
+
+            ctx.fillStyle = '#4B5563';
+            ctx.font = '700 20px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('Buscá en tiempo real y descubrí en qué súper pagás menos:', colLX, colLY + 185);
+
+            // Lista de Ventajas / Features
+            const feats = [
+                { icon: '⚡', title: 'Buscador instantáneo', desc: 'Filtra al escribir el producto' },
+                { icon: '🧺', title: 'Armador de canasta', desc: 'Elegí 5, 10 o 15 artículos a la vez' },
+                { icon: '📊', title: 'Matriz multi-almacén', desc: 'Calcula el súper ganador #1' },
+            ];
+
+            let fy = colLY + 225;
+            feats.forEach(f => {
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(colLX, fy, 480, 50);
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#0B0C10';
+                ctx.strokeRect(colLX, fy, 480, 50);
+
+                ctx.fillStyle = '#0B0C10';
+                ctx.font = '900 20px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText(f.icon + '  ' + f.title + ':', colLX + 15, fy + 32);
+
+                ctx.fillStyle = '#2962FF';
+                ctx.font = '700 18px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText(f.desc, colLX + 245, fy + 32);
+
+                fy += 60;
+            });
+
+            // Botón CTA Izquierdo
+            const btnY = fy + 10;
+            ctx.fillStyle = '#0B0C10';
+            ctx.fillRect(colLX + 6, btnY + 6, 480, 70);
+            ctx.fillStyle = '#FFD600';
+            ctx.fillRect(colLX, btnY, 480, 70);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(colLX, btnY, 480, 70);
+
+            ctx.fillStyle = '#0B0C10';
+            ctx.textAlign = 'center';
+            ctx.font = '900 24px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('👉 ARMÁ TU CANASTA GRATIS EN:', colLX + 240, btnY + 30);
+            ctx.font = '900 26px "JetBrains Mono", monospace';
+            ctx.fillText('mercadofacil.webticocr.com', colLX + 240, btnY + 58);
+
+            // COLUMNA DERECHA (Mockup Podio Multi-Súper)
+            const colRX = 580, colRY = 105, colRW = w - colRX - 50, colRH = 485;
+            ctx.fillStyle = '#0B0C10';
+            ctx.fillRect(colRX + 10, colRY + 10, colRW, colRH);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(colRX, colRY, colRW, colRH);
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(colRX, colRY, colRW, colRH);
+
+            // Header Columna Derecha
+            ctx.fillStyle = '#0B0C10';
+            ctx.fillRect(colRX, colRY, colRW, 48);
+            ctx.fillStyle = '#FFD600';
+            ctx.font = '900 18px "JetBrains Mono", monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText('🛒 PODIO EN VIVO · CANASTA BÁSICA SEMANAL', colRX + 20, colRY + 31);
+
+            // Filas Comparativas
+            const podioH = [
+                { pos: '🥇 1', super: 'MAXI PALÍ', precio: '₡14,250', tag: '¡MÁS BARATO 🏆!', bg: '#00E676', bold: true },
+                { pos: '🥈 2', super: 'MegaSuper', precio: '₡15,100', tag: '+₡850', bg: '#F8FAFC', bold: false },
+                { pos: '🥉 3', super: 'Walmart', precio: '₡15,850', tag: '+₡1,600', bg: '#FFFFFF', bold: false },
+                { pos: '4', super: 'MásxMenos', precio: '₡16,980', tag: '+₡2,730', bg: '#F8FAFC', bold: false },
+                { pos: '5', super: 'Auto Mercado', precio: '₡19,450', tag: '+₡5,200', bg: '#FFFFFF', bold: false },
+            ];
+
+            let hRowY = colRY + 48;
+            podioH.forEach((p, idx) => {
+                const rH = (idx === 0) ? 68 : 52;
+                ctx.fillStyle = p.bg;
+                ctx.fillRect(colRX, hRowY, colRW, rH);
+                ctx.lineWidth = (idx === 0) ? 3 : 1.5;
+                ctx.strokeStyle = '#0B0C10';
+                ctx.strokeRect(colRX, hRowY, colRW, rH);
+
+                ctx.fillStyle = '#0B0C10';
+                ctx.font = (idx === 0) ? '900 24px "Plus Jakarta Sans", sans-serif' : '800 19px "Plus Jakarta Sans", sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(p.pos + '. ' + p.super, colRX + 18, hRowY + (rH / 2) + 7);
+
+                ctx.font = (idx === 0) ? '900 18px "JetBrains Mono", monospace' : '700 16px "JetBrains Mono", monospace';
+                ctx.textAlign = 'right';
+                ctx.fillText(p.tag, colRX + colRW - 170, hRowY + (rH / 2) + 6);
+
+                ctx.font = (idx === 0) ? '900 28px "JetBrains Mono", monospace' : '800 20px "JetBrains Mono", monospace';
+                ctx.fillText(p.precio, colRX + colRW - 18, hRowY + (rH / 2) + 7);
+
+                hRowY += rH;
+            });
+
+            // Callout ahorro abajo en columna derecha
+            const badgeAY = hRowY + 12;
+            ctx.fillStyle = '#FF6B35';
+            ctx.fillRect(colRX + 15, badgeAY, colRW - 30, 52);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#0B0C10';
+            ctx.strokeRect(colRX + 15, badgeAY, colRW - 30, 52);
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.textAlign = 'center';
+            ctx.font = '900 20px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('💰 ¡AHORRÁ HASTA ₡5,200 EN TU COMPRA!', colRX + colRW / 2, badgeAY + 33);
+
+            // Subnota final
+            ctx.fillStyle = '#6B7280';
+            ctx.font = '600 14px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('Compara en Walmart, Maxi Palí, Palí, MásxMenos, MegaSuper, Auto Mercado y más.', colRX + colRW / 2, colRY + colRH - 14);
+        }
+
         // Descarga individual de canvas en PNG
         window.descargarCanvas = function (canvasId, fileName) {
             const canvas = document.getElementById(canvasId);
@@ -1418,7 +2153,10 @@
                 { id: 'canvasBanner3', name: 'MercadoFacil_Facebook_Horizontal_1200x630.png' },
                 { id: 'canvasBanner4', name: 'MercadoFacil_Comercios_B2B_1080x1080.png' },
                 { id: 'canvasBanner5', name: 'MercadoFacil_Alerta_Precios_1080x1080.png' },
-                { id: 'canvasBanner6', name: 'MercadoFacil_AutoRepuestos_Tech_1080x1080.png' }
+                { id: 'canvasBanner6', name: 'MercadoFacil_AutoRepuestos_Tech_1080x1080.png' },
+                { id: 'canvasBanner7', name: 'MercadoFacil_NuevoFeature_Canasta_1080x1080.png' },
+                { id: 'canvasBanner8', name: 'MercadoFacil_NuevoFeature_Story_WhatsApp_1080x1920.png' },
+                { id: 'canvasBanner9', name: 'MercadoFacil_NuevoFeature_Horizontal_1200x630.png' }
             ];
 
             let delay = 0;
@@ -1452,7 +2190,8 @@
             event.target.classList.remove('bg-white', 'text-vibrant-dark');
 
             document.querySelectorAll('.banner-card').forEach(card => {
-                if (cat === 'todos' || card.dataset.category === cat) {
+                const cats = (card.dataset.category || '').split(' ');
+                if (cat === 'todos' || cats.includes(cat)) {
                     card.classList.remove('hidden');
                 } else {
                     card.classList.add('hidden');
@@ -1462,25 +2201,23 @@
 
         // Dibujar todos los banners una vez cargada la página y las fuentes
         document.addEventListener('DOMContentLoaded', () => {
+            const drawAll = () => {
+                drawBanner1();
+                drawBanner2();
+                drawBanner3();
+                drawBanner4();
+                drawBanner5();
+                drawBanner6();
+                drawBanner7();
+                drawBanner8();
+                drawBanner9();
+            };
+
             // Asegurar que las fuentes web estén listas antes de dibujar
             if (document.fonts) {
-                document.fonts.ready.then(() => {
-                    drawBanner1();
-                    drawBanner2();
-                    drawBanner3();
-                    drawBanner4();
-                    drawBanner5();
-                    drawBanner6();
-                });
+                document.fonts.ready.then(drawAll);
             } else {
-                setTimeout(() => {
-                    drawBanner1();
-                    drawBanner2();
-                    drawBanner3();
-                    drawBanner4();
-                    drawBanner5();
-                    drawBanner6();
-                }, 300);
+                setTimeout(drawAll, 300);
             }
         });
     </script>
