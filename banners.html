@@ -728,7 +728,7 @@
                             🥉 Walmart: ₡15,850
                             🔴 MásxMenos: ₡16,980
                             🟢 Auto Mercado: ₡19,450
-                            (¡Ahorrás hasta ₡5,200 en la misma compra!)
+                            (¡₡5,200 de diferencia en solo 5 artículos! Una familia de 5 personas comprando 2-3 veces al mes ahorra más de ₡30,000 mensuales.)
 
                             Comparamos en tiempo real entre 9 cadenas:
                             Walmart, Maxi Palí, MásxMenos, Palí, Auto Mercado, MegaSuper, Perimercados, PriceSmart y Pequeño Mundo.
@@ -762,7 +762,7 @@
                             2️⃣ Seleccionás tus productos de la semana 🧺
                             3️⃣ El sistema compara los precios en todos los supermercados y te dice dónde gastarás menos dinero 💰
 
-                            ¡Ahorros de más de ₡5,000 colones en una sola compra semanal!
+                            Si en solo 5 productos te ahorrás ₡5,200, una familia de 5 personas haciendo su súper 2 o 3 veces al mes ahorra más de ₡30,000 mensuales (¡el Plan Mercados de ₡5,000 se paga solo en la primera ida!).
 
                             Entrá desde tu celular y probá tu canasta gratis:
                             👉 https://mercadofacil.webticocr.com
@@ -1930,14 +1930,17 @@
 
             // Callout dentro del paso 3
             ctx.fillStyle = '#FF6B35';
-            ctx.fillRect(cX + 20, p3Y + p3H - 75, cW - 40, 55);
+            ctx.fillRect(cX + 20, p3Y + p3H - 92, cW - 40, 76);
             ctx.lineWidth = 3;
             ctx.strokeStyle = '#0B0C10';
-            ctx.strokeRect(cX + 20, p3Y + p3H - 75, cW - 40, 55);
+            ctx.strokeRect(cX + 20, p3Y + p3H - 92, cW - 40, 76);
             ctx.fillStyle = '#FFFFFF';
-            ctx.font = '900 24px "Plus Jakarta Sans", sans-serif';
+            ctx.font = '900 23px "Plus Jakarta Sans", sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('💰 ¡DIFERENCIA DE HASTA ₡5,200 EN LA MISMA COMPRA!', cX + cW / 2, p3Y + p3H - 39);
+            ctx.fillText('💰 ¡₡5,200 DE AHORRO EN SOLO 5 PRODUCTOS!', cX + cW / 2, p3Y + p3H - 59);
+            ctx.fillStyle = '#FFD600';
+            ctx.font = '800 19px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('Familia de 5 (2-3 compras/mes): ¡Ahorrá ₡30,000+ al mes!', cX + cW / 2, p3Y + p3H - 30);
 
             // BOTÓN FOOTER
             const bFootY = 1630, bFootH = 220;
@@ -1996,7 +1999,7 @@
             ctx.fillText('🇨🇷 ¡NUEVO: COMPARADOR DE CANASTA MULTI-SÚPER!', w - 40, 54);
 
             // COLUMNA IZQUIERDA (Info & Features)
-            const colLX = 50, colLY = 105;
+            const colLX = 45, colLY = 105, colW = 495;
 
             // Badge
             ctx.fillStyle = '#2962FF';
@@ -2012,36 +2015,39 @@
             // Titular
             ctx.textAlign = 'left';
             ctx.fillStyle = '#0B0C10';
-            ctx.font = '900 48px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText('¿DÓNDE SALE MÁS', colLX, colLY + 90);
-            ctx.fillText('BARATA TU CANASTA?', colLX, colLY + 145);
+            ctx.font = '900 44px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('¿DÓNDE SALE MÁS', colLX, colLY + 86);
+            ctx.fillText('BARATA TU CANASTA?', colLX, colLY + 138);
 
             ctx.fillStyle = '#4B5563';
-            ctx.font = '700 20px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText('Buscá en tiempo real y descubrí en qué súper pagás menos:', colLX, colLY + 185);
+            ctx.font = '700 19px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('Buscá en tiempo real y descubrí', colLX, colLY + 178);
+            ctx.fillText('en cuál súper pagás menos:', colLX, colLY + 203);
 
-            // Lista de Ventajas / Features
+            // Lista de Ventajas / Features (ancho medido dinámicamente para evitar traslapes)
             const feats = [
-                { icon: '⚡', title: 'Buscador instantáneo', desc: 'Filtra al escribir el producto' },
-                { icon: '🧺', title: 'Armador de canasta', desc: 'Elegí 5, 10 o 15 artículos a la vez' },
-                { icon: '📊', title: 'Matriz multi-almacén', desc: 'Calcula el súper ganador #1' },
+                { icon: '⚡', title: 'Buscador en vivo:', desc: 'filtra al instante al escribir' },
+                { icon: '🧺', title: 'Armador de canasta:', desc: 'elegí varios productos a la vez' },
+                { icon: '📊', title: 'Podio multi-súper:', desc: 'calcula el comercio #1' },
             ];
 
             let fy = colLY + 225;
             feats.forEach(f => {
                 ctx.fillStyle = '#FFFFFF';
-                ctx.fillRect(colLX, fy, 480, 50);
+                ctx.fillRect(colLX, fy, colW, 52);
                 ctx.lineWidth = 3;
                 ctx.strokeStyle = '#0B0C10';
-                ctx.strokeRect(colLX, fy, 480, 50);
+                ctx.strokeRect(colLX, fy, colW, 52);
 
+                const titleStr = f.icon + ' ' + f.title;
                 ctx.fillStyle = '#0B0C10';
-                ctx.font = '900 20px "Plus Jakarta Sans", sans-serif';
-                ctx.fillText(f.icon + '  ' + f.title + ':', colLX + 15, fy + 32);
+                ctx.font = '900 18px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText(titleStr, colLX + 14, fy + 33);
+                const titleW = ctx.measureText(titleStr).width;
 
                 ctx.fillStyle = '#2962FF';
-                ctx.font = '700 18px "Plus Jakarta Sans", sans-serif';
-                ctx.fillText(f.desc, colLX + 245, fy + 32);
+                ctx.font = '700 17px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText(f.desc, colLX + 14 + titleW + 8, fy + 33);
 
                 fy += 60;
             });
@@ -2049,22 +2055,22 @@
             // Botón CTA Izquierdo
             const btnY = fy + 10;
             ctx.fillStyle = '#0B0C10';
-            ctx.fillRect(colLX + 6, btnY + 6, 480, 70);
+            ctx.fillRect(colLX + 6, btnY + 6, colW, 70);
             ctx.fillStyle = '#FFD600';
-            ctx.fillRect(colLX, btnY, 480, 70);
+            ctx.fillRect(colLX, btnY, colW, 70);
             ctx.lineWidth = 4;
             ctx.strokeStyle = '#0B0C10';
-            ctx.strokeRect(colLX, btnY, 480, 70);
+            ctx.strokeRect(colLX, btnY, colW, 70);
 
             ctx.fillStyle = '#0B0C10';
             ctx.textAlign = 'center';
-            ctx.font = '900 24px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText('👉 ARMÁ TU CANASTA GRATIS EN:', colLX + 240, btnY + 30);
+            ctx.font = '900 22px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('👉 ARMÁ TU CANASTA GRATIS EN:', colLX + colW / 2, btnY + 30);
             ctx.font = '900 26px "JetBrains Mono", monospace';
-            ctx.fillText('mercadofacil.webticocr.com', colLX + 240, btnY + 58);
+            ctx.fillText('mercadofacil.webticocr.com', colLX + colW / 2, btnY + 58);
 
             // COLUMNA DERECHA (Mockup Podio Multi-Súper)
-            const colRX = 580, colRY = 105, colRW = w - colRX - 50, colRH = 485;
+            const colRX = 570, colRY = 105, colRW = w - colRX - 45, colRH = 485;
             ctx.fillStyle = '#0B0C10';
             ctx.fillRect(colRX + 10, colRY + 10, colRW, colRH);
             ctx.fillStyle = '#FFFFFF';
@@ -2077,9 +2083,9 @@
             ctx.fillStyle = '#0B0C10';
             ctx.fillRect(colRX, colRY, colRW, 48);
             ctx.fillStyle = '#FFD600';
-            ctx.font = '900 18px "JetBrains Mono", monospace';
+            ctx.font = '900 17px "JetBrains Mono", monospace';
             ctx.textAlign = 'left';
-            ctx.fillText('🛒 PODIO EN VIVO · CANASTA BÁSICA SEMANAL', colRX + 20, colRY + 31);
+            ctx.fillText('🛒 PODIO EN VIVO · CANASTA BÁSICA (5 ARTÍCULOS)', colRX + 18, colRY + 31);
 
             // Filas Comparativas
             const podioH = [
@@ -2100,15 +2106,15 @@
                 ctx.strokeRect(colRX, hRowY, colRW, rH);
 
                 ctx.fillStyle = '#0B0C10';
-                ctx.font = (idx === 0) ? '900 24px "Plus Jakarta Sans", sans-serif' : '800 19px "Plus Jakarta Sans", sans-serif';
+                ctx.font = (idx === 0) ? '900 23px "Plus Jakarta Sans", sans-serif' : '800 19px "Plus Jakarta Sans", sans-serif';
                 ctx.textAlign = 'left';
                 ctx.fillText(p.pos + '. ' + p.super, colRX + 18, hRowY + (rH / 2) + 7);
 
-                ctx.font = (idx === 0) ? '900 18px "JetBrains Mono", monospace' : '700 16px "JetBrains Mono", monospace';
+                ctx.font = (idx === 0) ? '900 17px "JetBrains Mono", monospace' : '700 16px "JetBrains Mono", monospace';
                 ctx.textAlign = 'right';
-                ctx.fillText(p.tag, colRX + colRW - 170, hRowY + (rH / 2) + 6);
+                ctx.fillText(p.tag, colRX + colRW - 185, hRowY + (rH / 2) + 6);
 
-                ctx.font = (idx === 0) ? '900 28px "JetBrains Mono", monospace' : '800 20px "JetBrains Mono", monospace';
+                ctx.font = (idx === 0) ? '900 27px "JetBrains Mono", monospace' : '800 20px "JetBrains Mono", monospace';
                 ctx.fillText(p.precio, colRX + colRW - 18, hRowY + (rH / 2) + 7);
 
                 hRowY += rH;
@@ -2124,13 +2130,13 @@
 
             ctx.fillStyle = '#FFFFFF';
             ctx.textAlign = 'center';
-            ctx.font = '900 20px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText('💰 ¡AHORRÁ HASTA ₡5,200 EN TU COMPRA!', colRX + colRW / 2, badgeAY + 33);
+            ctx.font = '900 18px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('💰 ¡AHORRÁ ₡30,000+ AL MES EN COMPRAS FAMILIARES!', colRX + colRW / 2, badgeAY + 33);
 
             // Subnota final
             ctx.fillStyle = '#6B7280';
-            ctx.font = '600 14px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText('Compara en Walmart, Maxi Palí, Palí, MásxMenos, MegaSuper, Auto Mercado y más.', colRX + colRW / 2, colRY + colRH - 14);
+            ctx.font = '600 13.5px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('Walmart, Maxi Palí, Palí, MásxMenos, MegaSuper, Auto Mercado y más.', colRX + colRW / 2, colRY + colRH - 14);
         }
 
         // Descarga individual de canvas en PNG
