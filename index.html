@@ -3491,9 +3491,13 @@
             });
 
             const uniqueItems = Object.values(itemMap);
-            const supers = ['Walmart', 'MásxMenos', 'Maxi Palí', 'Palí', 'Auto Mercado', 'MegaSuper', 'Perimercados', 'PriceSmart', 'Pequeño Mundo'];
+            const hasPlan = Boolean(window.hasAccessToAllSupermarkets && window.hasAccessToAllSupermarkets());
+            const allSupers = ['Walmart', 'MásxMenos', 'Maxi Palí', 'Palí', 'Auto Mercado', 'MegaSuper', 'Perimercados', 'PriceSmart', 'Pequeño Mundo'];
+            const freeComparisonSupers = ['Pequeño Mundo', 'Auto Mercado'];
+            const activeSupers = hasPlan ? allSupers : freeComparisonSupers;
+            const lockedSupers = hasPlan ? [] : allSupers.filter(s => !freeComparisonSupers.includes(s));
 
-            const resultsBySuper = supers.map(supName => {
+            const resultsBySuper = activeSupers.map(supName => {
                 let total = 0;
                 let countAvailable = 0;
                 const prices = {};
@@ -3505,8 +3509,8 @@
                         total += match.precio * u.cantidad;
                         countAvailable++;
                     } else {
-                        // Buscar en cualquier otro súper como referencia
-                        const anyMatch = (window.allData || []).find(d => d.item === u.item);
+                        // Buscar únicamente entre los supermercados habilitados para el nivel actual como referencia
+                        const anyMatch = (window.allData || []).find(d => d.item === u.item && activeSupers.includes(d.super));
                         if (anyMatch && anyMatch.precio) {
                             prices[u.item] = anyMatch.precio;
                             total += anyMatch.precio * u.cantidad;
@@ -3534,6 +3538,8 @@
             return {
                 uniqueItems,
                 resultsBySuper,
+                lockedSupers,
+                hasPlan,
                 cheapest,
                 mostExpensive,
                 maxSavings
@@ -3564,15 +3570,12 @@
             const data = window.calcularComparativaCanasta();
             if (!data) return;
 
-            const { uniqueItems, resultsBySuper, cheapest, mostExpensive, maxSavings } = data;
-            const hasPlan = Boolean(window.hasAccessToAllSupermarkets && window.hasAccessToAllSupermarkets());
+            const { uniqueItems, resultsBySuper, lockedSupers, hasPlan, cheapest, mostExpensive, maxSavings } = data;
 
-            // 1. Podio / Tarjetas de Totales por Supermercado
-            const rankCardsHtml = resultsBySuper.map((sup, idx) => {
+            // 1. Podio / Tarjetas de Totales por Supermercado (solo almacenes habilitados)
+            const unlockedCardsHtml = resultsBySuper.map((sup, idx) => {
                 const isCheapest = idx === 0;
                 const diff = sup.total - cheapest.total;
-                const isFreeSuper = window.FREE_TRIAL_SUPERS && window.FREE_TRIAL_SUPERS.includes(sup.super);
-                const isLockedNotice = !hasPlan && !isFreeSuper;
 
                 let cardBg = isCheapest ? 'bg-[#FEF9C3] border-vibrant-dark border-4 shadow-stitch' : 'bg-white border-2 border-vibrant-dark shadow-stitch';
                 let trophyBadge = isCheapest
@@ -3584,7 +3587,7 @@
                         <div>
                             <div class="flex items-center justify-between gap-2 mb-2">
                                 ${trophyBadge}
-                                ${isFreeSuper ? '<span class="text-[9px] bg-emerald-100 text-emerald-900 px-1.5 py-0.5 border border-emerald-400 font-black uppercase">⭐ Modo Gratis</span>' : (isLockedNotice ? '<span class="text-[9px] bg-blue-100 text-blue-900 px-1.5 py-0.5 border border-blue-400 font-black uppercase">🔒 Plan</span>' : '')}
+                                ${!hasPlan ? '<span class="text-[9px] bg-emerald-100 text-emerald-900 px-1.5 py-0.5 border border-emerald-400 font-black uppercase">⭐ Modo Gratis</span>' : ''}
                             </div>
                             <h4 class="font-black text-base text-vibrant-dark uppercase tracking-tight">${sup.super}</h4>
                             <div class="text-[11px] text-gray-500 font-semibold mb-3">
@@ -3598,14 +3601,43 @@
                             </div>
                             <div class="text-[11px] font-bold mt-1.5">
                                 ${isCheapest
-                                    ? `<span class="text-emerald-700 font-black">🎉 ¡Ahorras ${formatCRC(maxSavings)} frente al más caro!</span>`
-                                    : `<span class="text-red-600 font-bold">+${formatCRC(diff)} más que el puesto 1</span>`
+                                    ? `<span class="text-emerald-700 font-black">🎉 ¡Ahorras ${formatCRC(maxSavings)} frente a ${mostExpensive ? mostExpensive.super : 'otros'}!</span>`
+                                    : `<span class="text-red-600 font-bold">+${formatCRC(diff)} más que ${cheapest.super}</span>`
                                 }
                             </div>
                         </div>
                     </div>
                 `;
             }).join('');
+
+            // Tarjetas bloqueadas para almacenes que requieren membresía
+            const lockedCardsHtml = (lockedSupers || []).map(supName => `
+                <div onclick="window.abrirModalRegistroPlanes && window.abrirModalRegistroPlanes('', 'plan1')"
+                    class="bg-gray-100 border-2 border-dashed border-gray-400 p-4 flex flex-col justify-between cursor-pointer hover:border-vibrant-blue hover:bg-blue-50/40 transition-all group"
+                    title="Active su membresía para desbloquear ${supName}">
+                    <div>
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <span class="inline-flex items-center gap-1 bg-amber-200 text-amber-950 text-[10px] font-black px-2 py-0.5 border border-vibrant-dark uppercase tracking-wider">🔒 Membresía</span>
+                            <span class="text-[9px] bg-blue-100 text-blue-900 px-1.5 py-0.5 border border-blue-400 font-black uppercase">Plan Mercados</span>
+                        </div>
+                        <h4 class="font-black text-base text-gray-700 uppercase tracking-tight group-hover:text-vibrant-blue">${supName}</h4>
+                        <div class="text-[11px] text-gray-500 font-semibold mb-3">
+                            Cotización oculta en modo gratis
+                        </div>
+                    </div>
+                    <div class="pt-3 border-t-2 border-gray-300">
+                        <div class="text-[10px] font-bold uppercase text-gray-500 mb-0.5">Total de su Canasta:</div>
+                        <div class="text-xl md:text-2xl font-black text-gray-400 leading-tight select-none blur-[3px]">
+                            ₡••,•••
+                        </div>
+                        <div class="text-[11px] font-black text-vibrant-blue mt-1.5 group-hover:underline">
+                            🔓 Desbloquear con Plan →
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            const rankCardsHtml = unlockedCardsHtml + lockedCardsHtml;
 
             // 2. Matriz Detallada Producto x Supermercado
             const minPricesByItem = {};
@@ -3618,7 +3650,7 @@
                 minPricesByItem[u.item] = min;
             });
 
-            const theadCols = resultsBySuper.map((s, idx) => {
+            const unlockedTheadCols = resultsBySuper.map((s, idx) => {
                 const isCheapest = idx === 0;
                 return `
                     <th class="py-3 px-3 text-right text-xs font-black border-b-2 border-r-2 border-vibrant-dark ${isCheapest ? 'bg-emerald-200 text-emerald-950 font-black' : 'bg-gray-100 text-vibrant-dark'}">
@@ -3631,9 +3663,23 @@
                 `;
             }).join('');
 
+            const lockedTheadCols = (lockedSupers || []).map(supName => `
+                <th onclick="window.abrirModalRegistroPlanes && window.abrirModalRegistroPlanes('', 'plan1')"
+                    class="py-3 px-3 text-right text-xs font-black border-b-2 border-r border-gray-300 bg-gray-200 text-gray-600 cursor-pointer hover:bg-blue-100"
+                    title="Requiere Plan Mercados">
+                    <div class="flex items-center justify-end gap-1">
+                        <span>🔒</span>
+                        <span>${supName}</span>
+                    </div>
+                    <div class="text-[10px] font-bold text-blue-700">Solo Plan</div>
+                </th>
+            `).join('');
+
+            const theadCols = unlockedTheadCols + lockedTheadCols;
+
             const tbodyRows = uniqueItems.map(u => {
                 const minPrice = minPricesByItem[u.item];
-                const cells = resultsBySuper.map((s, idx) => {
+                const unlockedCells = resultsBySuper.map((s, idx) => {
                     const price = s.prices[u.item];
                     const isMin = price === minPrice;
                     const subtotal = price ? price * u.cantidad : null;
@@ -3647,6 +3693,14 @@
                     `;
                 }).join('');
 
+                const lockedCells = (lockedSupers || []).map(() => `
+                    <td onclick="window.abrirModalRegistroPlanes && window.abrirModalRegistroPlanes('', 'plan1')"
+                        class="py-3 px-3 text-right text-[11px] font-bold border-b border-r border-gray-200 bg-gray-100 text-gray-400 cursor-pointer hover:bg-blue-50 select-none"
+                        title="Desbloquear con membresía">
+                        🔒 Plan
+                    </td>
+                `).join('');
+
                 return `
                     <tr class="hover:bg-blue-50/30 transition-colors">
                         <td class="sticky left-0 bg-white py-3 px-4 text-xs font-black text-vibrant-dark border-b border-r-2 border-vibrant-dark z-10 shadow-xs">
@@ -3655,12 +3709,12 @@
                         <td class="py-3 px-3 text-center text-xs font-bold text-gray-600 border-b border-r-2 border-vibrant-dark bg-gray-50">
                             x${u.cantidad}
                         </td>
-                        ${cells}
+                        ${unlockedCells}${lockedCells}
                     </tr>
                 `;
             }).join('');
 
-            const tfootCols = resultsBySuper.map((s, idx) => {
+            const unlockedTfootCols = resultsBySuper.map((s, idx) => {
                 const isCheapest = idx === 0;
                 return `
                     <td class="py-4 px-3 text-right text-xs md:text-sm font-black border-r-2 border-gray-700 ${isCheapest ? 'bg-vibrant-green text-vibrant-dark font-black' : 'text-white'}">
@@ -3670,19 +3724,31 @@
                 `;
             }).join('');
 
+            const lockedTfootCols = (lockedSupers || []).map(() => `
+                <td onclick="window.abrirModalRegistroPlanes && window.abrirModalRegistroPlanes('', 'plan1')"
+                    class="py-4 px-3 text-right text-xs font-black border-r border-gray-700 text-amber-300 cursor-pointer hover:text-amber-200">
+                    🔒 Plan
+                </td>
+            `).join('');
+
+            const tfootCols = unlockedTfootCols + lockedTfootCols;
+
             const totalUnits = uniqueItems.reduce((acc, u) => acc + u.cantidad, 0);
 
             compSection.innerHTML = `
                 <div class="bg-vibrant-dark text-white p-5 border-2 border-vibrant-dark shadow-stitch flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                     <div>
-                        <div class="inline-flex items-center gap-2 bg-vibrant-green text-vibrant-dark text-[10px] font-black px-2.5 py-0.5 border border-vibrant-dark uppercase tracking-wider mb-2">
-                            🏆 Comparativa Inteligente Multi-Almacén
+                        <div class="inline-flex items-center gap-2 ${hasPlan ? 'bg-vibrant-green text-vibrant-dark' : 'bg-amber-300 text-vibrant-dark'} text-[10px] font-black px-2.5 py-0.5 border border-vibrant-dark uppercase tracking-wider mb-2">
+                            ${hasPlan ? '🏆 Comparativa Inteligente Multi-Almacén' : '⭐ Modo Gratis (Pequeño Mundo vs Auto Mercado) · 🔒 7 Almacenes con Plan'}
                         </div>
                         <h3 class="text-xl md:text-2xl font-black uppercase tracking-tight flex items-center gap-2">
                             <span>📊</span> ¿En qué almacén le sale más barato comprar toda esta canasta?
                         </h3>
                         <p class="text-xs text-gray-300 font-medium mt-1">
-                            Calculamos el costo exacto de sus ${uniqueItems.length} productos (${totalUnits} unidades) en los 9 supermercados monitoreados.
+                            ${hasPlan
+                                ? `Calculamos el costo exacto de sus ${uniqueItems.length} productos (${totalUnits} unidades) en los 9 supermercados monitoreados.`
+                                : `En modo gratis comparamos únicamente <strong>Pequeño Mundo</strong> y <strong>Auto Mercado</strong> (${uniqueItems.length} productos, ${totalUnits} unidades). Active una membresía para comparar los 9 almacenes.`
+                            }
                         </p>
                     </div>
                     <div class="flex items-center gap-2 flex-wrap">
@@ -3690,12 +3756,18 @@
                             class="bg-vibrant-green hover:bg-green-400 text-vibrant-dark font-black py-2.5 px-4 text-xs border-2 border-vibrant-dark shadow-stitch uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5">
                             <span>⚡</span> Comprar todo en ${cheapest.super} (${formatCRC(cheapest.total)})
                         </button>
+                        ${!hasPlan ? `
+                        <button onclick="window.abrirModalRegistroPlanes && window.abrirModalRegistroPlanes('', 'plan1')" 
+                            class="bg-amber-300 hover:bg-amber-400 text-vibrant-dark font-black py-2.5 px-4 text-xs border-2 border-vibrant-dark shadow-stitch uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5">
+                            <span>🔓</span> Desbloquear 9 Almacenes (₡5,000/mes)
+                        </button>
+                        ` : ''}
                     </div>
                 </div>
 
                 <div class="mb-6">
                     <h4 class="text-xs font-black uppercase tracking-wider text-gray-700 mb-3 flex items-center gap-2">
-                        <span>🏁</span> Ranking de Precios Totales por Supermercado (De menor a mayor)
+                        <span>🏁</span> ${hasPlan ? 'Ranking de Precios Totales por Supermercado (De menor a mayor)' : 'Comparativa Modo Gratis (Pequeño Mundo vs Auto Mercado) y Almacenes con Membresía'}
                     </h4>
                     <div id="canastaSuperRankCards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         ${rankCardsHtml}
@@ -3708,7 +3780,7 @@
                             <span>📋</span> Desglose Producto por Producto en Cada Almacén
                         </h4>
                         <span class="text-[11px] text-gray-600 font-bold">
-                            ⭐ Badge verde resalta el precio más bajo de cada producto
+                            ⭐ Badge verde resalta el precio más bajo de cada producto${!hasPlan ? ' · 🔒 Plan requerido para los demás almacenes' : ''}
                         </span>
                     </div>
                     <div class="overflow-x-auto">
@@ -3736,6 +3808,21 @@
                             </tfoot>
                         </table>
                     </div>
+                    ${!hasPlan ? `
+                    <div class="mt-4 bg-amber-50 border-2 border-vibrant-dark p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">🔒</span>
+                            <div>
+                                <div class="text-xs font-black uppercase text-vibrant-dark">¿Quiere comparar también Walmart, Maxi Palí, Palí, MásxMenos, MegaSuper, Perimercados y PriceSmart?</div>
+                                <div class="text-[11px] font-bold text-gray-600 mt-0.5">En modo gratis la comparativa de canasta funciona solo entre Pequeño Mundo y Auto Mercado. Active su membresía desde ₡5,000/mes para desbloquear los 9 almacenes.</div>
+                            </div>
+                        </div>
+                        <button onclick="window.abrirModalRegistroPlanes && window.abrirModalRegistroPlanes('', 'plan1')"
+                            class="bg-vibrant-blue hover:bg-blue-700 text-white font-black py-2.5 px-5 text-xs border-2 border-vibrant-dark shadow-stitch uppercase tracking-wider whitespace-nowrap cursor-pointer">
+                            🚀 Activar Plan Mercados
+                        </button>
+                    </div>
+                    ` : ''}
                 </div>
             `;
         };
@@ -6348,6 +6435,9 @@
             pb.authStore.onChange(() => {
                 mfTelemetry.syncAuth();
                 verificarEstadoSesion();
+                if (window.renderCanastaComparison) {
+                    window.renderCanastaComparison();
+                }
             });
         }
 
