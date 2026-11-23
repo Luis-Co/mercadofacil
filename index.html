@@ -3,11 +3,21 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>MercadoFácil | Compare Precios de Supermercados y Canasta Básica en Costa Rica</title>
 
+    <!-- PWA: Web App Manifest & Metadatos Móviles (Android / iOS) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2962FF">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MercadoFácil">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+
     <!-- Favicon Actualizado -->
-    <link rel="icon" href="https://img.icons8.com/color/48/shopping-cart--v1.png">
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 
     <!-- Tipografía: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -249,6 +259,15 @@
                 <a href="#premium"
                     class="text-white hover:text-vibrant-orange transition-colors hidden md:block uppercase tracking-wide">Para
                     Empresas</a>
+
+                <!-- Botón Instalar App (PWA) en Navbar (visible cuando es instalable en Android/iOS/Desktop) -->
+                <button id="btnPwaInstallNav" onclick="window.instalarPwaApp && window.instalarPwaApp()"
+                    class="hidden bg-vibrant-green hover:bg-green-400 text-vibrant-dark font-black px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-all active:translate-y-0.5"
+                    title="Instalar MercadoFácil como App en su celular">
+                    <span>📲</span>
+                    <span class="hidden sm:inline">Instalar App</span>
+                    <span class="sm:hidden">App</span>
+                </button>
 
                 <!-- Enlace Menú Principal: Página Admin (Solo visible cuando un usuario con admin: true se loguea) -->
                 <a href="admin.html" id="navMenuAdminLink"
@@ -7107,6 +7126,143 @@
             </div>
         </div>
     </div>
+
+    <!-- ==============================================
+         BANNER FLOTANTE DE INSTALACIÓN PWA (ANDROID / iOS)
+         ============================================== -->
+    <div id="pwaInstallBanner"
+        class="hidden fixed bottom-3 left-3 right-3 sm:left-auto sm:right-5 sm:bottom-5 sm:max-w-sm z-50 bg-[#0F172A] text-white border-4 border-vibrant-green shadow-2xl p-3.5 sm:p-4 animate-fadeIn">
+        <div class="flex items-start gap-3">
+            <img src="icons/icon-192.png" alt="MercadoFácil App" class="w-12 h-12 border-2 border-white flex-shrink-0">
+            <div class="min-w-0 flex-1">
+                <div class="flex items-start justify-between gap-2">
+                    <h4 class="font-black text-xs sm:text-sm uppercase tracking-tight text-vibrant-green leading-tight">
+                        📲 Instale MercadoFácil en su celular
+                    </h4>
+                    <button onclick="window.cerrarBannerPwa && window.cerrarBannerPwa()"
+                        class="text-gray-400 hover:text-white font-black text-sm leading-none px-1 cursor-pointer"
+                        aria-label="Cerrar aviso de instalación">✕</button>
+                </div>
+                <p id="pwaBannerDesc" class="text-[11px] text-gray-300 font-medium mt-1 leading-snug">
+                    Ábrala como app en pantalla completa, sin ocupar espacio y con precios actualizados al instante.
+                </p>
+                <div class="mt-2.5 flex items-center gap-2">
+                    <button onclick="window.instalarPwaApp && window.instalarPwaApp()"
+                        class="flex-1 bg-vibrant-green hover:bg-green-400 text-vibrant-dark font-black py-2 px-3 text-[11px] border-2 border-vibrant-dark uppercase tracking-wider cursor-pointer transition-all active:translate-y-0.5">
+                        Instalar ahora
+                    </button>
+                    <button onclick="window.cerrarBannerPwa && window.cerrarBannerPwa()"
+                        class="bg-transparent hover:bg-white/10 text-gray-300 font-bold py-2 px-2.5 text-[11px] border border-gray-600 uppercase cursor-pointer">
+                        Luego
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==============================================
+        // REGISTRO DE SERVICE WORKER Y FLUJO DE INSTALACIÓN PWA
+        // ==============================================
+        (function () {
+            if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./sw.js').catch((err) => {
+                        console.warn('Service Worker no registrado:', err);
+                    });
+                });
+            }
+
+            let deferredInstallPrompt = null;
+            const PWA_DISMISS_KEY = 'mf_pwa_banner_dismissed_v1';
+
+            const isStandalone = () =>
+                window.matchMedia('(display-mode: standalone)').matches ||
+                window.navigator.standalone === true ||
+                document.referrer.includes('android-app://');
+
+            const isIosSafari = () => {
+                const ua = window.navigator.userAgent || '';
+                const isIOS = /iPhone|iPad|iPod/i.test(ua);
+                const isWebkit = /WebKit/i.test(ua);
+                const isOtherIosBrowser = /CriOS|FxiOS|OPiOS|EdgiOS/i.test(ua);
+                return isIOS && isWebkit && !isOtherIosBrowser;
+            };
+
+            function mostrarControlesPwa(modoIos) {
+                if (isStandalone()) return;
+                const navBtn = document.getElementById('btnPwaInstallNav');
+                const banner = document.getElementById('pwaInstallBanner');
+                const desc = document.getElementById('pwaBannerDesc');
+
+                if (navBtn) navBtn.classList.remove('hidden');
+
+                const wasDismissed = localStorage.getItem(PWA_DISMISS_KEY) === '1';
+                if (banner && !wasDismissed) {
+                    if (modoIos && desc) {
+                        desc.innerHTML = 'En iPhone/iPad: toque <strong>Compartir ⬆️</strong> y luego <strong>"Agregar a pantalla de inicio"</strong>.';
+                    }
+                    banner.classList.remove('hidden');
+                }
+            }
+
+            function ocultarControlesPwa() {
+                const navBtn = document.getElementById('btnPwaInstallNav');
+                const banner = document.getElementById('pwaInstallBanner');
+                if (navBtn) navBtn.classList.add('hidden');
+                if (banner) banner.classList.add('hidden');
+            }
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredInstallPrompt = e;
+                mostrarControlesPwa(false);
+            });
+
+            window.addEventListener('appinstalled', () => {
+                deferredInstallPrompt = null;
+                ocultarControlesPwa();
+            });
+
+            // Soporte para Safari en iOS (no dispara beforeinstallprompt)
+            window.addEventListener('DOMContentLoaded', () => {
+                if (!isStandalone() && isIosSafari()) {
+                    setTimeout(() => mostrarControlesPwa(true), 2500);
+                }
+            });
+
+            window.cerrarBannerPwa = function () {
+                const banner = document.getElementById('pwaInstallBanner');
+                if (banner) banner.classList.add('hidden');
+                try { localStorage.setItem(PWA_DISMISS_KEY, '1'); } catch (e) { }
+            };
+
+            window.instalarPwaApp = async function () {
+                if (deferredInstallPrompt) {
+                    deferredInstallPrompt.prompt();
+                    try {
+                        const choice = await deferredInstallPrompt.userChoice;
+                        if (choice && choice.outcome === 'accepted') {
+                            ocultarControlesPwa();
+                        }
+                    } catch (e) { }
+                    deferredInstallPrompt = null;
+                    return;
+                }
+
+                // Instrucciones claras para iOS Safari o navegadores sin prompt nativo
+                const msg = isIosSafari()
+                    ? 'Para instalar <strong>MercadoFácil</strong> en su iPhone o iPad:<br><br>1️⃣ Toque el botón <strong>Compartir</strong> (cuadro con flecha hacia arriba ⬆️) en la barra inferior de Safari.<br>2️⃣ Deslice hacia abajo y elija <strong>"Agregar a pantalla de inicio"</strong>.<br>3️⃣ Toque <strong>"Agregar"</strong>.'
+                    : 'Para instalar <strong>MercadoFácil</strong> en su celular:<br><br>1️⃣ Abra el menú de su navegador (los <strong>3 puntos ⋮</strong> arriba a la derecha).<br>2️⃣ Seleccione <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong>.';
+
+                if (typeof window.customAlert === 'function') {
+                    window.customAlert(msg, 'Instalar MercadoFácil App', '📲');
+                } else {
+                    alert(msg.replace(/<[^>]+>/g, ''));
+                }
+            };
+        })();
+    </script>
 
 </body>
 

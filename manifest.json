@@ -1,0 +1,67 @@
+{
+  "name": "MercadoFácil Costa Rica",
+  "short_name": "MercadoFácil",
+  "description": "Compare precios de supermercados y canasta básica en Costa Rica en tiempo real.",
+  "start_url": "./index.html?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#2962FF",
+  "theme_color": "#2962FF",
+  "lang": "es-CR",
+  "categories": ["shopping", "finance", "lifestyle"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Comparar Precios",
+      "short_name": "Precios",
+      "description": "Consultar precios de la canasta básica en vivo",
+      "url": "./index.html#dashboard",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Mi Canasta",
+      "short_name": "Canasta",
+      "description": "Ver mi canasta y comparativa multi-almacén",
+      "url": "./index.html#canastaComparisonSection",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}
