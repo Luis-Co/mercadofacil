@@ -54,6 +54,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
 
     <style>
+        html,
+        body {
+            overflow-x: clip;
+            max-width: 100%;
+        }
+
         body {
             background-color: #F4F4F5;
             color: #0F172A;
@@ -127,13 +133,19 @@
         #three-container {
             width: 100%;
             height: 100%;
-            min-height: 350px;
+            min-height: 220px;
+        }
+
+        @media (min-width: 768px) {
+            #three-container {
+                min-height: 350px;
+            }
         }
 
         /* --- Estilos para Mi Canasta de Compras & Anime.js Layout --- */
         .layout-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 225px), 1fr));
             gap: 12px;
             align-content: start;
             align-items: stretch;
@@ -224,13 +236,13 @@
 
     <!-- Navegación -->
     <nav class="bg-vibrant-blue stitch-border-b sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-2 font-black text-2xl text-white cursor-pointer tracking-tighter"
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5 sm:gap-2 font-black text-base sm:text-2xl text-white cursor-pointer tracking-tighter min-w-0 truncate"
                 onclick="window.scrollTo(0,0)">
-                <img src="https://img.icons8.com/color/48/shopping-cart--v1.png" alt="Logo" class="w-8 h-8">
-                MERCADOFÁCIL
+                <img src="https://img.icons8.com/color/48/shopping-cart--v1.png" alt="Logo" class="w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0">
+                <span class="truncate">MERCADOFÁCIL</span>
             </div>
-            <div class="flex items-center gap-4 sm:gap-6 text-sm font-bold">
+            <div class="flex items-center gap-1.5 sm:gap-4 text-xs sm:text-sm font-bold flex-shrink-0">
                 <a href="#dashboard"
                     class="text-white hover:text-vibrant-green transition-colors hidden md:block uppercase tracking-wide">Comparar
                     Precios</a>
@@ -240,15 +252,15 @@
 
                 <!-- Enlace Menú Principal: Página Admin (Solo visible cuando un usuario con admin: true se loguea) -->
                 <a href="admin.html" id="navMenuAdminLink"
-                    class="hidden bg-amber-300 hover:bg-amber-400 text-vibrant-dark font-black px-3 py-1.5 text-xs border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5">
+                    class="hidden bg-amber-300 hover:bg-amber-400 text-vibrant-dark font-black px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-all active:translate-y-0.5">
                     <span>👑</span>
-                    <span>Admin</span>
+                    <span class="hidden sm:inline">Admin</span>
                 </a>
 
                 <!-- Selector de Idiomas -->
                 <div class="relative">
                     <select id="custom_lang_selector"
-                        class="appearance-none bg-white border-2 border-vibrant-dark text-vibrant-dark py-1.5 pl-3 pr-8 text-sm font-bold cursor-pointer hover:bg-gray-100 shadow-stitch">
+                        class="appearance-none bg-white border-2 border-vibrant-dark text-vibrant-dark py-1 pl-2 pr-6 sm:py-1.5 sm:pl-3 sm:pr-8 text-[11px] sm:text-sm font-bold cursor-pointer hover:bg-gray-100 shadow-stitch">
                         <option value="es">ESPAÑOL</option>
                         <option value="en">ENGLISH</option>
                         <option value="pt">PORTUGUÊS</option>
@@ -304,18 +316,18 @@
                     </button>
 
                     <!-- Info Usuario y Cerrar Sesión (Usuario autenticado) -->
-                    <div id="userProfileBar" class="hidden flex items-center gap-2">
+                    <div id="userProfileBar" class="hidden flex items-center gap-1.5 sm:gap-2">
                         <div
-                            class="bg-vibrant-dark text-white border-2 border-white px-2.5 py-1 text-xs font-bold flex items-center gap-1.5 shadow-stitch">
-                            <span class="w-2 h-2 rounded-full bg-vibrant-green animate-pulse"></span>
+                            class="bg-vibrant-dark text-white border-2 border-white px-2 sm:px-2.5 py-1 text-xs font-bold flex items-center gap-1 sm:gap-1.5 shadow-stitch">
+                            <span class="w-2 h-2 rounded-full bg-vibrant-green animate-pulse flex-shrink-0"></span>
                             <span id="userEmailLabel"
-                                class="max-w-[130px] truncate text-[11px]">usuario@gmail.com</span>
+                                class="max-w-[70px] sm:max-w-[130px] truncate text-[10px] sm:text-[11px]">usuario@gmail.com</span>
                         </div>
                         <span id="userExpireBadge"
                             class="hidden text-[10px] font-black px-2 py-0.5 border-2 border-vibrant-dark cursor-pointer shadow-stitch transition-transform active:scale-95"
                             title="Estado de suscripción. Clic para renovar"></span>
                         <button onclick="window.cerrarSesion()"
-                            class="bg-white hover:bg-red-50 text-red-600 font-black px-2 py-1 text-xs border-2 border-vibrant-dark shadow-stitch uppercase cursor-pointer"
+                            class="bg-white hover:bg-red-50 text-red-600 font-black px-2 py-1 text-[10px] sm:text-xs border-2 border-vibrant-dark shadow-stitch uppercase cursor-pointer"
                             title="Cerrar Sesión">
                             Salir
                         </button>
@@ -325,10 +337,10 @@
         </div>
     </nav>
 
-    <main class="flex-grow">
+    <main class="flex-grow w-full max-w-full min-w-0">
         <div id="publicAppContent">
             <!-- Hero Section with Three.js -->
-            <section class="py-12 md:py-20 stitch-border-b bg-white overflow-hidden relative">
+            <section class="py-8 sm:py-12 md:py-20 stitch-border-b bg-white overflow-hidden relative">
                 <!-- Decorative background elements -->
                 <div
                     class="absolute top-0 right-0 w-64 h-64 bg-vibrant-orange opacity-10 rounded-full mix-blend-multiply filter blur-3xl transform translate-x-1/2 -translate-y-1/2">
@@ -337,97 +349,97 @@
                     class="absolute bottom-0 left-0 w-64 h-64 bg-vibrant-blue opacity-10 rounded-full mix-blend-multiply filter blur-3xl transform -translate-x-1/2 translate-y-1/2">
                 </div>
 
-                <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative z-10">
-                    <div>
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center relative z-10">
+                    <div class="min-w-0">
                         <div
-                            class="inline-flex items-center gap-2 bg-vibrant-green text-vibrant-dark font-black text-xs px-3 py-1 mb-4 border-2 border-vibrant-dark shadow-stitch uppercase tracking-wider">
+                            class="inline-flex items-center gap-2 bg-vibrant-green text-vibrant-dark font-black text-[11px] sm:text-xs px-3 py-1 mb-4 border-2 border-vibrant-dark shadow-stitch uppercase tracking-wider">
                             🛒 Canasta básica al mejor precio
                         </div>
                         <h1
-                            class="text-4xl sm:text-5xl md:text-6xl font-black text-vibrant-dark tracking-tighter mb-4 leading-none uppercase">
+                            class="text-3xl sm:text-5xl md:text-6xl font-black text-vibrant-dark tracking-tighter mb-4 leading-none uppercase break-words">
                             ¿DÓNDE SALE<br>
                             <span
                                 class="text-transparent bg-clip-text bg-gradient-to-r from-vibrant-blue via-vibrant-green to-vibrant-orange">MÁS
                                 BARATO?</span>
                         </h1>
-                        <p class="text-xl md:text-2xl font-black text-vibrant-dark mb-4 tracking-tight">
+                        <p class="text-lg sm:text-xl md:text-2xl font-black text-vibrant-dark mb-4 tracking-tight">
                             Compare precios de la canasta básica y ahorre hoy
                         </p>
-                        <p class="text-base text-gray-700 font-medium mb-8 max-w-lg leading-relaxed">
+                        <p class="text-sm sm:text-base text-gray-700 font-medium mb-6 sm:mb-8 max-w-lg leading-relaxed">
                             Compare los precios de los productos esenciales en los supermercados de Costa Rica antes de
                             salir de compras. Cuide el presupuesto de su hogar y encuentre datos confiables para su
                             negocio.
                         </p>
-                        <div class="flex flex-col sm:flex-row gap-4 font-bold">
+                        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 font-bold text-sm sm:text-base">
                             <a href="#dashboard"
-                                class="bg-vibrant-orange text-vibrant-dark text-center py-3 px-6 shadow-stitch hover:shadow-stitch-hover hover:translate-y-0.5 transition-all">
+                                class="bg-vibrant-orange text-vibrant-dark text-center py-3 px-5 sm:px-6 shadow-stitch hover:shadow-stitch-hover hover:translate-y-0.5 transition-all">
                                 CONSULTAR PRECIOS HOY
                             </a>
                             <a href="#premium"
-                                class="bg-vibrant-green text-vibrant-dark text-center py-3 px-6 shadow-stitch hover:shadow-stitch-hover hover:translate-y-0.5 transition-all">
+                                class="bg-vibrant-green text-vibrant-dark text-center py-3 px-5 sm:px-6 shadow-stitch hover:shadow-stitch-hover hover:translate-y-0.5 transition-all">
                                 PLANES PARA EMPRESAS
                             </a>
                         </div>
                     </div>
                     <!-- 3D Canvas Container -->
-                    <div id="three-container" class="relative w-full h-96 flex justify-center items-center">
+                    <div id="three-container" class="relative w-full h-60 sm:h-80 md:h-96 flex justify-center items-center">
                         <!-- Three.js renders here -->
                     </div>
                 </div>
             </section>
 
             <!-- Dashboard Section (Comparador Canasta Básica) -->
-            <section id="dashboard" class="py-16 bg-vibrant-bg stitch-border-b">
-                <div class="max-w-6xl mx-auto px-6">
-                    <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
-                        <div>
+            <section id="dashboard" class="py-8 sm:py-16 bg-vibrant-bg stitch-border-b">
+                <div class="max-w-6xl mx-auto px-3 sm:px-6">
+                    <div class="mb-6 sm:mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                        <div class="min-w-0">
                             <div
-                                class="inline-block bg-vibrant-orange text-white text-xs font-black px-3 py-1 uppercase tracking-widest mb-2 border-2 border-vibrant-dark shadow-stitch">
+                                class="inline-block bg-vibrant-orange text-white text-[11px] sm:text-xs font-black px-3 py-1 uppercase tracking-widest mb-2 border-2 border-vibrant-dark shadow-stitch">
                                 Ahorro en el hogar
                             </div>
-                            <h2 class="text-3xl md:text-4xl font-black text-vibrant-dark tracking-tight uppercase">
+                            <h2 class="text-2xl sm:text-3xl md:text-4xl font-black text-vibrant-dark tracking-tight uppercase break-words">
                                 Precios de la Canasta Básica</h2>
-                            <p class="text-gray-600 font-medium mt-1">Consulte y compare cuánto cuesta el mismo producto
+                            <p class="text-xs sm:text-base text-gray-600 font-medium mt-1">Consulte y compare cuánto cuesta el mismo producto
                                 en diferentes supermercados de Costa Rica.</p>
                         </div>
                         <div
-                            class="inline-flex items-center gap-2 bg-white border-2 border-vibrant-dark px-4 py-2 text-xs font-bold text-gray-700 shadow-stitch self-start md:self-auto">
+                            class="inline-flex items-center gap-2 bg-white border-2 border-vibrant-dark px-3 sm:px-4 py-2 text-[11px] sm:text-xs font-bold text-gray-700 shadow-stitch self-start md:self-auto">
                             <span
-                                class="w-2.5 h-2.5 rounded-full bg-vibrant-green border border-vibrant-dark inline-block"></span>
+                                class="w-2.5 h-2.5 rounded-full bg-vibrant-green border border-vibrant-dark inline-block flex-shrink-0"></span>
                             Ordenado del más económico al más caro
                         </div>
                     </div>
 
                     <!-- Dashboard Container -->
-                    <div class="bg-white stitch-box shadow-stitch overflow-hidden">
+                    <div class="bg-white stitch-box shadow-stitch overflow-hidden w-full max-w-full min-w-0">
 
                         <!-- Controles / Filtros -->
                         <!-- 0. Barra de Búsqueda Rápida en Tiempo Real & Armador de Canasta Multi-Producto -->
-                        <div class="p-4 bg-[#09152b] stitch-border-b flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-                            <div class="relative flex-1">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-base">🔍</span>
+                        <div class="p-3 sm:p-4 bg-[#09152b] stitch-border-b flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                            <div class="relative flex-1 min-w-0">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-sm sm:text-base">🔍</span>
                                 <input type="search" id="productSearchInput" data-telemetry-search="true"
-                                    placeholder="Buscar por nombre de producto en tiempo real (ej: Arroz, Leche, Atún, Huevos, Café...)"
-                                    class="w-full pl-10 pr-10 py-3 bg-white text-vibrant-dark placeholder-gray-500 font-bold text-sm border-2 border-vibrant-dark shadow-stitch focus:outline-none focus:ring-2 focus:ring-vibrant-green transition-all" />
+                                    placeholder="Buscar producto (ej: Arroz, Leche, Atún...)"
+                                    class="w-full pl-9 sm:pl-10 pr-9 sm:pr-10 py-2.5 sm:py-3 bg-white text-vibrant-dark placeholder-gray-500 font-bold text-xs sm:text-sm border-2 border-vibrant-dark shadow-stitch focus:outline-none focus:ring-2 focus:ring-vibrant-green transition-all" />
                                 <button id="clearProductSearch" onclick="window.clearProductSearch && window.clearProductSearch()"
-                                    class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-red-600 font-black text-sm cursor-pointer"
+                                    class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-red-600 font-black text-sm cursor-pointer"
                                     title="Limpiar búsqueda">✕</button>
                             </div>
                             <div class="flex items-center gap-2">
                                 <button onclick="window.abrirModalArmarCanasta && window.abrirModalArmarCanasta()"
-                                    class="w-full md:w-auto bg-vibrant-green hover:bg-green-400 text-vibrant-dark font-black py-3 px-5 text-xs border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all active:translate-y-0.5 whitespace-nowrap">
+                                    class="w-full md:w-auto bg-vibrant-green hover:bg-green-400 text-vibrant-dark font-black py-2.5 sm:py-3 px-4 sm:px-5 text-[11px] sm:text-xs border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all active:translate-y-0.5">
                                     <span>⚡</span> Armar Canasta (Varios Productos)
                                 </button>
                             </div>
                         </div>
 
                         <!-- Controles / Filtros: Supermercado, Categoría Oficial, Producto -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 bg-vibrant-blue stitch-border-b">
-                            <div>
-                                <label class="block text-xs font-bold text-white uppercase tracking-widest mb-2">1.
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 p-3 sm:p-6 bg-vibrant-blue stitch-border-b">
+                            <div class="min-w-0">
+                                <label class="block text-xs font-bold text-white uppercase tracking-widest mb-1.5 sm:mb-2">1.
                                     Supermercado</label>
                                 <select id="superFilter"
-                                    class="w-full bg-white text-vibrant-dark font-semibold py-3 px-4 shadow-sm">
+                                    class="w-full min-w-0 max-w-full bg-white text-vibrant-dark font-semibold text-xs sm:text-sm py-2.5 sm:py-3 px-3 sm:px-4 shadow-sm truncate">
                                     <optgroup label="⭐ SUPERMERCADOS EN MODO GRATIS (2 HABILITADOS)">
                                         <option value="MásxMenos" selected>⭐ MÁSXMENOS (MODO GRATIS)</option>
                                         <option value="MegaSuper">⭐ MEGASUPER (MODO GRATIS)</option>
@@ -444,11 +456,11 @@
                                     </optgroup>
                                 </select>
                             </div>
-                            <div>
-                                <label class="block text-xs font-bold text-white uppercase tracking-widest mb-2">2.
+                            <div class="min-w-0">
+                                <label class="block text-xs font-bold text-white uppercase tracking-widest mb-1.5 sm:mb-2">2.
                                     Categoría de la Canasta</label>
                                 <select id="categoryFilter"
-                                    class="w-full bg-white text-vibrant-dark font-semibold py-3 px-4 shadow-sm">
+                                    class="w-full min-w-0 max-w-full bg-white text-vibrant-dark font-semibold text-xs sm:text-sm py-2.5 sm:py-3 px-3 sm:px-4 shadow-sm truncate">
                                     <option value="Todas">TODAS LAS CATEGORÍAS (EN VIVO)</option>
                                     <option value="🥑 Frutas">🥑 Frutas</option>
                                     <option value="🥦 Hortalizas, Leguminosas y Tubérculos">🥦 Hortalizas, Leguminosas y
@@ -464,10 +476,11 @@
                                     <option value="✏️ Útiles Escolares">✏️ Útiles Escolares</option>
                                 </select>
                             </div>
-                            <div>
-                                <label class="block text-xs font-bold text-white uppercase tracking-widest mb-2">3.
+                            <div class="min-w-0">
+                                <label class="block text-xs font-bold text-white uppercase tracking-widest mb-1.5 sm:mb-2">3.
                                     Producto Específico</label>
                                 <select id="itemFilter"
+                                    class="w-full min-w-0 max-w-full bg-white text-vibrant-dark font-semibold text-xs sm:text-sm py-2.5 sm:py-3 px-3 sm:px-4 shadow-sm truncate">
                                     class="w-full bg-white text-vibrant-dark font-semibold py-3 px-4 shadow-sm">
                                     <optgroup label="⭐ PRODUCTOS DE MUESTRA GRATIS (6 HABILITADOS)">
                                         <option value="Todos" selected>⭐ [MUESTRA GRATIS] Todos los 6 Productos Esenciales</option>
@@ -714,15 +727,15 @@
                         </div>
 
                         <!-- Mi Canasta de Compras (createLayout + SQLite) -->
-                        <div class="p-6 stitch-border-t bg-gray-50">
+                        <div class="p-3 sm:p-6 stitch-border-t bg-gray-50 min-w-0 w-full max-w-full">
                             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4">
-                                <div>
+                                <div class="min-w-0">
                                     <div
                                         class="inline-flex items-center gap-2 bg-vibrant-blue text-white text-[10px] font-black px-2.5 py-0.5 border-2 border-vibrant-dark uppercase tracking-wider shadow-stitch mb-1.5">
                                         💾 Persistencia Local SQLite
                                     </div>
                                     <h3
-                                        class="text-lg md:text-xl font-black text-vibrant-dark uppercase tracking-tight flex items-center gap-2">
+                                        class="text-base sm:text-lg md:text-xl font-black text-vibrant-dark uppercase tracking-tight flex items-center gap-2 break-words">
                                         <span>🧺</span> Mi Canasta de Compras
                                     </h3>
                                     <p class="text-xs text-gray-600 font-medium mt-0.5">
@@ -730,19 +743,19 @@
                                         guarda automáticamente en su navegador.
                                     </p>
                                 </div>
-                                <div class="controls flex flex-wrap items-center gap-2">
+                                <div class="controls grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full lg:w-auto">
                                     <!-- Botón Armar Canasta Multi-Producto -->
                                     <button onclick="window.abrirModalArmarCanasta && window.abrirModalArmarCanasta()"
-                                        class="bg-vibrant-yellow hover:bg-yellow-400 text-vibrant-dark font-black py-2 px-3.5 shadow-stitch hover:shadow-stitch-hover border-2 border-vibrant-dark uppercase tracking-wider text-xs flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5"
+                                        class="col-span-2 sm:col-span-1 bg-vibrant-yellow hover:bg-yellow-400 text-vibrant-dark font-black py-2 px-3 shadow-stitch hover:shadow-stitch-hover border-2 border-vibrant-dark uppercase tracking-wider text-[11px] sm:text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5"
                                         title="Escoger varios productos al mismo tiempo con comparativa instantánea">
                                         <span>⚡</span> Escoger Varios
                                     </button>
 
                                     <!-- Botón Compartir en WhatsApp -->
                                     <button onclick="window.compartirWhatsApp && window.compartirWhatsApp()"
-                                        class="bg-[#25D366] hover:bg-[#20bd5a] text-white font-black py-2 px-3.5 shadow-stitch hover:shadow-stitch-hover border-2 border-vibrant-dark uppercase tracking-wider text-xs flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5"
+                                        class="bg-[#25D366] hover:bg-[#20bd5a] text-white font-black py-2 px-2.5 sm:px-3.5 shadow-stitch hover:shadow-stitch-hover border-2 border-vibrant-dark uppercase tracking-wider text-[11px] sm:text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5"
                                         title="Enviar cotización a su propio WhatsApp o a un familiar">
-                                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 fill-current flex-shrink-0" viewBox="0 0 24 24">
                                             <path
                                                 d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
                                         </svg>
@@ -751,14 +764,14 @@
 
                                     <!-- Botón Descargar Foto PNG -->
                                     <button onclick="window.descargarFotoCanasta && window.descargarFotoCanasta('png')"
-                                        class="bg-vibrant-orange hover:bg-orange-400 text-vibrant-dark font-black py-2 px-3.5 shadow-stitch hover:shadow-stitch-hover border-2 border-vibrant-dark uppercase tracking-wider text-xs flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5"
+                                        class="bg-vibrant-orange hover:bg-orange-400 text-vibrant-dark font-black py-2 px-2.5 sm:px-3.5 shadow-stitch hover:shadow-stitch-hover border-2 border-vibrant-dark uppercase tracking-wider text-[11px] sm:text-xs flex items-center justify-center gap-1 cursor-pointer transition-all active:translate-y-0.5"
                                         title="Guardar foto de la cotización en formato PNG">
                                         <span>📸</span> Foto (.PNG)
                                     </button>
 
                                     <!-- Botón Descargar Foto JPG -->
                                     <button onclick="window.descargarFotoCanasta && window.descargarFotoCanasta('jpeg')"
-                                        class="bg-white hover:bg-gray-100 text-vibrant-dark font-black py-2 px-3 border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover text-xs uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-all active:translate-y-0.5"
+                                        class="bg-white hover:bg-gray-100 text-vibrant-dark font-black py-2 px-2.5 sm:px-3 border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover text-[11px] sm:text-xs uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer transition-all active:translate-y-0.5"
                                         title="Guardar foto de la cotización en formato JPEG">
                                         <span>🖼️</span> .JPG
                                     </button>
@@ -766,40 +779,40 @@
                                     <!-- Botón Vaciar -->
                                     <button id="btnVaciarCanasta"
                                         onclick="window.vaciarCanasta && window.vaciarCanasta()"
-                                        class="bg-white hover:bg-red-50 text-red-600 font-bold py-2 px-3 border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover text-xs uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-all active:translate-y-0.5"
+                                        class="bg-white hover:bg-red-50 text-red-600 font-bold py-2 px-2.5 sm:px-3 border-2 border-vibrant-dark shadow-stitch hover:shadow-stitch-hover text-[11px] sm:text-xs uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer transition-all active:translate-y-0.5"
                                         title="Vaciar toda la canasta">
                                         <span>🗑️</span> Vaciar
                                     </button>
-                                    <span class="text-[11px] font-bold text-gray-500 uppercase ml-1">Máx. 15</span>
+                                    <span class="col-span-2 sm:col-span-1 text-[11px] font-bold text-gray-500 uppercase text-center sm:text-left sm:ml-1">Máx. 15</span>
                                 </div>
                             </div>
 
                             <!-- Barra de Resumen de la Canasta -->
                             <div
-                                class="mb-4 bg-white border-2 border-vibrant-dark shadow-stitch p-4 flex flex-wrap items-center justify-between gap-4">
-                                <div class="flex items-center gap-6">
+                                class="mb-4 bg-white border-2 border-vibrant-dark shadow-stitch p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 min-w-0">
+                                <div class="flex items-center gap-3 sm:gap-6 flex-wrap min-w-0">
                                     <div>
                                         <span
-                                            class="text-[11px] font-bold text-gray-500 uppercase block">Artículos</span>
+                                            class="text-[10px] sm:text-[11px] font-bold text-gray-500 uppercase block">Artículos</span>
                                         <span id="canastaCountBadge"
-                                            class="text-xl font-black text-vibrant-dark">0</span>
+                                            class="text-lg sm:text-xl font-black text-vibrant-dark">0</span>
                                     </div>
-                                    <div class="stitch-border-l pl-6">
-                                        <span class="text-[11px] font-bold text-gray-500 uppercase block">Total
+                                    <div class="stitch-border-l pl-3 sm:pl-6 min-w-0">
+                                        <span class="text-[10px] sm:text-[11px] font-bold text-gray-500 uppercase block">Total
                                             Canasta</span>
                                         <span id="canastaTotalBadge"
-                                            class="text-2xl font-black text-vibrant-blue">₡0</span>
+                                            class="text-lg sm:text-2xl font-black text-vibrant-blue break-words">₡0</span>
                                     </div>
                                 </div>
-                                <div class="text-xs font-semibold text-gray-600 flex items-center gap-2">
-                                    <span>💡</span> <span id="canastaTipText">Seleccione productos de la grilla de
+                                <div class="text-xs font-semibold text-gray-600 flex items-start sm:items-center gap-2 min-w-0">
+                                    <span class="flex-shrink-0">💡</span> <span id="canastaTipText">Seleccione productos de la grilla de
                                         arriba pulsando "➕ Agregar" para armar su lista del súper.</span>
                                 </div>
                             </div>
 
                             <!-- Contenedor Layout Anime.js -->
                             <div
-                                class="layout-container min-h-[90px] p-4 bg-white border-2 border-vibrant-dark shadow-stitch">
+                                class="layout-container min-h-[90px] p-2.5 sm:p-4 bg-white border-2 border-vibrant-dark shadow-stitch w-full max-w-full min-w-0">
                                 <!-- Items añadidos dinámicamente con SQLite & Anime.js -->
                             </div>
 
@@ -3703,10 +3716,10 @@
 
                 return `
                     <tr class="hover:bg-blue-50/30 transition-colors">
-                        <td class="sticky left-0 bg-white py-3 px-4 text-xs font-black text-vibrant-dark border-b border-r-2 border-vibrant-dark z-10 shadow-xs">
+                        <td class="sticky left-0 bg-white py-2.5 sm:py-3 px-2.5 sm:px-4 text-[11px] sm:text-xs font-black text-vibrant-dark border-b border-r-2 border-vibrant-dark z-10 shadow-xs max-w-[140px] sm:max-w-none break-words">
                             ${u.item}
                         </td>
-                        <td class="py-3 px-3 text-center text-xs font-bold text-gray-600 border-b border-r-2 border-vibrant-dark bg-gray-50">
+                        <td class="py-2.5 sm:py-3 px-2 sm:px-3 text-center text-[11px] sm:text-xs font-bold text-gray-600 border-b border-r-2 border-vibrant-dark bg-gray-50">
                             x${u.cantidad}
                         </td>
                         ${unlockedCells}${lockedCells}
@@ -3736,59 +3749,59 @@
             const totalUnits = uniqueItems.reduce((acc, u) => acc + u.cantidad, 0);
 
             compSection.innerHTML = `
-                <div class="bg-vibrant-dark text-white p-5 border-2 border-vibrant-dark shadow-stitch flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                    <div>
-                        <div class="inline-flex items-center gap-2 ${hasPlan ? 'bg-vibrant-green text-vibrant-dark' : 'bg-amber-300 text-vibrant-dark'} text-[10px] font-black px-2.5 py-0.5 border border-vibrant-dark uppercase tracking-wider mb-2">
-                            ${hasPlan ? '🏆 Comparativa Inteligente Multi-Almacén' : '⭐ Modo Gratis (Pequeño Mundo vs Auto Mercado) · 🔒 7 Almacenes con Plan'}
+                <div class="bg-vibrant-dark text-white p-3.5 sm:p-5 border-2 border-vibrant-dark shadow-stitch flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 mb-5 sm:mb-6">
+                    <div class="min-w-0">
+                        <div class="inline-flex items-center gap-2 ${hasPlan ? 'bg-vibrant-green text-vibrant-dark' : 'bg-amber-300 text-vibrant-dark'} text-[10px] font-black px-2 sm:px-2.5 py-0.5 border border-vibrant-dark uppercase tracking-wider mb-2 max-w-full">
+                            <span class="truncate">${hasPlan ? '🏆 Comparativa Inteligente Multi-Almacén' : '⭐ Modo Gratis (2 Almacenes) · 🔒 7 con Plan'}</span>
                         </div>
-                        <h3 class="text-xl md:text-2xl font-black uppercase tracking-tight flex items-center gap-2">
-                            <span>📊</span> ¿En qué almacén le sale más barato comprar toda esta canasta?
+                        <h3 class="text-base sm:text-xl md:text-2xl font-black uppercase tracking-tight flex items-start sm:items-center gap-2 break-words">
+                            <span>📊</span> <span>¿En qué almacén le sale más barato comprar toda esta canasta?</span>
                         </h3>
-                        <p class="text-xs text-gray-300 font-medium mt-1">
+                        <p class="text-[11px] sm:text-xs text-gray-300 font-medium mt-1">
                             ${hasPlan
                                 ? `Calculamos el costo exacto de sus ${uniqueItems.length} productos (${totalUnits} unidades) en los 9 supermercados monitoreados.`
                                 : `En modo gratis comparamos únicamente <strong>Pequeño Mundo</strong> y <strong>Auto Mercado</strong> (${uniqueItems.length} productos, ${totalUnits} unidades). Active una membresía para comparar los 9 almacenes.`
                             }
                         </p>
                     </div>
-                    <div class="flex items-center gap-2 flex-wrap">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-wrap">
                         <button onclick="window.aplicarSuperMasBaratoACanasta && window.aplicarSuperMasBaratoACanasta()" 
-                            class="bg-vibrant-green hover:bg-green-400 text-vibrant-dark font-black py-2.5 px-4 text-xs border-2 border-vibrant-dark shadow-stitch uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5">
-                            <span>⚡</span> Comprar todo en ${cheapest.super} (${formatCRC(cheapest.total)})
+                            class="w-full sm:w-auto justify-center bg-vibrant-green hover:bg-green-400 text-vibrant-dark font-black py-2.5 px-3 sm:px-4 text-[11px] sm:text-xs border-2 border-vibrant-dark shadow-stitch uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5">
+                            <span>⚡</span> <span>Comprar todo en ${cheapest.super} (${formatCRC(cheapest.total)})</span>
                         </button>
                         ${!hasPlan ? `
                         <button onclick="window.abrirModalRegistroPlanes && window.abrirModalRegistroPlanes('', 'plan1')" 
-                            class="bg-amber-300 hover:bg-amber-400 text-vibrant-dark font-black py-2.5 px-4 text-xs border-2 border-vibrant-dark shadow-stitch uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5">
-                            <span>🔓</span> Desbloquear 9 Almacenes (₡5,000/mes)
+                            class="w-full sm:w-auto justify-center bg-amber-300 hover:bg-amber-400 text-vibrant-dark font-black py-2.5 px-3 sm:px-4 text-[11px] sm:text-xs border-2 border-vibrant-dark shadow-stitch uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5">
+                            <span>🔓</span> <span>Desbloquear 9 Almacenes (₡5,000/mes)</span>
                         </button>
                         ` : ''}
                     </div>
                 </div>
 
-                <div class="mb-6">
-                    <h4 class="text-xs font-black uppercase tracking-wider text-gray-700 mb-3 flex items-center gap-2">
-                        <span>🏁</span> ${hasPlan ? 'Ranking de Precios Totales por Supermercado (De menor a mayor)' : 'Comparativa Modo Gratis (Pequeño Mundo vs Auto Mercado) y Almacenes con Membresía'}
+                <div class="mb-5 sm:mb-6">
+                    <h4 class="text-[11px] sm:text-xs font-black uppercase tracking-wider text-gray-700 mb-3 flex items-center gap-2">
+                        <span>🏁</span> <span>${hasPlan ? 'Ranking de Precios Totales por Supermercado (De menor a mayor)' : 'Comparativa Modo Gratis (Pequeño Mundo vs Auto Mercado) y Almacenes con Membresía'}</span>
                     </h4>
-                    <div id="canastaSuperRankCards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <div id="canastaSuperRankCards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                         ${rankCardsHtml}
                     </div>
                 </div>
 
-                <div class="bg-white border-2 border-vibrant-dark shadow-stitch p-4 overflow-hidden">
-                    <div class="flex items-center justify-between gap-4 mb-3 flex-wrap">
-                        <h4 class="text-xs font-black uppercase tracking-wider text-gray-800 flex items-center gap-2">
+                <div class="bg-white border-2 border-vibrant-dark shadow-stitch p-2.5 sm:p-4 overflow-hidden w-full max-w-full min-w-0">
+                    <div class="flex items-center justify-between gap-2 sm:gap-4 mb-3 flex-wrap">
+                        <h4 class="text-[11px] sm:text-xs font-black uppercase tracking-wider text-gray-800 flex items-center gap-2">
                             <span>📋</span> Desglose Producto por Producto en Cada Almacén
                         </h4>
-                        <span class="text-[11px] text-gray-600 font-bold">
+                        <span class="text-[10px] sm:text-[11px] text-gray-600 font-bold">
                             ⭐ Badge verde resalta el precio más bajo de cada producto${!hasPlan ? ' · 🔒 Plan requerido para los demás almacenes' : ''}
                         </span>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table id="canastaMatrixTable" class="w-full text-left border-collapse min-w-[850px]">
+                    <div class="overflow-x-auto w-full max-w-full">
+                        <table id="canastaMatrixTable" class="w-full text-left border-collapse min-w-[680px] sm:min-w-[850px]">
                             <thead>
                                 <tr class="bg-gray-100 stitch-border-b">
-                                    <th class="sticky left-0 bg-gray-100 py-3 px-4 text-xs font-black text-vibrant-dark border-b-2 border-r-2 border-vibrant-dark z-10 w-56">Producto</th>
-                                    <th class="py-3 px-3 text-center text-xs font-black text-vibrant-dark border-b-2 border-r-2 border-vibrant-dark w-16">Cant.</th>
+                                    <th class="sticky left-0 bg-gray-100 py-2.5 sm:py-3 px-2.5 sm:px-4 text-[11px] sm:text-xs font-black text-vibrant-dark border-b-2 border-r-2 border-vibrant-dark z-10 w-32 sm:w-56 min-w-[120px]">Producto</th>
+                                    <th class="py-2.5 sm:py-3 px-2 sm:px-3 text-center text-[11px] sm:text-xs font-black text-vibrant-dark border-b-2 border-r-2 border-vibrant-dark w-12 sm:w-16">Cant.</th>
                                     ${theadCols}
                                 </tr>
                             </thead>
@@ -3797,10 +3810,10 @@
                             </tbody>
                             <tfoot>
                                 <tr class="bg-gray-900 text-white font-black">
-                                    <td class="sticky left-0 bg-gray-900 text-white py-4 px-4 text-xs uppercase tracking-wider border-r-2 border-gray-700 z-10">
+                                    <td class="sticky left-0 bg-gray-900 text-white py-3 sm:py-4 px-2.5 sm:px-4 text-[11px] sm:text-xs uppercase tracking-wider border-r-2 border-gray-700 z-10">
                                         TOTAL CANASTA
                                     </td>
-                                    <td class="py-4 px-3 text-center text-xs border-r-2 border-gray-700">
+                                    <td class="py-3 sm:py-4 px-2 sm:px-3 text-center text-[11px] sm:text-xs border-r-2 border-gray-700">
                                         ${totalUnits}
                                     </td>
                                     ${tfootCols}
@@ -3809,16 +3822,16 @@
                         </table>
                     </div>
                     ${!hasPlan ? `
-                    <div class="mt-4 bg-amber-50 border-2 border-vibrant-dark p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
-                        <div class="flex items-center gap-3">
-                            <span class="text-2xl">🔒</span>
-                            <div>
-                                <div class="text-xs font-black uppercase text-vibrant-dark">¿Quiere comparar también Walmart, Maxi Palí, Palí, MásxMenos, MegaSuper, Perimercados y PriceSmart?</div>
+                    <div class="mt-4 bg-amber-50 border-2 border-vibrant-dark p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 shadow-xs">
+                        <div class="flex items-start sm:items-center gap-3 min-w-0">
+                            <span class="text-xl sm:text-2xl flex-shrink-0">🔒</span>
+                            <div class="min-w-0">
+                                <div class="text-[11px] sm:text-xs font-black uppercase text-vibrant-dark">¿Quiere comparar también Walmart, Maxi Palí, Palí, MásxMenos, MegaSuper, Perimercados y PriceSmart?</div>
                                 <div class="text-[11px] font-bold text-gray-600 mt-0.5">En modo gratis la comparativa de canasta funciona solo entre Pequeño Mundo y Auto Mercado. Active su membresía desde ₡5,000/mes para desbloquear los 9 almacenes.</div>
                             </div>
                         </div>
                         <button onclick="window.abrirModalRegistroPlanes && window.abrirModalRegistroPlanes('', 'plan1')"
-                            class="bg-vibrant-blue hover:bg-blue-700 text-white font-black py-2.5 px-5 text-xs border-2 border-vibrant-dark shadow-stitch uppercase tracking-wider whitespace-nowrap cursor-pointer">
+                            class="w-full sm:w-auto text-center bg-vibrant-blue hover:bg-blue-700 text-white font-black py-2.5 px-4 sm:px-5 text-xs border-2 border-vibrant-dark shadow-stitch uppercase tracking-wider whitespace-nowrap cursor-pointer">
                             🚀 Activar Plan Mercados
                         </button>
                     </div>
@@ -7012,16 +7025,16 @@
     <!-- ==============================================
          MODAL ARMAR CANASTA MULTI-PRODUCTO
          ============================================== -->
-    <div id="modalArmarCanasta" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white border-4 border-vibrant-dark shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fadeIn">
+    <div id="modalArmarCanasta" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+        <div class="bg-white border-4 border-vibrant-dark shadow-2xl w-full max-w-4xl max-h-[94vh] sm:max-h-[90vh] flex flex-col overflow-hidden animate-fadeIn">
             <!-- Header -->
-            <div class="bg-[#0F172A] text-white p-5 border-b-4 border-vibrant-dark flex items-start justify-between gap-4">
-                <div>
-                    <div class="inline-flex items-center gap-2 bg-vibrant-green text-vibrant-dark text-[10px] font-black px-2.5 py-0.5 border border-vibrant-dark uppercase tracking-wider mb-2">
+            <div class="bg-[#0F172A] text-white p-3.5 sm:p-5 border-b-4 border-vibrant-dark flex items-start justify-between gap-3 sm:gap-4">
+                <div class="min-w-0">
+                    <div class="inline-flex items-center gap-2 bg-vibrant-green text-vibrant-dark text-[10px] font-black px-2 sm:px-2.5 py-0.5 border border-vibrant-dark uppercase tracking-wider mb-1.5 sm:mb-2">
                         ⚡ Selección Rápida
                     </div>
-                    <h3 class="text-xl md:text-2xl font-black uppercase tracking-tight flex items-center gap-2">
-                        <span>🧺</span> Armar Canasta y Comparar Almacenes
+                    <h3 class="text-base sm:text-xl md:text-2xl font-black uppercase tracking-tight flex items-center gap-2 break-words">
+                        <span>🧺</span> <span>Armar Canasta y Comparar Almacenes</span>
                     </h3>
                     <p class="text-xs text-gray-300 font-medium mt-1">
                         Seleccione varios productos al mismo tiempo. El sistema calculará automáticamente en cuál almacén le sale más barato comprar toda su lista.
